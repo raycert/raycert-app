@@ -61,6 +61,16 @@ Trạng thái: CHƯA BẮT ĐẦU
 RLS, rate limit, logging, reconnect, load/concurrency test, deployment, backup.
 Trạng thái: CHƯA BẮT ĐẦU
 
+# Phase 9 — Assessment / Post-test (Roadmap)
+Activity mode thứ 2 bên cạnh Live Quiz hiện tại: participant tự làm bài theo tốc độ riêng,
+không cần host điều khiển từng câu, không speed bonus, không leaderboard mặc định, điểm theo
+% correct, có pass score/attempt/time limit toàn bài, có thể randomize question/answer, result
+chỉ hiện sau submit. POLL vẫn không tính điểm. Data concept tương lai: `Assessment`,
+`AssessmentAttempt`, `AssessmentAnswer` (chưa tạo schema). Chi tiết: xem `ROADMAP_ASSESSMENT.md`.
+Ràng buộc: không đổi Live Quiz hiện tại; domain component dùng chung (`Question`, `AnswerOption`,
+`Quiz`, `QuestionType`, `QuestionImage`) phải giữ tên trung tính, không phụ thuộc cứng vào game/live.
+Trạng thái: CHƯA BẮT ĐẦU (roadmap/docs only — chưa có route, backend, database, hay field runtime nào)
+
 # Không làm trước MVP
 Loại câu hỏi thứ 3, multiple correct, open-ended, word cloud, matching, ordering, AI generator, LMS, payment, marketplace, team mode phức tạp, certificate.
 

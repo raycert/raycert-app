@@ -83,34 +83,33 @@ Responsive: list scrolls horizontally inside a bounded container below ~820px ra
 Data: `quizzes: Quiz[]`.
 
 **03 · Quiz Editor** — `/quizzes/new`, `/quizzes/[quizId]` · Trainer · Desktop.
-Layout: top bar (title, save status, Import Excel, Preview, Host) + 260px sidebar (`QuestionList`) + main (`QuizQuestionEditor` or `PollQuestionEditor`).
-Components: `QuizEditorShell`, `QuestionList`, `QuestionListItem`, `QuestionTypeBadge`, `AddQuestionButton`.
-Primary CTA: Add Question. Secondary: Save (auto), Preview, Host, Import Excel.
-States: new (empty draft), existing, unsaved changes, incomplete question (badge on sidebar item), question selected.
-Responsive: tablet 768–1023 → sidebar becomes a drawer (toggle button in top bar).
-Data: `quiz: Quiz` (with `questions: Question[]`).
+Layout: top bar (inline-editable title, save status, Import Excel, Preview, Host) + 260px sidebar (`QuestionList`) + main (`QuizQuestionEditor` or `PollQuestionEditor`).
+Components: `QuizEditorPage` (orchestrator: local state via `useQuizEditor`), `QuizEditorShell`, `QuestionList`, `QuestionListItem`, `QuestionTypeBadge`.
+Primary CTA: Add Question. Secondary: Save (auto, debounced — "Chưa lưu" → "Đang lưu…" → "Đã lưu"), Preview, Host, Import Excel.
+States: new (empty draft, title placeholder "Untitled Quiz"), existing (seeded from mock data), unsaved/saving/saved, incomplete question (⚠ + error tint on sidebar item), question selected, no question selected (empty-state prompt in main), Host disabled + inline warning banner when any question is incomplete or the quiz has zero questions.
+Responsive: ≥1024px fixed 260px sidebar; <1024px sidebar becomes a `Sheet` drawer (menu button in top bar) — same mechanism as `TrainerSidebarDrawer`.
+Data: `quiz: Quiz` (with `questions: Question[]`) — client/local state only, no persistence after reload.
 
-**04 · Add Question Modal** — overlay on `/quizzes/[quizId]` · Trainer · Desktop.
+**04 · Add Question Modal** — overlay on `/quizzes/[quizId]` (and `/quizzes/new`) · Trainer · Desktop.
 Layout: centered modal, 2 large selectable cards (Trắc nghiệm / Bình chọn).
-Components: `Dialog` (shadcn), `QuestionTypeCard`.
-Primary CTA: select a type (closes modal, opens QUIZ/POLL Editor for the new question). Secondary: Cancel.
+Components: `AddQuestionDialog` (self-contained: owns its own trigger button — the sidebar's dashed "+ Add Question" row — and the `Dialog`).
+Primary CTA: click a card (creates the question, closes the modal, selects the new question, opens its editor — single click, no separate confirm step). Secondary: Cancel.
 States: default only.
 
 **05 · QUIZ Editor** (question-level, inside Quiz Editor main) — Trainer · Desktop.
-Components: `QuizQuestionEditor`, `QuestionImageUpload`, `AnswerOptionEditor` (radio for correct), `TimerSelect`, `PointsSelect`, `ValidationBanner`.
-Primary CTA: implicit save on blur/change. Secondary: add/remove option (2–4), delete question.
-States: validation error (no correct answer / <2 options), incomplete (empty text).
-Data: `question: Question` where `type: 'QUIZ'`.
+Components: `QuizQuestionEditor`, `QuestionImageUpload`, `AnswerOptionEditor` (real `<input type="radio">` per question, visually custom-styled, for correct), `QuestionSettings` (Timer + Points selects), `ValidationMessage`.
+Primary CTA: implicit save (debounced) on any change. Secondary: add/remove option (2–4), delete question (trash icon, `aria-label`).
+States: validation error (no correct answer / <2 options / empty text — all shown live via `ValidationMessage`, driven by `lib/validation/question.ts`), incomplete (empty text).
+Data: `question: Question` where `type: 'QUIZ'`. Correct-answer is authoring-only state in this editor — never sent to a participant-facing component.
 
 **06 · POLL Editor** (question-level) — Trainer · Desktop.
-Components: `PollQuestionEditor`, `QuestionImageUpload` (shared), `AnswerOptionEditor` (no correct radio), `TimerSelect`.
-Primary CTA: implicit save. Secondary: add/remove option (2–6), delete question.
-States: incomplete (empty text or <2 options). No correct-answer / points fields ever rendered.
+Components: `PollQuestionEditor`, `QuestionImageUpload` (shared), `AnswerOptionEditor` (`showCorrectToggle={false}` — no radio rendered at all), `QuestionSettings` (Timer only, no Points).
+Primary CTA: implicit save (debounced). Secondary: add/remove option (2–6), delete question.
+States: incomplete (empty text or <2 options), via the same `ValidationMessage`. No correct-answer / points fields ever rendered — enforced by `QuestionSettings`'s `points`/`onPointsChange` props being optional and omitted entirely for POLL.
 
 **07 · Import Excel Modal** — overlay on `/quizzes/[quizId]` · Trainer · Desktop.
-Components: `ExcelImportDialog`, `Dropzone`, `Progress`, `ExcelPreviewTable`.
-Primary CTA: Import Valid Questions. Secondary: Upload lại file, Cancel.
-States: empty, selected, validating, preview (partial error), full error (CTA disabled), importing, success (toast, closes modal).
+**Phase 3 scope: dialog shell only, no parser.** Components: `ExcelImportDialog` — dropzone visual + "Browse File" + "Download Template", all mock (toast: "Import Excel sẽ được triển khai đầy đủ ở phase sau"). The full `Dropzone` + `Progress` + `ExcelPreviewTable` state machine (empty → selected → validating → preview/errors → importing → success) described below is **deferred**, not built in Phase 3.
+States (deferred): empty, selected, validating, preview (partial error), full error (CTA disabled), importing, success (toast, closes modal).
 
 **08 · Host Lobby** — `/host/[sessionId]/lobby` · Trainer(Host) · Desktop, projector.
 Layout: full-bleed navy panel, `GameQRCode` | `GamePin` side-by-side focal point (stacks vertically <640px), `JoinInstructions`, `CopyJoinLinkButton`, participant chips, Start Game.
@@ -204,17 +203,21 @@ components/
     HostShell.tsx           # navy full-bleed, no nav, projector mode
     MobileShell.tsx         # 390 viewport shell, safe-area padding
   quiz/
+    QuizEditorPage.tsx       # orchestrator: useQuizEditor + Shell + editors + dialogs
     QuizEditorShell.tsx
     QuestionList.tsx
     QuestionListItem.tsx
-    QuestionTypeBadge.tsx
+    QuestionTypeBadge.tsx    # size?: 'default' | 'sm'
+    AddQuestionDialog.tsx    # trigger + Dialog in one (Trắc nghiệm / Bình chọn cards)
     QuizQuestionEditor.tsx
+    PollQuestionEditor.tsx
     AnswerOptionEditor.tsx
+    QuestionSettings.tsx     # Timer (+ Points for QUIZ) selects
+    ValidationMessage.tsx
+    QuizPreviewDialog.tsx
     QuizList.tsx             # My Quizzes list (exports QuizListHeader too)
     QuizRow.tsx
     QuizStatusBadge.tsx
-  poll/
-    PollQuestionEditor.tsx
   game/
     Timer.tsx
     ResponseCounter.tsx
@@ -249,21 +252,35 @@ components/
   ui/                        # shadcn primitives: button, input, dialog, progress, badge, toast, tabs...
 ```
 
+Non-`components/` additions (Phase 3): `hooks/use-quiz-editor.ts` (all Quiz Editor local state — add/select/edit question, add/remove option, set correct answer, save-status simulation) and `lib/validation/question.ts` (Zod schemas + `isQuestionComplete`/`getQuestionValidationMessages`, backing both the sidebar's incomplete badge and each editor's `ValidationMessage`).
+
 ### Key component specs
 
-**`QuizEditorShell`** — Responsibility: top bar + sidebar/drawer + main slot layout for the editor route. Props: `quiz: Quiz`, `saveStatus: 'saved'|'saving'|'error'`, `onHost`, `onPreview`, `onImportExcel`. State: sidebar open (drawer, tablet). Variants: new vs existing (via `quiz.questions.length === 0`). Used in: `/quizzes/new`, `/quizzes/[quizId]`.
+**`QuizEditorPage`** — Responsibility: page-level orchestrator for `/quizzes/new` and `/quizzes/[quizId]`. Owns all editor state via the `useQuizEditor(initialQuiz)` hook (`hooks/use-quiz-editor.ts`) and the Preview/Import dialogs' open state; wires everything into `QuizEditorShell`. Props: `initialQuiz: Quiz`. No persistence — state is local/client-only, reset on reload.
 
-**`QuestionList` / `QuestionListItem`** — Props: `questions: Question[]`, `selectedId`, `onSelect`. Item shows order, `QuestionTypeBadge`, truncated text, incomplete-warning icon. Used in: Quiz Editor sidebar.
+**`QuizEditorShell`** — Responsibility: top bar (inline-editable title input, save-status label, Import Excel/Preview/Host buttons, Host-disabled warning banner) + sidebar/drawer + main slot layout. Props: `quizTitle`, `onTitleChange`, `saveStatus: 'saved'|'saving'|'unsaved'`, `onImportExcel`, `onPreview`, `onHost`, `hostDisabled: boolean`, `sidebar: ReactNode`, `children` (main). State: drawer open (tablet, <1024px — same `Sheet` pattern as `TrainerSidebarDrawer`). Used in: `/quizzes/new`, `/quizzes/[quizId]` (via `QuizEditorPage`).
 
-**`QuestionTypeBadge`** — Props: `type: 'QUIZ'|'POLL'`. Variants: filled (brand-700, for QUIZ) / outlined (teal-500, for POLL). Used in: sidebar, Add Question modal, Host Question, all Result screens.
+**`QuestionList` / `QuestionListItem`** — Props: `questions: Question[]`, `selectedId`, `onSelect`, `onMoveUp`/`onMoveDown` (reorder foundation — swaps with the neighboring question and renumbers; no drag-and-drop), `onCreateQuestion` (renders `AddQuestionDialog` after the list). Item shows order, `QuestionTypeBadge` (`size="sm"`), truncated text, incomplete-warning icon (⚠). Used in: Quiz Editor sidebar.
 
-**`QuizQuestionEditor` / `PollQuestionEditor`** — Props: `question: Question`, `onChange`. State: local draft before debounced save. Composed of `QuestionImageUpload` + `AnswerOptionEditor[]` + `TimerSelect` (+ `PointsSelect` for QUIZ only). Used in: Quiz Editor main.
+**`QuestionTypeBadge`** — Props: `type: 'QUIZ'|'POLL'`, `size?: 'default'|'sm'`. Variants: filled (brand-700, for QUIZ) / outlined (teal-500, for POLL). Used in: sidebar (`sm`), Add Question modal, Quiz Preview, all Result screens.
 
-**`AnswerOptionEditor`** — Props: `option`, `isCorrect?`, `showCorrectToggle: boolean` (false for POLL), `onChange`, `onRemove`. Used in: QUIZ/POLL Editor.
+**`QuizQuestionEditor`** — Props: `question: Question` (type `'QUIZ'`), `order`, `validationMessages: string[]`, `onChangeText`, `onUploadImage`, `onRemoveImage`, `onAddOption`, `onRemoveOption`, `onChangeOptionText`, `onSetCorrect`, `onTimerChange`, `onPointsChange`, `onDelete`. Composed of `QuestionImageUpload` + `AnswerOptionEditor[]` + `QuestionSettings` (Timer + Points) + `ValidationMessage`. All callbacks pre-curried by the caller with the question's id — the component itself is id-agnostic. Used in: Quiz Editor main, QUIZ questions.
+
+**`PollQuestionEditor`** — Same shape as `QuizQuestionEditor` minus `onSetCorrect`/`onPointsChange` (no correct-answer, no points) and `QuestionSettings` renders Timer only. Used in: Quiz Editor main, POLL questions.
+
+**`AnswerOptionEditor`** — Props: `option: AnswerOption`, `questionId`, `showCorrectToggle: boolean` (false for POLL), `onChangeText`, `onSetCorrect?`, `onRemove`, `canRemove: boolean`. The correct-answer selector is a real `<input type="radio" name="correct-{questionId}">` (visually custom-styled via `peer-checked:`, not a fake div) — native keyboard/arrow-key/screen-reader semantics for free. Used in: QUIZ/POLL Editor.
+
+**`QuestionSettings`** — Props: `timerSeconds`, `onTimerChange`, `points?`, `onPointsChange?`. Preset `Select` dropdowns (Timer: 10/15/20/30/45/60s; Points: 500/1000/1500/2000). Points UI is entirely omitted (not just disabled) when `points`/`onPointsChange` are absent — the POLL editor never passes them. Used in: `QuizQuestionEditor`, `PollQuestionEditor`.
+
+**`ValidationMessage`** — Props: `messages: string[]`. Renders nothing when empty; otherwise an `error-100`-tinted `role="alert"` block, one line per message (⚠ icon + text). Messages come from `lib/validation/question.ts` (Zod schemas per §12 domain rules), recomputed on every render from the live draft — never stored, so they can't go stale. Used in: `QuizQuestionEditor`, `PollQuestionEditor`.
+
+**`AddQuestionDialog`** — Props: `onCreateQuestion: (type: QuestionType) => void`. Self-contained: renders its own trigger (the sidebar's dashed "+ Add Question" row) and `Dialog`. Clicking a card calls `onCreateQuestion` and closes immediately — no separate confirm step. Used in: `QuestionList`.
+
+**`QuizPreviewDialog`** — Props: `open`, `onOpenChange`, `quiz: Quiz`, `hasIncompleteQuestions: boolean`. Read-only run-through of every question (type, text, image, options; QUIZ's correct option marked ✓ — safe here since Preview is trainer-only, unlike participant-facing components which must never leak correctness early). Shows a warning banner when `hasIncompleteQuestions`. No gameplay. Used in: Quiz Editor ("Preview" button).
 
 **`AnswerOptionPlayer`** — Responsibility: render one answer option in Host (read-only) or Participant (interactive) context, with the full state machine (§6). Props: `label: 'A'|'B'|'C'|'D'|'E'|'F'`, `text: string`, `state: AnswerOptionState`, `variant: 'quiz'|'poll'`, `interactive: boolean`, `onSelect?`. Used in: Host Question, Participant Answer.
 
-**`QuestionImageUpload`** — Props: `image: ImageUploadState`, `onUpload`, `onReplace`, `onRemove`. State: internal drag-over boolean. Full spec in §12. Used in: QUIZ/POLL Editor.
+**`QuestionImageUpload`** — Props: `imageUrl?: string`, `onUploaded: (url, fileName) => void`, `onRemove`. Internal phase state (`idle`/`drag-over`/`uploading`/`error`) is UI-only — `imageUrl` presence alone decides the persisted preview state. Validates type (JPG/JPEG/PNG/WebP) and size (≤5MB) client-side before accepting a file; on success, creates a local `URL.createObjectURL(file)` (revoked on replace/remove/unmount — no upload to any backend). Full spec in §12. Used in: QUIZ/POLL Editor.
 
 **`QuestionImageDisplay`** — Props: `url: string`, `context: 'host'|'participant'`. Pure display, `object-fit: contain`, context-specific max-height (see §12). Used in: Host Question, Participant Answer.
 
@@ -277,7 +294,7 @@ components/
 
 **`ParticipantLeaderboard`** — Props: `entries: LeaderboardEntry[]` (nearby ranks or top 5), `myRank: number`. Distinct compact styling from `Leaderboard`. Used in: `/play/[sessionId]` after QUIZ result.
 
-**`ExcelImportDialog`** — Props: `state: ImportState`, `previewRows: ImportPreviewRow[]`, `onFileSelect`, `onReupload`, `onConfirm`, `onCancel`. Composed of `Dropzone` + `Progress` + `ExcelPreviewTable`. Used in: Quiz Editor.
+**`ExcelImportDialog`** — **Phase 3 scope: shell only.** Props: `open`, `onOpenChange`. Renders the "empty" dropzone visual (Kéo thả .xlsx / Browse File / Download Template) with every action wired to a toast ("Import Excel sẽ được triển khai đầy đủ ở phase sau") instead of real logic. The full props/behavior below (`state: ImportState`, `previewRows: ImportPreviewRow[]`, `onFileSelect`, `onReupload`, `onConfirm`, `onCancel`, composed of `Dropzone` + `Progress` + `ExcelPreviewTable`) is the target shape for a later phase, not yet implemented. Used in: Quiz Editor ("Import Excel" button).
 
 **`ExcelPreviewTable`** — Props: `rows: ImportPreviewRow[]`. Renders row/type/question/status/error columns; error rows get an error-100 background.
 
@@ -413,6 +430,13 @@ export interface ImageUploadState {
   errorMessage?: string;
 }
 ```
+
+> **Forward-compat note (roadmap, not implemented):** `Question`, `AnswerOption`, `Quiz`, and
+> `QuestionType` are shared between the current Live Quiz mode and a possible future Post-test
+> mode — keep them neutral (no `Live`-prefixed names, no hard dependency on `GameSession`/
+> `SessionPhase`). Same for the image concept behind `imageUrl` /
+> `QuestionImageUpload`/`QuestionImageDisplay`. See `ROADMAP_ASSESSMENT.md` at the repo root for
+> the full future activity-mode / Assessment rules — nothing there is implemented yet.
 
 ---
 
