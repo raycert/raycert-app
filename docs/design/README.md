@@ -68,17 +68,18 @@ Each screen: **ID · Name · Route · Role · Device priority · Layout · Compo
 
 **01 · Trainer Dashboard** — `/dashboard` · Trainer · Desktop.
 Layout: top bar (logo, nav, Create Quiz) + 190px sidebar + main (Recent Sessions list, quick action cards).
-Components: `NavBar`, `SidebarNav`, `SessionCard`, `Button`.
-Primary CTA: Create Quiz. Secondary: Edit/Host on a session card.
-States: loading, empty (no sessions yet).
-Responsive: tablet keeps layout, reduces padding; not primary mobile use case.
-Data: `recentSessions: GameSession[]` (last 5).
+Components: `NavBar`, `SidebarNav` (+ `TrainerSidebarDrawer` on tablet/mobile), `RecentSessionItem`, `EmptyState`, `Button`.
+Primary CTA: Create Quiz. Secondary: Edit/Host on a session item.
+States: loading, empty (no sessions yet — `EmptyState` + Create Quiz CTA).
+Responsive: ≥1024px fixed sidebar; <1024px sidebar becomes a `Sheet` drawer opened from a menu button in `NavBar`. Not primary mobile use case, but not broken either.
+Data: `recentSessions: RecentSessionSummary[]` (mock-only summary shape — see §16; last 3–5).
 
 **02 · My Quizzes** — `/quizzes` · Trainer · Desktop.
-Layout: search bar + Create Quiz button + table (Title, Questions, Mix, Updated, Status, Actions).
-Components: `SearchInput`, `QuizTable`, `QuizTableRow`, `StatusBadge`, `Button`.
-Primary CTA: Create Quiz. Secondary: Edit, Host, More (··· menu: duplicate/delete).
-States: loading, empty, search-no-result.
+Layout: search bar + Create Quiz button + list (Title, Questions, Mix, Updated, Status, Actions).
+Components: `SearchInput`, `QuizList`, `QuizRow`, `QuizStatusBadge`, `EmptyState`, `Button`, `DropdownMenu` (shadcn, for the ··· menu).
+Primary CTA: Create Quiz. Secondary: Edit, Host, More (··· menu: Duplicate/Delete — mock actions, toast feedback, no persistence).
+States: loading, empty (`EmptyState` + Create Quiz CTA), search-no-result (inline message inside `QuizList`, no `EmptyState`/CTA — a bad query isn't fixed by creating a quiz).
+Responsive: list scrolls horizontally inside a bounded container below ~820px rather than breaking the page layout.
 Data: `quizzes: Quiz[]`.
 
 **03 · Quiz Editor** — `/quizzes/new`, `/quizzes/[quizId]` · Trainer · Desktop.
@@ -195,7 +196,11 @@ States: all-POLL or all-QUIZ session (hide the irrelevant analysis block); never
 components/
   layout/
     NavBar.tsx
-    SidebarNav.tsx
+    SidebarNav.tsx           # exports SidebarNavList too, reused by the drawer
+    TrainerSidebarDrawer.tsx # Sheet-based sidebar for <1024px
+    EmptyState.tsx
+    SearchInput.tsx
+    RecentSessionItem.tsx
     HostShell.tsx           # navy full-bleed, no nav, projector mode
     MobileShell.tsx         # 390 viewport shell, safe-area padding
   quiz/
@@ -205,6 +210,9 @@ components/
     QuestionTypeBadge.tsx
     QuizQuestionEditor.tsx
     AnswerOptionEditor.tsx
+    QuizList.tsx             # My Quizzes list (exports QuizListHeader too)
+    QuizRow.tsx
+    QuizStatusBadge.tsx
   poll/
     PollQuestionEditor.tsx
   game/
@@ -286,6 +294,20 @@ components/
 **`HostLobbyPanel`** — Responsibility: composes `GameQRCode` + `GamePin` + `JoinInstructions` + `CopyJoinLinkButton` + participant chips + Start Game for `/host/[sessionId]/lobby`. Props: `sessionCode: string`, `pin: string`, `participants: Participant[]`. State: `joinUrl` — seeded with the relative path (`/join/[sessionCode]`) so server and first client render match, then upgraded to an absolute URL (`window.location.origin + ...`) after mount to avoid a hydration mismatch.
 
 **`PinInput`** — Props: `value: string`, `onChange: (value: string) => void`, `error?: string`. Numeric, 6-digit, large centered text. Used in: Join Game (`/join`).
+
+**`TrainerSidebarDrawer`** — Responsibility: menu-button + `Sheet` (`side="left"`) wrapping `SidebarNavList`, visible only `<1024px` (`SidebarNav`'s fixed `<aside>` takes over `≥1024px`). No props — reads the active route itself via `usePathname`. Closes on navigation. Used in: `NavBar`, every Trainer route.
+
+**`EmptyState`** — Props: `title: string`, `description?: string`, `action?: ReactNode`. Generic empty-state block (dashed border, centered). Used in: My Quizzes (no quizzes), Trainer Dashboard (no recent sessions) — not used for "search, 0 results" (see `QuizList`).
+
+**`SearchInput`** — Props: `id: string`, `label: string` (visually hidden, paired via `htmlFor`), `value: string`, `onChange: (value: string) => void`, `placeholder?: string`. Wraps `Input` (shadcn) with a leading search icon. Used in: My Quizzes.
+
+**`RecentSessionItem`** — Props: `session: RecentSessionSummary` (mock-only shape — see §16). Renders `{quizTitle} · {relative hostedAt} · {participantCount} người tham gia` + Edit/Host actions. Used in: Trainer Dashboard.
+
+**`QuizList`** — Props: `quizzes: Quiz[]` (already filtered by the caller). Renders `QuizListHeader` + one `QuizRow` per quiz, horizontally scrollable below ~820px; renders an inline "Không tìm thấy quiz phù hợp." message (no CTA) when the array is empty — distinct from the full-library `EmptyState`. Used in: My Quizzes.
+
+**`QuizRow`** — Props: `quiz: Quiz`. One row: title, question count, mix (`"{n} QUIZ · {n} POLL"`, computed from `quiz.questions`), updated (relative time), `QuizStatusBadge`, actions (Edit → `/quizzes/[quizId]`, Host → `/host/[quizId]/lobby`, `DropdownMenu` "···" → Duplicate/Delete). Used in: My Quizzes.
+
+**`QuizStatusBadge`** — Props: `status: Quiz['status']`. Pill; `published` = background/brand-500, `draft` = muted/muted-foreground. Used in: `QuizRow`.
 
 ---
 
@@ -563,6 +585,7 @@ Provide a `mocks/` module (e.g. `mocks/quizzes.ts`, `mocks/session.ts`) covering
 - **`Game Report` mock**: overview numbers + `ParticipantAnswer[]` for 1 full session + one QUIZ analysis row + one POLL analysis row.
 - **`ImportPreviewRow[]`** mock: 4 rows, 2 valid, 2 with distinct error types (multiple correct answers; correct-answer column present on a POLL row) — matches the example already shown in High-Fidelity V1.
 - **Join flow resolvers** (added): `resolveSessionByPin(pin)` and `resolveSessionByCode(sessionCode)` in `mocks/session.ts`, both looking up the single mock `GameSession` (`pin: "482913"`, `id`/session code: `"session-mock-1"`). Frontend-only stand-ins for what a real backend will resolve server-side by PIN/code.
+- **`RecentSessionSummary[]`** mock (added): `mockRecentSessions` in `mocks/session.ts` — 3 entries referencing the 2 published quizzes, `hostedAt` computed as `Date.now() - offset` (not a fixed ISO string) so "2 giờ trước" stays accurate whenever the dashboard is viewed. Not a core domain type — `GameSession` alone has no quiz title or hosted-at timestamp.
 
 ---
 

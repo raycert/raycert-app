@@ -108,3 +108,45 @@ export function resolveSessionByCode(sessionCode: string): GameSession | undefin
 export function resolveSessionByPin(pin: string): GameSession | undefined {
   return mockGameSessions.find((session) => session.pin === pin);
 }
+
+/**
+ * Display-ready summary for Trainer Dashboard's "Recent Sessions" list.
+ * Not a core domain type (§5 of the handoff) — GameSession alone doesn't
+ * carry a quiz title or a hosted-at timestamp, so this is a mock-only shape.
+ * `hostedAt` is computed relative to `Date.now()` (not a fixed ISO string)
+ * so the "2 giờ trước" style copy stays accurate whenever this is viewed.
+ */
+export interface RecentSessionSummary {
+  sessionId: string;
+  quizId: string;
+  quizTitle: string;
+  hostedAt: string; // ISO
+  participantCount: number;
+}
+
+const HOUR_MS = 3_600_000;
+const DAY_MS = 86_400_000;
+
+export const mockRecentSessions: RecentSessionSummary[] = [
+  {
+    sessionId: "session-mock-1",
+    quizId: "quiz-onboarding",
+    quizTitle: "Onboarding Quiz",
+    hostedAt: new Date(Date.now() - 2 * HOUR_MS).toISOString(),
+    participantCount: 24,
+  },
+  {
+    sessionId: "session-mock-2",
+    quizId: "quiz-compliance",
+    quizTitle: "Compliance Refresher",
+    hostedAt: new Date(Date.now() - 1 * DAY_MS).toISOString(),
+    participantCount: 18,
+  },
+  {
+    sessionId: "session-mock-3",
+    quizId: "quiz-onboarding",
+    quizTitle: "Onboarding Quiz",
+    hostedAt: new Date(Date.now() - 4 * DAY_MS).toISOString(),
+    participantCount: 30,
+  },
+];
