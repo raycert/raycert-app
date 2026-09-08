@@ -1,0 +1,230 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Inlined from the `shadcn` CLI package's dist/tailwind.css (v3.8.5) instead of
+ * depending on that package at runtime — it's a devtool, not an app dependency,
+ * and pnpm's build-script policy blocks its `msw` transitive dep anyway.
+ * Kept so future `npx shadcn add <component>` output (Accordion, Switch, ...)
+ * that relies on these data-state variants keeps working.
+ */
+@theme inline {
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height, var(--accordion-panel-height, auto));
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height, var(--accordion-panel-height, auto));
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@custom-variant data-open {
+  &:where([data-state="open"]),
+  &:where([data-open]:not([data-open="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-closed {
+  &:where([data-state="closed"]),
+  &:where([data-closed]:not([data-closed="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-checked {
+  &:where([data-state="checked"]),
+  &:where([data-checked]:not([data-checked="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-unchecked {
+  &:where([data-state="unchecked"]),
+  &:where([data-unchecked]:not([data-unchecked="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-selected {
+  &:where([data-selected="true"]) {
+    @slot;
+  }
+}
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-active {
+  &:where([data-state="active"]),
+  &:where([data-active]:not([data-active="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-horizontal {
+  &:where([data-orientation="horizontal"]) {
+    @slot;
+  }
+}
+@custom-variant data-vertical {
+  &:where([data-orientation="vertical"]) {
+    @slot;
+  }
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/*
+ * RayCert Design Tokens — from docs/design/README.md §8–10
+ * and RayCert - Design System V1.dc.html.
+ * No dark theme: Host/Participant/Trainer all use this single light palette.
+ */
+:root {
+  /* Brand (Signal Blue) */
+  --brand-900: #07294f;
+  --brand-700: #1d4371;
+  --brand-500: #345f95;
+  --brand-100: #e2ecf9;
+
+  /* Teal accent — POLL */
+  --teal-500: #2ca2a2;
+  --teal-100: #d5f2f1;
+
+  /* Amber accent — warning / timer */
+  --amber-600: #d6810c;
+  --amber-500: #e99b2a;
+  --amber-100: #ffebd2;
+
+  /* Success / Error — QUIZ correctness only */
+  --success-600: #1e7729;
+  --success-100: #d7f5d7;
+  --error-600: #be222a;
+  --error-100: #ffe5e1;
+
+  /* Neutral / surface / text */
+  --raycert-background: #f2f6f9;
+  --raycert-surface: #ffffff;
+  --raycert-border: #dfe2e4;
+  --raycert-border-strong: #cbced1;
+  --raycert-neutral-50: #f7f7f8;
+  --text-heading: #181b1d;
+  --text-body: #4a4e50;
+  --text-muted: #7d8183;
+
+  /* shadcn semantic aliases -> RayCert tokens */
+  --background: var(--raycert-background);
+  --foreground: var(--text-heading);
+  --card: var(--raycert-surface);
+  --card-foreground: var(--text-heading);
+  --popover: var(--raycert-surface);
+  --popover-foreground: var(--text-heading);
+  --primary: var(--brand-700);
+  --primary-foreground: #ffffff;
+  --secondary: var(--brand-100);
+  --secondary-foreground: var(--brand-700);
+  --muted: var(--raycert-neutral-50);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--raycert-neutral-50);
+  --accent-foreground: var(--text-heading);
+  --destructive: var(--error-600);
+  --border: var(--raycert-border);
+  --input: var(--raycert-border);
+  --ring: var(--brand-700);
+
+  /* Radius scale — §10 (sm 8px, md 10px, lg 12px, pill via rounded-full) */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
+  --radius-3xl: 12px;
+  --radius-4xl: 12px;
+
+  /* Shadow scale — §10 */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* RayCert brand palette exposed as Tailwind utilities: bg-brand-700, text-teal-500, etc. */
+  --color-brand-900: var(--brand-900);
+  --color-brand-700: var(--brand-700);
+  --color-brand-500: var(--brand-500);
+  --color-brand-100: var(--brand-100);
+  --color-teal-500: var(--teal-500);
+  --color-teal-100: var(--teal-100);
+  --color-amber-600: var(--amber-600);
+  --color-amber-500: var(--amber-500);
+  --color-amber-100: var(--amber-100);
+  --color-success-600: var(--success-600);
+  --color-success-100: var(--success-100);
+  --color-error-600: var(--error-600);
+  --color-error-100: var(--error-100);
+  --color-surface: var(--raycert-surface);
+  --color-border-strong: var(--raycert-border-strong);
+  --color-heading: var(--text-heading);
+  --color-body: var(--text-body);
+
+  /* Fonts — Manrope for headings, Inter for body/UI */
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-manrope);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/*
+ * Typography scale (§9 of docs/design/README.md) is applied via plain Tailwind
+ * utilities directly on elements, e.g.:
+ *   Display   font-heading text-[40px] font-extrabold leading-[48px]
+ *   H1        font-heading text-[32px] font-bold leading-[40px]
+ *   H2        font-heading text-2xl font-bold leading-[32px]
+ *   H3        font-heading text-[19px] font-semibold leading-[28px]
+ *   Body Lg   text-[17px] font-medium leading-[26px]
+ *   Body      text-base leading-6
+ *   Label     text-[13px] font-semibold uppercase tracking-wide
+ *   Caption   text-xs leading-4
+ *   Button    text-sm font-semibold leading-5
+ * `font-sans` (Inter) is the default body/UI family; `font-heading` (Manrope)
+ * is opt-in for Display/H1/H2/H3 only.
+ */

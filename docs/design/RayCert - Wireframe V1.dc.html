@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body { margin: 0; background: #f5f5f4; }</style>
+</helmet>
+<div style="font-family: -apple-system, Helvetica, Arial, sans-serif; color: #2c2b28; max-width: 1180px; margin: 0 auto; padding: 56px 40px 120px; display: flex; flex-direction: column; gap: 56px;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #ddd; padding-bottom: 24px;">
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #999;">RayCert — UI/UX Design</div>
+    <h1 style="font-size: 30px; font-weight: 700; margin: 0;">Wireframe V1</h1>
+    <div style="font-size: 14px; color: #777;">Grayscale, tập trung bố cục/hierarchy/CTA/navigation. Không đổi Design Direction hay Design System đã chốt — bước này chỉ kiểm tra UX.</div>
+    <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; padding-top: 8px;">
+      <a href="#groupA" style="color: #555;">A · Trainer / Authoring</a>
+      <a href="#groupB" style="color: #555;">B · Host Live</a>
+      <a href="#groupC" style="color: #555;">C · Participant</a>
+      <a href="#groupD" style="color: #555;">D · Reporting</a>
+      <a href="#errors" style="color: #555;">E · Error / Recovery</a>
+      <a href="#flows" style="color: #555;">F · Flows</a>
+      <a href="#reuse" style="color: #555;">G · Component Reuse</a>
+    </div>
+  </div>
+
+  <div id="groupA" style="display: flex; flex-direction: column; gap: 40px;">
+    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">A · Trainer / Authoring</h2>
+
+    <!-- 1. Trainer Dashboard -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">1. Trainer Dashboard</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 16px;">
+          <div style="font-weight: 700; font-size: 14px;">RayCert</div>
+          <div style="display: flex; gap: 18px; font-size: 12.5px; color: #888;"><div>My Quizzes</div><div>Results</div></div>
+          <div style="background: #222; color: #fff; font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 5px;">+ Create Quiz</div>
+        </div>
+        <div style="display: grid; grid-template-columns: 160px 1fr; gap: 20px;">
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; color: #999; border-right: 1px solid #eee; padding-right: 16px;">
+            <div style="color: #222; font-weight: 600;">Dashboard</div><div>My Quizzes</div><div>Recent Sessions</div><div>Results</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #aaa; letter-spacing: 0.05em;">Recent Sessions</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; background: #fafafa;"><div>Onboarding Quiz — hosted 2h ago</div><div style="display:flex; gap:8px;"><div style="border:1px solid #ccc; padding:4px 10px; border-radius:4px; font-size:11px;">Edit</div><div style="background:#222; color:#fff; padding:4px 10px; border-radius:4px; font-size:11px;">Host</div></div></div>
+              <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; background: #fafafa;"><div>Compliance Poll — hosted yesterday</div><div style="display:flex; gap:8px;"><div style="border:1px solid #ccc; padding:4px 10px; border-radius:4px; font-size:11px;">Edit</div><div style="background:#222; color:#fff; padding:4px 10px; border-radius:4px; font-size:11px;">Host</div></div></div>
+            </div>
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #aaa; letter-spacing: 0.05em; margin-top: 6px;">Quick Actions</div>
+            <div style="display: flex; gap: 10px;">
+              <div style="flex:1; border: 1px dashed #ccc; border-radius: 5px; padding: 14px; text-align: center; font-size: 12px; color: #999;">My Quizzes →</div>
+              <div style="flex:1; border: 1px dashed #ccc; border-radius: 5px; padding: 14px; text-align: center; font-size: 12px; color: #999;">Results →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s1 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 2. My Quizzes -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">2. My Quizzes</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 18px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 14px;">
+          <div style="border: 1px solid #ddd; border-radius: 5px; padding: 7px 12px; font-size: 12px; color: #999; width: 220px;">Search quizzes…</div>
+          <div style="background: #222; color: #fff; font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 5px;">+ Create Quiz</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.4fr; gap: 10px; font-size: 10.5px; font-weight: 700; color: #aaa; text-transform: uppercase; padding: 0 12px;"><div>Title</div><div>Questions</div><div>Mix</div><div>Updated</div><div>Actions</div></div>
+          <sc-for list="{{ quizRows }}" as="q" hint-placeholder-count="3">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.4fr; gap: 10px; align-items: center; border: 1px solid #eee; border-radius: 5px; padding: 12px; font-size: 12.5px;">
+              <div>{{ q.title }}</div><div style="color:#888;">{{ q.count }}</div><div style="color:#888;">{{ q.mix }}</div><div style="color:#888;">{{ q.updated }}</div>
+              <div style="display: flex; gap: 6px;"><div style="border:1px solid #ccc; padding:4px 10px; border-radius:4px; font-size:11px;">Edit</div><div style="background:#222; color:#fff; padding:4px 10px; border-radius:4px; font-size:11px;">Host</div><div style="border:1px solid #ccc; padding:4px 8px; border-radius:4px; font-size:11px;">···</div></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s2 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 3. Quiz Editor -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">3. Quiz Editor</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 0; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-bottom: 1px solid #eee;">
+          <div style="font-size: 13px; font-weight: 700;">Onboarding Quiz <span style="color:#aaa; font-weight:400; font-size:11px;">· Saved</span></div>
+          <div style="display: flex; gap: 8px;"><div style="border:1px solid #ccc; padding:6px 12px; border-radius:5px; font-size:11.5px;">Import Excel</div><div style="border:1px solid #ccc; padding:6px 12px; border-radius:5px; font-size:11.5px;">Preview</div><div style="background:#222; color:#fff; padding:6px 12px; border-radius:5px; font-size:11.5px;">Host</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 220px 1fr; min-height: 260px;">
+          <div style="border-right: 1px solid #eee; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="border: 1.5px solid #222; border-radius: 5px; padding: 10px; font-size: 12px; background: #f7f7f7;">1 · <span style="font-weight:700;">QUIZ</span> · 20s</div>
+            <div style="border: 1px solid #eee; border-radius: 5px; padding: 10px; font-size: 12px; color: #888;">2 · POLL · 15s</div>
+            <div style="border: 1px solid #eee; border-radius: 5px; padding: 10px; font-size: 12px; color: #c77;">3 · QUIZ · thiếu đáp án</div>
+            <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 10px; font-size: 12px; color: #999; text-align: center; margin-top: 4px;">+ Add Question</div>
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #aaa;">Câu hỏi 1 · QUIZ</div>
+            <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 14px; font-size: 13px; color: #999;">Question text input…</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 12px; font-size: 12px; color: #999;">A. option…</div>
+              <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 12px; font-size: 12px; color: #999;">B. option…</div>
+            </div>
+            <div style="display: flex; gap: 10px; font-size: 11.5px; color: #999;"><div style="border:1px solid #ddd; border-radius:4px; padding:6px 10px;">Timer: 20s</div><div style="border:1px solid #ddd; border-radius:4px; padding:6px 10px;">Points: 1000</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s3 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 4. Add Question -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">4. Add Question</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop · Modal</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #f0f0ef; padding: 40px; display: flex; justify-content: center;">
+        <div style="background: #fff; border-radius: 8px; padding: 24px; width: 460px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+          <div style="font-size: 14px; font-weight: 700;">Thêm câu hỏi</div>
+          <div style="display: flex; gap: 12px;">
+            <div style="flex: 1; border: 1.5px solid #222; border-radius: 6px; padding: 20px; text-align: center; font-size: 13px; font-weight: 600;">Trắc nghiệm<div style="font-size: 11px; color: #999; font-weight: 400; margin-top: 6px;">Có đáp án đúng, có điểm</div></div>
+            <div style="flex: 1; border: 1.5px solid #ddd; border-radius: 6px; padding: 20px; text-align: center; font-size: 13px; font-weight: 600;">Bình chọn<div style="font-size: 11px; color: #999; font-weight: 400; margin-top: 6px;">Không đáp án đúng, chỉ distribution</div></div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 8px;"><div style="border:1px solid #ccc; padding:7px 14px; border-radius:5px; font-size:12px;">Cancel</div></div>
+        </div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s4 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 5. QUIZ Editor (question) -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">5. QUIZ Editor</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 12px; max-width: 620px;">
+        <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 14px; font-size: 13px; color: #999;">Question text input…</div>
+        <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 16px; font-size: 12px; color: #999; text-align: center; display: flex; flex-direction: column; gap: 4px;">🖼 Image (optional, tối đa 1)<div style="font-size: 11px; color: #bbb;">Upload / Drag &amp; drop — states: empty · uploading · preview · replace · remove · error</div></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px; border: 1.5px solid #222; border-radius: 5px; padding: 10px 12px; font-size: 12.5px;"><div style="width:16px; height:16px; border-radius:50%; border:1.5px solid #222; background:#222;"></div>A. option… <span style="margin-left:auto; font-size:10.5px; color:#999;">correct</span></div>
+          <div style="display: flex; align-items: center; gap: 10px; border: 1px solid #ddd; border-radius: 5px; padding: 10px 12px; font-size: 12.5px;"><div style="width:16px; height:16px; border-radius:50%; border:1.5px solid #ccc;"></div>B. option…</div>
+          <div style="display: flex; align-items: center; gap: 10px; border: 1px solid #ddd; border-radius: 5px; padding: 10px 12px; font-size: 12.5px;"><div style="width:16px; height:16px; border-radius:50%; border:1.5px solid #ccc;"></div>C. option… <div style="margin-left:auto; font-size:11px; color:#bbb;">remove ×</div></div>
+          <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 9px; font-size: 12px; color: #999; text-align: center;">+ Add option (tối đa 4)</div>
+        </div>
+        <div style="display: flex; gap: 10px; font-size: 11.5px; color: #666;"><div style="border:1px solid #ddd; border-radius:4px; padding:6px 10px;">Timer: 20s ▾</div><div style="border:1px solid #ddd; border-radius:4px; padding:6px 10px;">Points: 1000 ▾</div></div>
+        <div style="font-size: 11px; color: #c77;">⚠ Cần chọn đúng 1 đáp án đúng trước khi lưu.</div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s5 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 6. POLL Editor (question) -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">6. POLL Editor</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 12px; max-width: 620px;">
+        <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 14px; font-size: 13px; color: #999;">Question text input…</div>
+        <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 16px; font-size: 12px; color: #999; text-align: center; display: flex; flex-direction: column; gap: 4px;">🖼 Image (optional, tối đa 1) — cùng component với QUIZ Editor<div style="font-size: 11px; color: #bbb;">Upload / Drag &amp; drop — states: empty · uploading · preview · replace · remove · error</div></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px 12px; font-size: 12.5px;">A. option…</div>
+          <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px 12px; font-size: 12.5px;">B. option…</div>
+          <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px 12px; font-size: 12.5px;">C. option… <span style="float:right; font-size:11px; color:#bbb;">remove ×</span></div>
+          <div style="border: 1px dashed #ccc; border-radius: 5px; padding: 9px; font-size: 12px; color: #999; text-align: center;">+ Add option (tối đa 6)</div>
+        </div>
+        <div style="display: flex; gap: 10px; font-size: 11.5px; color: #666;"><div style="border:1px solid #ddd; border-radius:4px; padding:6px 10px;">Timer: 15s ▾</div></div>
+        <div style="font-size: 11px; color: #999;">Không có: đáp án đúng, điểm, speed bonus.</div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s6 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 7. Import Excel Panel -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">7. Import Excel Panel</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop · Modal</div></div>
+      <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 320px; border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase;">State: Empty</div>
+          <div style="border: 1.5px dashed #ccc; border-radius: 6px; padding: 30px; text-align: center; font-size: 12.5px; color: #999; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+            Kéo thả file .xlsx vào đây
+            <div style="border: 1px solid #ccc; padding: 6px 14px; border-radius: 5px; font-size: 12px; color: #444;">Browse File</div>
+            <div style="font-size: 11.5px; color: #789; text-decoration: underline;">Download Template</div>
+          </div>
+        </div>
+        <div style="flex: 1; min-width: 320px; border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase;">State: Validating</div>
+          <div style="border: 1px solid #eee; border-radius: 6px; padding: 30px; text-align: center; font-size: 12.5px; color: #999; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+            onboarding_quiz.xlsx
+            <div style="width: 80%; height: 6px; background: #eee; border-radius: 999px; overflow: hidden;"><div style="width: 60%; height: 100%; background: #999;"></div></div>
+            Đang kiểm tra dữ liệu…
+          </div>
+        </div>
+      </div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase;">State: Preview + Errors</div>
+        <div style="display: flex; gap: 16px; font-size: 12px; color: #666;">
+          <div>onboarding_quiz.xlsx</div><div>Tổng: <strong>10 dòng</strong></div><div>QUIZ: 7</div><div>POLL: 3</div><div style="color:#2a7a4a;">Hợp lệ: 8</div><div style="color:#a13c2c;">Lỗi: 2</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: grid; grid-template-columns: 40px 60px 2fr 90px 1.6fr; gap: 8px; font-size: 10.5px; font-weight: 700; color: #aaa; text-transform: uppercase; padding: 0 10px;"><div>Row</div><div>Type</div><div>Question</div><div>Status</div><div>Error</div></div>
+          <sc-for list="{{ importRows }}" as="r" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: 40px 60px 2fr 90px 1.6fr; gap: 8px; align-items: center; border: 1px solid #eee; border-radius: 5px; padding: 10px; font-size: 12px; background: {{ r.bg }};">
+              <div>{{ r.row }}</div><div>{{ r.type }}</div><div>{{ r.q }}</div>
+              <div style="color: {{ r.statusColor }}; font-weight: 700;">{{ r.status }}</div><div style="color: #a13c2c;">{{ r.error }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <div style="border: 1px solid #ccc; padding: 8px 16px; border-radius: 5px; font-size: 12.5px;">Tải lại file</div>
+          <div style="border: 1px solid #ccc; padding: 8px 16px; border-radius: 5px; font-size: 12.5px;">Cancel</div>
+          <div style="background: #222; color: #fff; padding: 8px 16px; border-radius: 5px; font-size: 12.5px;">Import 8 câu hợp lệ</div>
+        </div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s7imp }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="groupB" style="display: flex; flex-direction: column; gap: 40px;">
+    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">B · Host Live Session</h2>
+    <div style="font-size: 12.5px; color: #999;">Desktop, projector-friendly — chữ lớn, ít chi tiết, hierarchy rõ từ xa.</div>
+
+    <!-- 7. Host Lobby -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">8. Host Lobby</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop · Projector</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #1c1c1a; color: #fff; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center;">
+        <div style="font-size: 13px; color: #999;">RayCert · Onboarding Quiz</div>
+        <div style="font-size: 13px; color: #999;">Game PIN</div>
+        <div style="font-size: 56px; font-weight: 800; letter-spacing: 0.06em;">482 913</div>
+        <div style="font-size: 14px; color: #ccc;">12 participants joined</div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 640px;">
+          <sc-for list="{{ joinedNames }}" as="n" hint-placeholder-count="8">
+            <div style="background: #2c2c2a; padding: 8px 14px; border-radius: 6px; font-size: 12.5px;">{{ n }}</div>
+          </sc-for>
+        </div>
+        <div style="background: #fff; color: #1c1c1a; font-size: 14px; font-weight: 700; padding: 12px 32px; border-radius: 6px; margin-top: 10px;">Start Game</div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s7 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 8. Host Question -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">9. Host Question</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop · Projector</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #1c1c1a; color: #fff; padding: 32px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 13px; color: #999;">Câu hỏi 3 / 10 · <span style="background:#fff; color:#1c1c1a; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:4px;">QUIZ</span></div>
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="width:48px; height:48px; border-radius:50%; border:4px solid #444; border-top-color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700;">14</div>
+            <div style="font-size: 13px; color: #ccc;">Responses: 8 / 12</div>
+          </div>
+        </div>
+        <div style="border: 1px solid #444; border-radius: 8px; padding: 8px 14px; font-size: 11px; color: #aaa; text-align: center;">optional image — đặt giữa question text và answer options, giới hạn chiều cao để không đẩy options ra khỏi viewport</div>
+        <div style="font-size: 28px; font-weight: 700; text-align: center; padding: 10px 0;">Đâu là thủ đô của Việt Nam?</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="border: 1px solid #444; border-radius: 8px; padding: 16px; font-size: 15px; text-align: center;">A. Hà Nội</div>
+          <div style="border: 1px solid #444; border-radius: 8px; padding: 16px; font-size: 15px; text-align: center;">B. TP.HCM</div>
+          <div style="border: 1px solid #444; border-radius: 8px; padding: 16px; font-size: 15px; text-align: center;">C. Đà Nẵng</div>
+          <div style="border: 1px solid #444; border-radius: 8px; padding: 16px; font-size: 15px; text-align: center;">D. Huế</div>
+        </div>
+        <div style="display: flex; justify-content: center;"><div style="background: #fff; color: #1c1c1a; font-size: 13px; font-weight: 700; padding: 10px 28px; border-radius: 6px;">End Question</div></div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s8 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 9. QUIZ Result — Host -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">10. QUIZ Result — Host</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop · Projector</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #1c1c1a; color: #fff; padding: 32px; display: flex; flex-direction: column; gap: 18px;">
+        <div style="font-size: 13px; color: #999;">Đáp án đúng: <span style="color:#fff; font-weight:700;">A. Hà Nội</span> · Correct rate: 62%</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">A</div><div style="flex:1; height:22px; background:#333; border-radius:5px; overflow:hidden;"><div style="width:62%; height:100%; background:#fff;"></div></div><div style="width:36px; font-size:12px; text-align:right;">62%</div></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">B</div><div style="flex:1; height:22px; background:#333; border-radius:5px; overflow:hidden;"><div style="width:20%; height:100%; background:#666;"></div></div><div style="width:36px; font-size:12px; text-align:right;">20%</div></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">C</div><div style="flex:1; height:22px; background:#333; border-radius:5px; overflow:hidden;"><div style="width:12%; height:100%; background:#666;"></div></div><div style="width:36px; font-size:12px; text-align:right;">12%</div></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">D</div><div style="flex:1; height:22px; background:#333; border-radius:5px; overflow:hidden;"><div style="width:6%; height:100%; background:#666;"></div></div><div style="width:36px; font-size:12px; text-align:right;">6%</div></div>
+        </div>
+        <div style="font-size: 12px; color: #999;">12 người đã trả lời</div>
+        <div style="display: flex; justify-content: center; gap: 12px;"><div style="border: 1px solid #555; color:#fff; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 6px;">Leaderboard</div><div style="background: #fff; color: #1c1c1a; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 6px;">Next</div></div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s9 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 10. POLL Result — Host -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">11. POLL Result — Host</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop · Projector</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #1c1c1a; color: #fff; padding: 32px; display: flex; flex-direction: column; gap: 18px;">
+        <div style="font-size: 13px; color: #999;">Distribution — không có đúng/sai</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">A</div><div style="flex:1; height:22px; background:#333; border-radius:5px; overflow:hidden;"><div style="width:45%; height:100%; background:#888;"></div></div><div style="width:36px; font-size:12px; text-align:right;">45%</div></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">B</div><div style="flex:1; height:22px; background:#333; border-radius:5px; overflow:hidden;"><div style="width:35%; height:100%; background:#888;"></div></div><div style="width:36px; font-size:12px; text-align:right;">35%</div></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">C</div><div style="flex:1; height:22px; background:#333; border-radius:5px; overflow:hidden;"><div style="width:20%; height:100%; background:#888;"></div></div><div style="width:36px; font-size:12px; text-align:right;">20%</div></div>
+        </div>
+        <div style="font-size: 12px; color: #999;">10 votes</div>
+        <div style="display: flex; justify-content: center;"><div style="background: #fff; color: #1c1c1a; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 6px;">Next</div></div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s10 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 11. Leaderboard — Host -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">12. Leaderboard — Host</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop · Projector</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #1c1c1a; color: #fff; padding: 32px; display: flex; flex-direction: column; gap: 10px; max-width: 480px; margin: 0 auto; width: 100%;">
+        <div style="font-size: 13px; color: #999; text-align: center;">Leaderboard</div>
+        <sc-for list="{{ leaderRows }}" as="r" hint-placeholder-count="5">
+          <div style="display: flex; align-items: center; gap: 12px; background: #2c2c2a; padding: 10px 16px; border-radius: 6px;"><div style="width: 22px; font-weight: 700;">{{ r.rank }}</div><div style="flex: 1; font-size: 14px;">{{ r.name }}</div><div style="font-weight: 700;">{{ r.score }}</div></div>
+        </sc-for>
+        <div style="display: flex; justify-content: center; margin-top: 10px;"><div style="background: #fff; color: #1c1c1a; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 6px;">Next Question</div></div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s11 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 13. Host Final Results -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">13. Host Final Results</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop · Projector</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #1c1c1a; color: #fff; padding: 32px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-size: 15px; font-weight: 700; text-align: center;">Session hoàn tất</div>
+        <div style="display: flex; justify-content: center; gap: 24px; font-size: 12.5px; color: #ccc;">
+          <div>12 participants</div><div>7 QUIZ</div><div>3 POLL</div><div>Avg correct rate (QUIZ): 68%</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 420px; margin: 0 auto; width: 100%;">
+          <sc-for list="{{ leaderRows }}" as="r" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 12px; background: #2c2c2a; padding: 10px 16px; border-radius: 6px;"><div style="width: 22px; font-weight: 700;">{{ r.rank }}</div><div style="flex: 1; font-size: 14px;">{{ r.name }}</div><div style="font-weight: 700;">{{ r.score }}</div></div>
+          </sc-for>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 12px;"><div style="border: 1px solid #555; color:#fff; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 6px;">End Session</div><div style="background: #fff; color: #1c1c1a; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 6px;">View Report</div></div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s13 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="groupC" style="display: flex; flex-direction: column; gap: 40px;">
+    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">C · Participant</h2>
+    <div style="font-size: 12.5px; color: #999;">Mobile-first, viewport tham chiếu 390×844.</div>
+
+    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+      <!-- 14. Join Game -->
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 300px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">14. Join Game</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Mobile</div></div>
+        <div style="border: 1.5px solid #999; border-radius: 24px; background: #fff; padding: 24px 18px; display: flex; flex-direction: column; gap: 24px; min-height: 480px;">
+          <div style="text-align: center; font-weight: 700; font-size: 15px;">RayCert</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; justify-content: center;">
+            <div style="font-size: 12px; color: #999; text-align: center;">Nhập Game PIN</div>
+            <div style="border: 1px solid #ccc; border-radius: 8px; padding: 16px; font-size: 22px; letter-spacing: 0.1em; text-align: center; color: #ccc;">000 000</div>
+          </div>
+          <div style="background: #222; color: #fff; text-align: center; font-size: 14px; font-weight: 700; padding: 14px; border-radius: 8px;">Continue</div>
+        </div>
+        <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 12px 14px;">
+          <sc-for list="{{ s14 }}" as="f" hint-placeholder-count="9">
+            <div style="display: flex; gap: 8px; padding: 3px 0; font-size: 11.5px; line-height: 1.5;"><div style="width: 100px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.04em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 15. Nickname Entry -->
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 300px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">15. Nickname Entry</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Mobile</div></div>
+        <div style="border: 1.5px solid #999; border-radius: 24px; background: #fff; padding: 24px 18px; display: flex; flex-direction: column; gap: 16px; min-height: 480px;">
+          <div style="font-size: 12px; color: #999;">← Đổi PIN</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; justify-content: center;">
+            <div style="font-size: 12px; color: #999; text-align: center;">Nhập tên hiển thị</div>
+            <div style="border: 1px solid #ccc; border-radius: 8px; padding: 14px; font-size: 14px; color: #999;">Nickname…</div>
+            <div style="font-size: 11px; color: #a13c2c; text-align: center;">Tên này đã được dùng, chọn tên khác.</div>
+          </div>
+          <div style="background: #222; color: #fff; text-align: center; font-size: 14px; font-weight: 700; padding: 14px; border-radius: 8px;">Join Game</div>
+        </div>
+        <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 12px 14px;">
+          <sc-for list="{{ s15 }}" as="f" hint-placeholder-count="9">
+            <div style="display: flex; gap: 8px; padding: 3px 0; font-size: 11.5px; line-height: 1.5;"><div style="width: 100px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.04em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 16. Waiting Room -->
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 300px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">16. Waiting Room</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Mobile</div></div>
+        <div style="border: 1.5px solid #999; border-radius: 24px; background: #fff; padding: 24px 18px; display: flex; flex-direction: column; gap: 16px; min-height: 480px; align-items: center; justify-content: center; text-align: center;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-weight: 700;">An</div>
+          <div style="font-size: 14px; font-weight: 700;">Bạn đã vào phòng</div>
+          <div style="font-size: 12px; color: #999;">Onboarding Quiz</div>
+          <div style="font-size: 12px; color: #999;">Đang chờ giảng viên bắt đầu…</div>
+        </div>
+        <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 12px 14px;">
+          <sc-for list="{{ s16 }}" as="f" hint-placeholder-count="9">
+            <div style="display: flex; gap: 8px; padding: 3px 0; font-size: 11.5px; line-height: 1.5;"><div style="width: 100px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.04em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 17. Participant QUIZ Answer -->
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 300px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">17. QUIZ Answer</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Mobile</div></div>
+        <div style="border: 1.5px solid #999; border-radius: 24px; background: #fff; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 480px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #999;"><div>Câu 3/10</div><div style="width:28px; height:28px; border-radius:50%; border:3px solid #222; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px;">14</div></div>
+          <div style="font-size: 15px; font-weight: 700; text-align: center;">Đâu là thủ đô của Việt Nam?</div>
+          <div style="border: 1px dashed #ccc; border-radius: 6px; padding: 8px; font-size: 10.5px; color: #bbb; text-align: center;">optional image (giữ aspect ratio, giới hạn chiều cao)</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="border: 1.5px solid #ddd; border-radius: 8px; padding: 14px; font-size: 13px;">A. Hà Nội</div>
+            <div style="border: 1.5px solid #ddd; border-radius: 8px; padding: 14px; font-size: 13px;">B. TP.HCM</div>
+            <div style="border: 1.5px solid #ddd; border-radius: 8px; padding: 14px; font-size: 13px;">C. Đà Nẵng</div>
+            <div style="border: 1.5px solid #ddd; border-radius: 8px; padding: 14px; font-size: 13px;">D. Huế</div>
+          </div>
+        </div>
+        <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 12px 14px;">
+          <sc-for list="{{ s17 }}" as="f" hint-placeholder-count="9">
+            <div style="display: flex; gap: 8px; padding: 3px 0; font-size: 11.5px; line-height: 1.5;"><div style="width: 100px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.04em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 17b. Submitted (state) -->
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 300px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">19. Submitted (state)</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Mobile · overlay</div></div>
+        <div style="border: 1.5px solid #999; border-radius: 24px; background: #fff; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 480px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #999;"><div>Câu 3/10</div><div style="width:28px; height:28px; border-radius:50%; border:3px solid #ddd; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; color:#ccc;">7</div></div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; text-align: center;">
+            <div style="font-size: 14px; font-weight: 700;">Đã gửi câu trả lời</div>
+            <div style="border: 2px solid #222; border-radius: 8px; padding: 12px 20px; font-size: 13px; font-weight: 600;">A. Hà Nội</div>
+            <div style="font-size: 11.5px; color: #999;">Đang chờ kết quả…</div>
+          </div>
+        </div>
+        <div style="font-size: 11.5px; color: #999; line-height: 1.5;">State của Answer Screen (17/18) khi đã trả lời — không route riêng. Tất cả option lock, không cho chọn lại.</div>
+      </div>
+
+      <!-- 18. Participant POLL Answer -->
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 300px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">18. POLL Answer</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Mobile</div></div>
+        <div style="border: 1.5px solid #999; border-radius: 24px; background: #fff; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 480px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #999;"><div>Câu 4/10 · POLL</div><div style="width:28px; height:28px; border-radius:50%; border:3px solid #222; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px;">10</div></div>
+          <div style="font-size: 15px; font-weight: 700; text-align: center;">Mức độ hài lòng buổi training?</div>
+          <div style="border: 1px dashed #ccc; border-radius: 6px; padding: 8px; font-size: 10.5px; color: #bbb; text-align: center;">optional image</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; font-size: 13px;">A. Rất hài lòng</div>
+            <div style="border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; font-size: 13px;">B. Bình thường</div>
+            <div style="border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; font-size: 13px;">C. Chưa hài lòng</div>
+          </div>
+        </div>
+        <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 12px 14px;">
+          <sc-for list="{{ s18 }}" as="f" hint-placeholder-count="9">
+            <div style="display: flex; gap: 8px; padding: 3px 0; font-size: 11.5px; line-height: 1.5;"><div style="width: 100px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.04em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 20. QUIZ Result — Participant -->
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 300px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">20. QUIZ Result</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Mobile</div></div>
+        <div style="border: 1.5px solid #999; border-radius: 24px; background: #fff; padding: 24px 18px; display: flex; flex-direction: column; gap: 14px; min-height: 480px; align-items: center; justify-content: center; text-align: center;">
+          <div style="font-size: 22px;">✓</div>
+          <div style="font-size: 16px; font-weight: 700;">Đúng!</div>
+          <div style="font-size: 12px; color: #999;">+850 điểm</div>
+          <div style="border-top: 1px solid #eee; width: 100%; padding-top: 12px; font-size: 12px; color: #666;">Tổng điểm: <strong>2,850</strong></div>
+          <div style="font-size: 11px; color: #999;">Đang chờ câu tiếp theo…</div>
+        </div>
+        <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 12px 14px;">
+          <sc-for list="{{ s20 }}" as="f" hint-placeholder-count="9">
+            <div style="display: flex; gap: 8px; padding: 3px 0; font-size: 11.5px; line-height: 1.5;"><div style="width: 100px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.04em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 21. POLL Result — Participant -->
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 300px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">21. POLL Result</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Mobile</div></div>
+        <div style="border: 1.5px solid #999; border-radius: 24px; background: #fff; padding: 24px 18px; display: flex; flex-direction: column; gap: 14px; min-height: 480px; justify-content: center;">
+          <div style="font-size: 12px; color: #999; text-align: center;">Bạn đã chọn: <strong style="color:#222;">A. Rất hài lòng</strong></div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width:14px; font-size:11px;">A</div><div style="flex:1; height:18px; background:#eee; border-radius:5px; overflow:hidden;"><div style="width:55%; height:100%; background:#666;"></div></div><div style="width:30px; font-size:11px; text-align:right;">55%</div></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width:14px; font-size:11px;">B</div><div style="flex:1; height:18px; background:#eee; border-radius:5px; overflow:hidden;"><div style="width:30%; height:100%; background:#999;"></div></div><div style="width:30px; font-size:11px; text-align:right;">30%</div></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width:14px; font-size:11px;">C</div><div style="flex:1; height:18px; background:#eee; border-radius:5px; overflow:hidden;"><div style="width:15%; height:100%; background:#999;"></div></div><div style="width:30px; font-size:11px; text-align:right;">15%</div></div>
+          </div>
+          <div style="font-size: 11px; color: #999; text-align: center;">Đang chờ câu tiếp theo…</div>
+        </div>
+        <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 12px 14px;">
+          <sc-for list="{{ s21 }}" as="f" hint-placeholder-count="9">
+            <div style="display: flex; gap: 8px; padding: 3px 0; font-size: 11.5px; line-height: 1.5;"><div style="width: 100px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.04em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 22. Participant Final Result -->
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 300px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">22. Final Result</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Mobile</div></div>
+        <div style="border: 1.5px solid #999; border-radius: 24px; background: #fff; padding: 24px 18px; display: flex; flex-direction: column; gap: 14px; min-height: 480px; align-items: center; justify-content: center; text-align: center;">
+          <div style="font-size: 12px; color: #999;">Bạn xếp thứ</div>
+          <div style="font-size: 40px; font-weight: 800;">#2</div>
+          <div style="font-size: 13px; color: #666;">Tổng điểm: <strong>2,850</strong></div>
+          <div style="font-size: 13px; color: #666;">Đúng 6/7 câu QUIZ</div>
+        </div>
+        <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 12px 14px;">
+          <sc-for list="{{ s22 }}" as="f" hint-placeholder-count="9">
+            <div style="display: flex; gap: 8px; padding: 3px 0; font-size: 11.5px; line-height: 1.5;"><div style="width: 100px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.04em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="groupD" style="display: flex; flex-direction: column; gap: 40px;">
+    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">D · Reporting</h2>
+
+    <!-- 23. Results Dashboard -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">23. Results Dashboard</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 18px;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; gap: 10px; font-size: 10.5px; font-weight: 700; color: #aaa; text-transform: uppercase; padding: 0 12px;"><div>Quiz</div><div>Date</div><div>Participants</div><div>Avg Score</div><div>Correct Rate</div><div></div></div>
+        <sc-for list="{{ sessionRows }}" as="s" hint-placeholder-count="3">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; gap: 10px; align-items: center; border: 1px solid #eee; border-radius: 5px; padding: 12px; font-size: 12.5px; margin-top: 6px;">
+            <div>{{ s.name }}</div><div style="color:#888;">{{ s.date }}</div><div style="color:#888;">{{ s.count }}</div><div style="color:#888;">{{ s.avg }}</div><div style="color:#888;">{{ s.rate }}</div>
+            <div style="border:1px solid #ccc; padding:4px 10px; border-radius:4px; font-size:11px; text-align:center;">View Report</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s23 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- 24. Game Report -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;"><div style="font-size: 15px; font-weight: 700;">24. Game Report</div><div style="font-size: 11px; color: #999; background: #eee; padding: 2px 8px; border-radius: 4px;">Desktop</div></div>
+      <div style="border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #aaa;">Overview</div>
+          <div style="display: flex; gap: 20px; font-size: 12.5px; color: #666;"><div>12 participants</div><div>7 QUIZ</div><div>3 POLL</div><div>Avg score: 1,980</div><div>Avg correct rate: 68%</div></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #aaa;">Participant Results</div>
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; font-size: 10.5px; font-weight: 700; color: #aaa; padding: 0 10px;"><div>Nickname</div><div>Correct</div><div>Incorrect</div><div>Score</div><div>Rank</div></div>
+          <div style="border: 1px solid #eee; border-radius: 5px; padding: 10px; font-size: 12px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;"><div>An</div><div>6</div><div>1</div><div>2,850</div><div>1</div></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #aaa;">QUIZ Analysis</div>
+          <div style="border: 1px solid #eee; border-radius: 5px; padding: 10px 12px; font-size: 12px; color: #666;">Câu 1 · Correct rate 62% · Distribution bar · Response time trung bình 8.2s</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #aaa;">POLL Analysis</div>
+          <div style="border: 1px solid #eee; border-radius: 5px; padding: 10px 12px; font-size: 12px; color: #666;">Câu 4 · Vote distribution (A 45% / B 35% / C 20%) · Participation 10/12 — không có correct rate</div>
+        </div>
+      </div>
+      <div style="border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 14px 16px;">
+        <sc-for list="{{ s24 }}" as="f" hint-placeholder-count="9">
+          <div style="display: flex; gap: 10px; padding: 4px 0; font-size: 12px; line-height: 1.5;"><div style="width: 118px; flex-shrink: 0; font-weight: 700; color: #9a9690; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; padding-top: 2px;">{{ f.k }}</div><div>{{ f.v }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div id="errors" style="display: flex; flex-direction: column; gap: 20px;">
+    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">E · Error &amp; Recovery States</h2>
+    <div style="font-size: 12.5px; color: #999;">Inline state / modal / overlay — không page riêng.</div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px;">
+      <sc-for list="{{ errorStates }}" as="e" hint-placeholder-count="12">
+        <div style="border: 1px solid #ddd; border-radius: 8px; background: #fff; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 12.5px; font-weight: 700;">{{ e.name }}</div>
+          <div style="font-size: 11.5px; color: #777; line-height: 1.5;">{{ e.ui }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div id="flows" style="display: flex; flex-direction: column; gap: 28px;">
+    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">F · Screen-to-Screen Flow</h2>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 13.5px; font-weight: 700;">Trainer</div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0;">
+        <sc-for list="{{ trainerScreenFlow }}" as="s" hint-placeholder-count="12">
+          <div style="display: flex; align-items: center;">
+            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px; font-size: 12px; background: #fff; white-space: nowrap;">{{ s.label }}</div>
+            <sc-if value="{{ s.hasNext }}" hint-placeholder-val="{{ true }}"><div style="padding: 0 6px; color: #bbb;">→</div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 13.5px; font-weight: 700;">Participant</div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0;">
+        <sc-for list="{{ participantScreenFlow }}" as="s" hint-placeholder-count="12">
+          <div style="display: flex; align-items: center;">
+            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px; font-size: 12px; background: #fff; white-space: nowrap;">{{ s.label }}</div>
+            <sc-if value="{{ s.hasNext }}" hint-placeholder-val="{{ true }}"><div style="padding: 0 6px; color: #bbb;">→</div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div id="reuse" style="display: flex; flex-direction: column; gap: 16px;">
+    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">G · Component Reuse Notes</h2>
+    <div style="border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 6px 16px;">
+      <sc-for list="{{ reuseNotes }}" as="c" hint-placeholder-count="9">
+        <div style="display: flex; gap: 14px; padding: 10px 0; border-top: 1px solid #eee; font-size: 12.5px;">
+          <div style="width: 190px; flex-shrink: 0; font-weight: 700;">{{ c.name }}</div>
+          <div style="color: #666; line-height: 1.5;">{{ c.usedIn }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const chain = (labels) => labels.map((l, i, a) => ({ label: l, hasNext: i < a.length - 1 }));
+    return {
+      quizRows: [
+        { title: 'Onboarding Quiz', count: '10', mix: '8 QUIZ / 2 POLL', updated: '2h ago' },
+        { title: 'Compliance Refresher', count: '6', mix: '6 QUIZ', updated: '1d ago' },
+        { title: 'Team Pulse Check', count: '4', mix: '4 POLL', updated: '5d ago' },
+      ],
+      s1: [
+        {k:'User', v:'Trainer'}, {k:'Device', v:'Desktop'},
+        {k:'Primary Goal', v:'Bắt đầu nhanh — tạo, mở, hoặc host quiz'},
+        {k:'Primary CTA', v:'Create Quiz'},
+        {k:'Secondary Actions', v:'Open recent quiz, Host quiz gần đây, View Results'},
+        {k:'Main Components', v:'Nav sidebar, Recent Sessions list, Quick action cards'},
+        {k:'Navigation In', v:'App entry / Login'},
+        {k:'Navigation Out', v:'My Quizzes, Quiz Editor (new), Host Lobby, Results Dashboard'},
+        {k:'Important States', v:'Empty (chưa có quiz nào), Loading'},
+      ],
+      s2: [
+        {k:'User', v:'Trainer'}, {k:'Device', v:'Desktop'},
+        {k:'Primary Goal', v:'Tìm và quản lý quiz đã tạo'},
+        {k:'Primary CTA', v:'Edit (mỗi quiz)'},
+        {k:'Secondary Actions', v:'Host, More menu (duplicate/delete), Search, Create Quiz'},
+        {k:'Main Components', v:'Search bar, Quiz list row, Status badge, Empty state'},
+        {k:'Navigation In', v:'Trainer Dashboard'},
+        {k:'Navigation Out', v:'Quiz Editor, Host Lobby, Quiz Detail (More)'},
+        {k:'Important States', v:'Empty, Loading, Search no-result'},
+      ],
+      s3: [
+        {k:'User', v:'Trainer'}, {k:'Device', v:'Desktop'},
+        {k:'Primary Goal', v:'Soạn nội dung quiz — thêm/sắp xếp câu hỏi'},
+        {k:'Primary CTA', v:'Add Question'},
+        {k:'Secondary Actions', v:'Save (auto/manual), Preview, Host'},
+        {k:'Main Components', v:'Top bar (title, save status, Preview, Host), Question list sidebar (số thứ tự, QUIZ/POLL badge, timer, trạng thái incomplete), Question canvas'},
+        {k:'Navigation In', v:'My Quizzes (Edit), Trainer Dashboard (Create)'},
+        {k:'Navigation Out', v:'Quiz Preview, Host Lobby, Add Question panel'},
+        {k:'Important States', v:'New Quiz (rỗng), Existing Quiz, Unsaved changes, Incomplete question warning'},
+      ],
+      s4: [
+        {k:'User', v:'Trainer'}, {k:'Device', v:'Desktop · Modal/side panel'},
+        {k:'Primary Goal', v:'Chọn loại câu hỏi để thêm'},
+        {k:'Primary CTA', v:'Chọn Trắc nghiệm hoặc Bình chọn'},
+        {k:'Secondary Actions', v:'Cancel / Close'},
+        {k:'Main Components', v:'2 lựa chọn lớn dạng card (QUIZ / POLL) + mô tả ngắn'},
+        {k:'Navigation In', v:'Quiz Editor (Add Question)'},
+        {k:'Navigation Out', v:'QUIZ Editor hoặc POLL Editor (đóng modal)'},
+        {k:'Important States', v:'Default — không có state phức tạp'},
+      ],
+      s5: [
+        {k:'User', v:'Trainer'}, {k:'Device', v:'Desktop'},
+        {k:'Primary Goal', v:'Cấu hình 1 câu QUIZ đầy đủ đáp án + đáp án đúng'},
+        {k:'Primary CTA', v:'Save câu hỏi (hoặc tự lưu khi rời canvas)'},
+        {k:'Secondary Actions', v:'Add/Remove option (2–4), Set timer, Set points, Delete question'},
+        {k:'Main Components', v:'Question input, Image upload (optional, max 1, empty/uploading/preview/replace/remove/error), Option list A–D với chọn đúng, Timer selector, Points selector, Validation message'},
+        {k:'Navigation In', v:'Add Question, Quiz Editor sidebar'},
+        {k:'Navigation Out', v:'Quiz Editor (quay lại canvas)'},
+        {k:'Important States', v:'Validation error (thiếu đáp án đúng / <2 option), Incomplete (thiếu question text)'},
+      ],
+      s6: [
+        {k:'User', v:'Trainer'}, {k:'Device', v:'Desktop'},
+        {k:'Primary Goal', v:'Cấu hình 1 câu POLL với 2–6 lựa chọn'},
+        {k:'Primary CTA', v:'Save câu hỏi'},
+        {k:'Secondary Actions', v:'Add/Remove option (2–6), Set timer, Delete question'},
+        {k:'Main Components', v:'Question input, Image upload (dùng chung component với QUIZ Editor), Option list (không radio đúng/sai), Timer selector'},
+        {k:'Navigation In', v:'Add Question, Quiz Editor sidebar'},
+        {k:'Navigation Out', v:'Quiz Editor'},
+        {k:'Important States', v:'Incomplete (thiếu text hoặc <2 option) — không có "đáp án đúng" validation'},
+      ],
+      joinedNames: ['An','Bình','Chi','Đức','Giang','Hà','Khoa','Linh'],
+      leaderRows: [
+        { rank: 1, name: 'An', score: '2,850' }, { rank: 2, name: 'Chi', score: '2,610' },
+        { rank: 3, name: 'Khoa', score: '2,400' }, { rank: 4, name: 'Hà', score: '2,150' }, { rank: 5, name: 'Linh', score: '1,980' },
+      ],
+      s7: [
+        {k:'User', v:'Trainer (Host)'}, {k:'Device', v:'Desktop, projector-friendly'},
+        {k:'Primary Goal', v:'Chờ participant join, xác nhận đủ người trước khi start'},
+        {k:'Primary CTA', v:'Start Game'},
+        {k:'Secondary Actions', v:'Copy PIN/link, End session'},
+        {k:'Main Components', v:'Game PIN (rất lớn), Participant count, Participant name grid, Start Game'},
+        {k:'Navigation In', v:'Quiz Editor (Host), My Quizzes (Host)'},
+        {k:'Navigation Out', v:'Host Question (Start Game)'},
+        {k:'Important States', v:'Chưa ai join, Đang join, Đủ participant, Start disabled (0 participant)'},
+      ],
+      s8: [
+        {k:'User', v:'Trainer (Host)'}, {k:'Device', v:'Desktop, projector-friendly'},
+        {k:'Primary Goal', v:'Điều hành câu hỏi đang active, theo dõi response'},
+        {k:'Primary CTA', v:'End Question'},
+        {k:'Secondary Actions', v:'(tối giản khi đang chạy — không có action phụ)'},
+        {k:'Main Components', v:'Question X/Y, QUIZ/POLL badge, Question text lớn, Timer, Response count, Answer options preview (ẩn đúng/sai)'},
+        {k:'Navigation In', v:'Host Lobby (Start Game), Result — Host (Next)'},
+        {k:'Navigation Out', v:'QUIZ/POLL Result — Host (End Question / timeout)'},
+        {k:'Important States', v:'Timer running, Timer sắp hết, Timeout tự động end, Đã end (chờ chuyển)'},
+      ],
+      s9: [
+        {k:'User', v:'Trainer (Host)'}, {k:'Device', v:'Desktop, projector-friendly'},
+        {k:'Primary Goal', v:'Công bố đáp án đúng và độ chính xác cả lớp'},
+        {k:'Primary CTA', v:'Next (Leaderboard hoặc câu tiếp theo)'},
+        {k:'Secondary Actions', v:'(none chính)'},
+        {k:'Main Components', v:'Correct answer highlight, Distribution bars, Correct rate %, Số người trả lời, Next'},
+        {k:'Navigation In', v:'Host Question (End Question)'},
+        {k:'Navigation Out', v:'Leaderboard — Host, Host Question (câu tiếp), Host Final Results (câu cuối)'},
+        {k:'Important States', v:'0 response, Correct rate 100%/0%'},
+      ],
+      s10: [
+        {k:'User', v:'Trainer (Host)'}, {k:'Device', v:'Desktop, projector-friendly'},
+        {k:'Primary Goal', v:'Công bố phân bổ lựa chọn, không có đúng/sai'},
+        {k:'Primary CTA', v:'Next'},
+        {k:'Secondary Actions', v:'(none)'},
+        {k:'Main Components', v:'Distribution bars (đồng màu), Số vote, %, Response count, Next'},
+        {k:'Navigation In', v:'Host Question (End Question)'},
+        {k:'Navigation Out', v:'Host Question (câu tiếp) hoặc Host Final Results — POLL không vào Leaderboard'},
+        {k:'Important States', v:'0 response'},
+      ],
+      s11: [
+        {k:'User', v:'Trainer (Host)'}, {k:'Device', v:'Desktop, projector-friendly'},
+        {k:'Primary Goal', v:'Tạo động lực, cho thấy vị trí hiện tại (chỉ sau câu QUIZ)'},
+        {k:'Primary CTA', v:'Next Question'},
+        {k:'Secondary Actions', v:'(none)'},
+        {k:'Main Components', v:'Rank list (top 5–10), nickname, total score, movement (tuỳ chọn)'},
+        {k:'Navigation In', v:'QUIZ Result — Host (Next)'},
+        {k:'Navigation Out', v:'Host Question (câu tiếp) hoặc Host Final Results (câu cuối)'},
+        {k:'Important States', v:'Tie score, participant rời giữa game'},
+      ],
+      importRows: [
+        { row: 2, type: 'QUIZ', q: 'Đâu là thủ đô...', status: 'OK', statusColor: '#2a7a4a', error: '—', bg: '#fff' },
+        { row: 3, type: 'QUIZ', q: 'Tổng doanh thu Q1...', status: 'Lỗi', statusColor: '#a13c2c', error: 'Có 2 đáp án đúng (chỉ được 1)', bg: '#fff5f4' },
+        { row: 4, type: 'POLL', q: 'Mức độ hài lòng...', status: 'Lỗi', statusColor: '#a13c2c', error: 'Cột "Correct Answer" không hợp lệ cho POLL', bg: '#fff5f4' },
+        { row: 5, type: 'QUIZ', q: 'Quy trình an toàn...', status: 'OK', statusColor: '#2a7a4a', error: '—', bg: '#fff' },
+      ],
+      s7imp: [
+        {k:'User', v:'Trainer'}, {k:'Device', v:'Desktop · Modal/panel'},
+        {k:'Primary Goal', v:'Nhập nhiều câu hỏi cùng lúc từ file Excel có sẵn'},
+        {k:'Primary CTA', v:'Import Valid Questions'},
+        {k:'Secondary Actions', v:'Download Template, Tải lại file, Cancel'},
+        {k:'Main Components', v:'Dropzone, Progress, Preview summary (tổng/QUIZ/POLL/hợp lệ/lỗi), Preview table theo dòng, Error message'},
+        {k:'Navigation In', v:'Quiz Editor (Import Excel)'},
+        {k:'Navigation Out', v:'Quiz Editor (đóng modal, câu hỏi hợp lệ được thêm vào sidebar)'},
+        {k:'Important States', v:'Empty, Uploading/Validating, Preview (có lỗi theo dòng+cột+lý do), Toàn bộ lỗi (0 hợp lệ), Import thành công'},
+      ],
+      s13: [
+        {k:'User', v:'Trainer (Host)'}, {k:'Device', v:'Desktop, projector-friendly'},
+        {k:'Primary Goal', v:'Tổng kết session, dẫn tới report'},
+        {k:'Primary CTA', v:'View Report'},
+        {k:'Secondary Actions', v:'End Session'},
+        {k:'Main Components', v:'Top 3/5, participant count, QUIZ/POLL count, average correct rate (QUIZ), View Report, End Session'},
+        {k:'Navigation In', v:'Leaderboard — Host hoặc POLL Result — Host (câu cuối)'},
+        {k:'Navigation Out', v:'Game Report, Trainer Dashboard (End Session)'},
+        {k:'Important States', v:'Session toàn POLL (ẩn phần rank/leaderboard)'},
+      ],
+      sessionRows: [
+        { name: 'Onboarding Quiz', date: '08/09', count: 12, avg: '1,980', rate: '68%' },
+        { name: 'Compliance Refresher', date: '05/09', count: 9, avg: '2,240', rate: '74%' },
+        { name: 'Team Pulse Check', date: '02/09', count: 15, avg: '—', rate: '—' },
+      ],
+      errorStates: [
+        { name: 'PIN không tồn tại', ui: 'Inline error dưới input PIN tại Join Game, giữ form.' },
+        { name: 'Game đã bắt đầu', ui: 'Chặn join, message tại Join Game, không vào Waiting Room.' },
+        { name: 'Game đã kết thúc', ui: 'Chặn join, message tại Join Game.' },
+        { name: 'Nickname trùng', ui: 'Inline error dưới input tại Nickname Entry.' },
+        { name: 'Network disconnected', ui: 'Overlay mờ phủ trên state hiện tại, giữ nguyên vị trí trong flow.' },
+        { name: 'Reconnecting', ui: 'Overlay "Đang kết nối lại…" + spinner, chặn tương tác.' },
+        { name: 'Reconnect thành công', ui: 'Overlay biến mất, tự động về đúng câu hỏi/kết quả hiện tại.' },
+        { name: 'Reconnect thất bại', ui: 'Overlay đổi thành "Không thể kết nối" + nút Thử lại / Rời phiên.' },
+        { name: 'Empty quiz', ui: 'Quiz Editor hiện empty state, chặn Host/Preview cho tới khi có ≥1 câu hỏi hợp lệ.' },
+        { name: 'Incomplete question', ui: 'Badge cảnh báo trên sidebar item + chặn Save/Host cho câu đó.' },
+        { name: 'Image upload lỗi', ui: 'Inline error trong Image area (QUIZ/POLL Editor): sai định dạng / quá dung lượng, giữ nguyên ảnh cũ nếu có.' },
+        { name: 'Excel validation lỗi', ui: 'Preview table hiện lỗi theo dòng+cột+lý do, cho phép tải lại file hoặc import phần hợp lệ.' },
+      ],
+      trainerScreenFlow: chain(['Dashboard','My Quizzes','Quiz Editor','Add Question','QUIZ/POLL Editor (+ image)','Import Excel Panel','Quiz Preview','Host Lobby','Host Question','QUIZ/POLL Result','Leaderboard','Host Final Results','Game Report']),
+      participantScreenFlow: chain(['Join Game','Nickname Entry','Waiting Room','QUIZ/POLL Answer','Submitted (state)','QUIZ/POLL Result','Participant Final Result']),
+      reuseNotes: [
+        { name: 'Question Editor shell', usedIn: 'QUIZ Editor (5), POLL Editor (6) — cùng khung, khác phần đáp án đúng/điểm.' },
+        { name: 'Image Upload', usedIn: 'QUIZ Editor (5), POLL Editor (6) — 1 component chung, cùng state system (empty/uploading/preview/replace/remove/error). Hiển thị read-only ở Host Question (9) và Participant Answer (17/18).' },
+        { name: 'Answer Option', usedIn: 'QUIZ Editor (5), POLL Editor (6), Host Question (9), Participant QUIZ/POLL Answer (17/18) — style khác theo QUIZ/POLL và theo state.' },
+        { name: 'Result Bar', usedIn: 'QUIZ Result — Host (10), POLL Result — Host (11), POLL Result — Participant (21).' },
+        { name: 'Timer', usedIn: 'Host Question (9), Participant QUIZ/POLL Answer (17/18).' },
+        { name: 'QUIZ/POLL Badge', usedIn: 'Quiz Editor sidebar (3), Add Question (4), Host Question (9), tất cả Result screens.' },
+        { name: 'Excel Import Preview Table', usedIn: 'Import Excel Panel (7) — duy nhất, không tái dùng nơi khác.' },
+        { name: 'Error State (inline)', usedIn: 'Join Game, Nickname Entry, Quiz Editor, Image Upload, Import Excel Panel.' },
+        { name: 'Reconnecting Overlay', usedIn: 'Waiting Room (16), Participant QUIZ/POLL Answer (17/18), Result screens (20/21) — mọi màn hình participant có thể mất kết nối.' },
+      ],
+      s14: [
+        {k:'User', v:'Participant'}, {k:'Device', v:'Mobile (390×844)'},
+        {k:'Primary Goal', v:'Vào đúng session bằng PIN'},
+        {k:'Primary CTA', v:'Continue'},
+        {k:'Secondary Actions', v:'(none — tối giản)'},
+        {k:'Main Components', v:'Logo/wordmark, PIN input (số lớn), Continue'},
+        {k:'Navigation In', v:'Link chia sẻ / mở app'},
+        {k:'Navigation Out', v:'Nickname Entry'},
+        {k:'Important States', v:'PIN không tồn tại, Game đã kết thúc, Game không cho join'},
+      ],
+      s15: [
+        {k:'User', v:'Participant'}, {k:'Device', v:'Mobile'},
+        {k:'Primary Goal', v:'Đặt tên hiển thị để tham gia'},
+        {k:'Primary CTA', v:'Join Game'},
+        {k:'Secondary Actions', v:'Quay lại (đổi PIN)'},
+        {k:'Main Components', v:'Nickname input, Join Game, Back link'},
+        {k:'Navigation In', v:'Join Game (PIN hợp lệ)'},
+        {k:'Navigation Out', v:'Waiting Room'},
+        {k:'Important States', v:'Nickname trùng, Session không còn hợp lệ'},
+      ],
+      s16: [
+        {k:'User', v:'Participant'}, {k:'Device', v:'Mobile'},
+        {k:'Primary Goal', v:'Xác nhận đã join, chờ giảng viên'},
+        {k:'Primary CTA', v:'(không có — chờ)'},
+        {k:'Secondary Actions', v:'(none)'},
+        {k:'Main Components', v:'Nickname, session title, "Đang chờ giảng viên bắt đầu"'},
+        {k:'Navigation In', v:'Nickname Entry (Join Game)'},
+        {k:'Navigation Out', v:'Participant QUIZ/POLL Answer (khi host Start)'},
+        {k:'Important States', v:'Mất kết nối (Reconnecting), host kết thúc trước khi start'},
+      ],
+      s17: [
+        {k:'User', v:'Participant'}, {k:'Device', v:'Mobile'},
+        {k:'Primary Goal', v:'Trả lời trong thời gian giới hạn'},
+        {k:'Primary CTA', v:'Chọn 1 option (tap = submit)'},
+        {k:'Secondary Actions', v:'(none sau khi chọn — lock ngay)'},
+        {k:'Main Components', v:'Timer, Question text, optional Image (giữ aspect ratio, giới hạn chiều cao), Answer options A–D'},
+        {k:'Navigation In', v:'Waiting Room, Result (Next Question)'},
+        {k:'Navigation Out', v:'QUIZ Result — Participant'},
+        {k:'Important States', v:'Default, Selected, Submitted (locked), Timeout chưa chọn'},
+      ],
+      s18: [
+        {k:'User', v:'Participant'}, {k:'Device', v:'Mobile'},
+        {k:'Primary Goal', v:'Vote trong thời gian giới hạn'},
+        {k:'Primary CTA', v:'Chọn 1 option (tap = submit)'},
+        {k:'Secondary Actions', v:'(none)'},
+        {k:'Main Components', v:'Timer, Question text, optional Image, Answer options (tối đa 6)'},
+        {k:'Navigation In', v:'Waiting Room, Result (Next Question)'},
+        {k:'Navigation Out', v:'POLL Result — Participant'},
+        {k:'Important States', v:'Default, Selected, Submitted (locked), Timeout chưa vote'},
+      ],
+      s20: [
+        {k:'User', v:'Participant'}, {k:'Device', v:'Mobile'},
+        {k:'Primary Goal', v:'Biết đúng/sai và điểm câu vừa rồi'},
+        {k:'Primary CTA', v:'(none — tự chuyển)'},
+        {k:'Secondary Actions', v:'(none)'},
+        {k:'Main Components', v:'Đúng/Sai (icon+text), điểm câu này, tổng điểm, trạng thái chờ'},
+        {k:'Navigation In', v:'QUIZ Answer (submitted, host end)'},
+        {k:'Navigation Out', v:'QUIZ/POLL Answer (câu tiếp) hoặc Participant Final Result (câu cuối)'},
+        {k:'Important States', v:'Không trả lời (timeout) → "Không trả lời", không hiện Sai gây nhầm'},
+      ],
+      s21: [
+        {k:'User', v:'Participant'}, {k:'Device', v:'Mobile'},
+        {k:'Primary Goal', v:'Xem phân bổ lựa chọn của cả lớp'},
+        {k:'Primary CTA', v:'(none)'},
+        {k:'Secondary Actions', v:'(none)'},
+        {k:'Main Components', v:'Lựa chọn đã chọn, Distribution bars + %, trạng thái chờ'},
+        {k:'Navigation In', v:'POLL Answer'},
+        {k:'Navigation Out', v:'QUIZ/POLL Answer (câu tiếp) hoặc Participant Final Result'},
+        {k:'Important States', v:'Không vote (timeout)'},
+      ],
+      s22: [
+        {k:'User', v:'Participant'}, {k:'Device', v:'Mobile'},
+        {k:'Primary Goal', v:'Xem kết quả cá nhân cuối session'},
+        {k:'Primary CTA', v:'(none)'},
+        {k:'Secondary Actions', v:'(none)'},
+        {k:'Main Components', v:'Rank, total score, correct count, performance summary ngắn'},
+        {k:'Navigation In', v:'QUIZ/POLL Result — Participant (câu cuối)'},
+        {k:'Navigation Out', v:'Thoát app'},
+        {k:'Important States', v:'Session toàn POLL → ẩn rank/score'},
+      ],
+      s23: [
+        {k:'User', v:'Trainer'}, {k:'Device', v:'Desktop'},
+        {k:'Primary Goal', v:'Xem lịch sử session đã host'},
+        {k:'Primary CTA', v:'View Report (mỗi session)'},
+        {k:'Secondary Actions', v:'(filter/search — có thể bỏ ở MVP)'},
+        {k:'Main Components', v:'Session list, empty state'},
+        {k:'Navigation In', v:'Trainer Dashboard'},
+        {k:'Navigation Out', v:'Game Report'},
+        {k:'Important States', v:'Empty (chưa host session nào)'},
+      ],
+      s24: [
+        {k:'User', v:'Trainer'}, {k:'Device', v:'Desktop'},
+        {k:'Primary Goal', v:'Phân tích chi tiết 1 session'},
+        {k:'Primary CTA', v:'(none chính)'},
+        {k:'Secondary Actions', v:'Export/Back'},
+        {k:'Main Components', v:'Overview, Participant Results table, QUIZ Analysis, POLL Analysis'},
+        {k:'Navigation In', v:'Results Dashboard, Host Final Results'},
+        {k:'Navigation Out', v:'Results Dashboard (Back)'},
+        {k:'Important States', v:'Session toàn POLL (ẩn correct rate)'},
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

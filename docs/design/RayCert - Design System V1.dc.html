@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #f2f6f9; }
+  .ds-h2 { font-family: Manrope, sans-serif; font-weight: 700; font-size: 22px; color: #181b1d; margin: 0; }
+  .ds-h3 { font-family: Manrope, sans-serif; font-weight: 700; font-size: 15px; color: #181b1d; margin: 0; }
+  .ds-label { font-family: Inter, sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #7d8183; }
+  .ds-card { background: #fff; border: 1px solid #dfe2e4; border-radius: 12px; }
+</style>
+</helmet>
+
+<div style="font-family: Inter, -apple-system, sans-serif; color: #181b1d; max-width: 1180px; margin: 0 auto; padding: 64px 40px 120px; display: flex; flex-direction: column; gap: 64px;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #dfe2e4; padding-bottom: 28px;">
+    <div class="ds-label">RayCert — UI/UX Design</div>
+    <h1 style="font-family: Manrope; font-size: 34px; font-weight: 800; margin: 0;">Design System V1</h1>
+    <div style="font-size: 15px; color: #4a4e50;">Dựa trên Design Direction 1b — Signal Blue. Chuyên nghiệp, tương tác có kiểm soát, không game-show.</div>
+  </div>
+
+  <!-- COLOR TOKENS -->
+  <div style="display: flex; flex-direction: column; gap: 24px;">
+    <h2 class="ds-h2">1. Color Tokens</h2>
+    <sc-for list="{{ colorGroups }}" as="group" hint-placeholder-count="6">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-label">{{ group.title }}</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+          <sc-for list="{{ group.tokens }}" as="tok" hint-placeholder-count="4">
+            <div class="ds-card" style="overflow: hidden;">
+              <div style="height: 56px; background: {{ tok.hex }}; border-bottom: 1px solid #dfe2e4;"></div>
+              <div style="padding: 10px 12px; display: flex; flex-direction: column; gap: 3px;">
+                <div style="font-size: 12.5px; font-weight: 700;">{{ tok.name }}</div>
+                <div style="font-size: 11px; color: #7d8183; font-family: monospace;">{{ tok.hex }}</div>
+                <div style="font-size: 11px; color: #4a4e50; margin-top: 4px; line-height: 1.4;">{{ tok.usage }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- TYPOGRAPHY -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <h2 class="ds-h2">2. Typography</h2>
+    <div style="font-size: 13px; color: #4a4e50;">Heading: Manrope · Body/UI: Inter. Participant screens: text chính tối thiểu 16px.</div>
+    <div class="ds-card" style="display: flex; flex-direction: column;">
+      <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="9">
+        <div style="display: grid; grid-template-columns: 110px 1fr 240px; align-items: center; gap: 16px; padding: 16px 20px; border-top: 1px solid #eef0f1;">
+          <div style="font-size: 12px; font-weight: 700; color: #7d8183;">{{ t.name }}</div>
+          <div style="font-family: {{ t.font }}; font-weight: {{ t.weight }}; font-size: {{ t.size }}; line-height: {{ t.lineHeight }}; color: #181b1d;">{{ t.sample }}</div>
+          <div style="font-size: 11.5px; color: #7d8183; font-family: monospace; text-align: right;">{{ t.spec }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- SPACING -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <h2 class="ds-h2">3. Spacing Scale</h2>
+    <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+      <sc-for list="{{ spacingScale }}" as="s" hint-placeholder-count="8">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="width: 60px; font-size: 12.5px; font-weight: 700;">{{ s.name }}</div>
+          <div style="height: 14px; background: #345f95; border-radius: 3px; width: {{ s.px }}px;"></div>
+          <div style="font-size: 12px; color: #7d8183; font-family: monospace;">{{ s.pxLabel }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- RADIUS -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <h2 class="ds-h2">4. Radius Scale</h2>
+    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+      <sc-for list="{{ radiusScale }}" as="r" hint-placeholder-count="4">
+        <div class="ds-card" style="padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 150px;">
+          <div style="width: 64px; height: 64px; background: #e2ecf9; border: 1.5px solid #345f95; border-radius: {{ r.px }}px;"></div>
+          <div style="font-size: 12.5px; font-weight: 700; text-align: center;">{{ r.name }}</div>
+          <div style="font-size: 11px; color: #7d8183; text-align: center;">{{ r.usage }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- SHADOW -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <h2 class="ds-h2">5. Shadow Scale</h2>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <sc-for list="{{ shadowScale }}" as="sh" hint-placeholder-count="3">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+          <div style="width: 140px; height: 90px; background: #fff; border-radius: 12px; box-shadow: {{ sh.css }};"></div>
+          <div style="font-size: 12.5px; font-weight: 700;">{{ sh.name }}</div>
+          <div style="font-size: 11px; color: #7d8183; text-align: center; max-width: 160px;">{{ sh.usage }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- COMPONENT FOUNDATION -->
+  <div style="display: flex; flex-direction: column; gap: 24px;">
+    <h2 class="ds-h2">6. Component Foundation</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px;">
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Buttons</div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <div style="background: #1d4371; color: #fff; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 10px;">Primary</div>
+          <div style="background: transparent; border: 1.5px solid #1d4371; color: #1d4371; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 10px;">Secondary</div>
+          <div style="background: transparent; color: #1d4371; font-size: 14px; font-weight: 600; padding: 10px 12px; border-radius: 10px;">Ghost</div>
+        </div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">
+          Primary: bg brand-700, text white, radius 10px, hover brand-500, focus ring 2px brand-700 offset 2px.<br/>
+          Secondary: border brand-700 1.5px, text brand-700, bg transparent, hover bg brand-100.<br/>
+          Ghost: no border/bg, text brand-700, hover bg neutral-50. Height 44px (participant), 40px (desktop).
+        </div>
+      </div>
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Input / Textarea / Select</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #7d8183; background: #fff;">Placeholder text</div>
+          <div style="border: 1.5px solid #1d4371; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #181b1d; background: #fff; box-shadow: 0 0 0 3px #e2ecf9;">Focused value</div>
+        </div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">
+          Default: border neutral-200, bg white, radius 8px. Focus: border brand-700 + 3px brand-100 ring. Error: border error-600 + caption error-600 below. Select uses same shell + chevron icon; Textarea same shell, min-height 88px.
+        </div>
+      </div>
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Card</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 12px; padding: 16px; box-shadow: 0 1px 2px rgba(15,23,42,0.04); font-size: 12px; color: #7d8183;">Surface white · border neutral-200 · radius 12px · shadow-sm</div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">Padding 16–24px theo mật độ. Hover (nếu clickable): shadow-md + border brand-100.</div>
+      </div>
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Badge</div>
+        <div style="display: flex; gap: 8px;">
+          <div style="background: #1d4371; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 4px 10px; border-radius: 999px;">QUIZ</div>
+          <div style="background: #fff; color: #2ca2a2; border: 1.5px solid #2ca2a2; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 3.5px 10px; border-radius: 999px;">POLL</div>
+        </div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">Radius pill (999px) — chỉ badge được dùng pill. QUIZ = brand-700 fill. POLL = teal-500 outline.</div>
+      </div>
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Timer</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 48px; height: 48px; border-radius: 999px; border: 4px solid #dfe2e4; border-top-color: #1d4371; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-weight: 700; font-size: 14px;">12</div>
+          <div style="width: 48px; height: 48px; border-radius: 999px; border: 4px solid #dfe2e4; border-top-color: #d6810c; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-weight: 700; font-size: 14px; color: #d6810c;">3</div>
+        </div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">Ring dùng brand-700 mặc định, chuyển amber-600 khi ≤5s còn lại (attention, không phải error).</div>
+      </div>
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Progress</div>
+        <div style="height: 8px; border-radius: 999px; background: #dfe2e4; overflow: hidden;"><div style="width: 64%; height: 100%; background: #1d4371;"></div></div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">Dùng cho response rate / câu hỏi hiện tại trong bộ câu hỏi. Track neutral-200, fill brand-700, radius pill.</div>
+      </div>
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Result Bar</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; font-size: 11px; font-weight: 700; color: #7d8183;">A</div>
+            <div style="flex: 1; height: 20px; border-radius: 6px; background: #eef0f1; overflow: hidden;"><div style="width: 72%; height: 100%; background: #1e7729;"></div></div>
+            <div style="font-size: 11.5px; font-weight: 700; width: 32px; text-align: right;">72%</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; font-size: 11px; font-weight: 700; color: #7d8183;">B</div>
+            <div style="flex: 1; height: 20px; border-radius: 6px; background: #eef0f1; overflow: hidden;"><div style="width: 28%; height: 100%; background: #345f95;"></div></div>
+            <div style="font-size: 11.5px; font-weight: 700; width: 32px; text-align: right;">28%</div>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">QUIZ: đáp án đúng luôn success-600; các đáp án khác brand-500 nhạt. POLL: tất cả bar dùng brand-500 (không success/error), luôn kèm số liệu %.</div>
+      </div>
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Leaderboard Row</div>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: #f2f6f9;">
+          <div style="font-family: Manrope; font-weight: 800; font-size: 13px; color: #345f95; width: 20px;">1</div>
+          <div style="flex: 1; font-size: 13px; font-weight: 600;">Nguyễn An</div>
+          <div style="font-size: 13px; font-weight: 700; color: #1d4371;">+850</div>
+        </div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">Top 3 có thể nhấn nhẹ bằng brand-100 bg; không dùng huy chương màu vàng/bạc/đồng kiểu game show — chỉ số thứ tự rõ.</div>
+      </div>
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Toast</div>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; background: #181b1d; color: #fff; font-size: 13px;">Đã lưu thay đổi.</div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">Neutral-900 bg cho info; success-600/error-600 bg cho toast semantic. Auto-dismiss 3–4s, luôn có icon + text.</div>
+      </div>
+
+      <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="ds-h3">Modal / Tabs / Sidebar Item (spec)</div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.8;">
+          <strong>Modal:</strong> surface white, radius 12px, shadow-lg, scrim neutral-900 40% opacity, max-width 480–560px.<br/>
+          <strong>Tabs:</strong> underline style, active tab text brand-700 + 2px brand-700 underline, inactive neutral-400, no pill tabs.<br/>
+          <strong>Sidebar item:</strong> default text neutral-600, hover bg neutral-50, active bg brand-100 + text brand-700 + 3px left accent bar brand-700.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- QUESTION-SPECIFIC STATES -->
+  <div style="display: flex; flex-direction: column; gap: 24px;">
+    <h2 class="ds-h2">7. Question-specific Components — Answer Option States</h2>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="background: #1d4371; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px;">QUIZ</div>
+        <div style="font-size: 13px; font-weight: 700;">Answer Option</div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+        <sc-for list="{{ quizStates }}" as="st" hint-placeholder-count="7">
+          <div style="border-radius: 10px; padding: 12px; text-align: center; border: {{ st.border }}; background: {{ st.bg }}; color: {{ st.color }};">
+            <div style="font-size: 12.5px; font-weight: 700;">A. Hà Nội</div>
+            <div style="font-size: 10.5px; margin-top: 6px; font-weight: 600; opacity: 0.85;">{{ st.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="background: #fff; border: 1.5px solid #2ca2a2; color: #2ca2a2; font-size: 11px; font-weight: 700; padding: 2.5px 9px; border-radius: 999px;">POLL</div>
+        <div style="font-size: 13px; font-weight: 700;">Answer Option — không bao giờ Correct/Incorrect</div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+        <sc-for list="{{ pollStates }}" as="st" hint-placeholder-count="5">
+          <div style="border-radius: 10px; padding: 12px; text-align: center; border: {{ st.border }}; background: {{ st.bg }}; color: {{ st.color }};">
+            <div style="font-size: 12.5px; font-weight: 700;">A. Rất hài lòng</div>
+            <div style="font-size: 10.5px; margin-top: 6px; font-weight: 600; opacity: 0.85;">{{ st.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="font-size: 12.5px; color: #4a4e50; background: #fff; border: 1px solid #dfe2e4; border-radius: 10px; padding: 14px 16px; line-height: 1.7;">
+      Mọi answer option luôn có label chữ (A/B/C/D) — không phân biệt lựa chọn chỉ bằng màu. QUIZ dùng tối đa 1 accent tint (brand-100) cho selected trước khi đóng; correct/incorrect chỉ xuất hiện sau khi host đóng câu hỏi.
+    </div>
+  </div>
+
+  <!-- RESPONSIVE -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <h2 class="ds-h2">8. Responsive Principles</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px;">
+      <sc-for list="{{ breakpoints }}" as="bp" hint-placeholder-count="3">
+        <div class="ds-card" style="padding: 18px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 13px; font-weight: 700;">{{ bp.name }}</div>
+          <div style="font-size: 11.5px; color: #7d8183; font-family: monospace;">{{ bp.range }}</div>
+          <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">{{ bp.rule }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ACCESSIBILITY -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h2 class="ds-h2">9. Accessibility</h2>
+    <div class="ds-card" style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+      <sc-for list="{{ a11y }}" as="rule" hint-placeholder-count="6">
+        <div style="display: flex; gap: 10px; font-size: 13px; color: #2c2b28; line-height: 1.6;">
+          <div style="color: #345f95; font-weight: 700;">—</div>
+          <div>{{ rule }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="border-top: 1px solid #dfe2e4; padding-top: 20px; font-size: 12.5px; color: #7d8183;">
+    Design System V1 — chờ review trước khi sang wireframe / high-fidelity screens.
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      colorGroups: [
+        { title: 'Brand', tokens: [
+          { name: 'brand-900', hex: '#07294f', usage: 'Text nhấn mạnh trên nền sáng, hiếm dùng làm bg lớn.' },
+          { name: 'brand-700 (primary)', hex: '#1d4371', usage: 'CTA chính, active nav, selected, focus, logo.' },
+          { name: 'brand-500', hex: '#345f95', usage: 'Hover state, secondary data viz.' },
+          { name: 'brand-100', hex: '#e2ecf9', usage: 'Tint nền cho selected/hover nhẹ.' },
+        ]},
+        { title: 'Neutral / Background / Surface / Border / Text', tokens: [
+          { name: 'background', hex: '#f2f6f9', usage: 'Nền trang (neutral-50).' },
+          { name: 'surface', hex: '#ffffff', usage: 'Nền card/panel.' },
+          { name: 'border', hex: '#dfe2e4', usage: 'Viền card, input, divider (neutral-200).' },
+          { name: 'border-strong', hex: '#cbced1', usage: 'Divider đậm hơn (neutral-300).' },
+          { name: 'text-muted', hex: '#7d8183', usage: 'Placeholder, caption, label phụ (neutral-400).' },
+          { name: 'text-body', hex: '#4a4e50', usage: 'Body text (neutral-600).' },
+          { name: 'text-heading', hex: '#181b1d', usage: 'Heading, text chính (neutral-900).' },
+        ]},
+        { title: 'Teal Accent', tokens: [
+          { name: 'teal-500', hex: '#2ca2a2', usage: 'POLL badge, data viz phụ, informational state.' },
+          { name: 'teal-100', hex: '#d5f2f1', usage: 'Tint nền cho poll selected/info.' },
+        ]},
+        { title: 'Amber Accent', tokens: [
+          { name: 'amber-500', hex: '#e99b2a', usage: 'Highlight, attention, chart series phụ.' },
+          { name: 'amber-600 (warning)', hex: '#d6810c', usage: 'Timer warning, cảnh báo — không dùng làm CTA.' },
+          { name: 'amber-100', hex: '#ffebd2', usage: 'Tint nền cảnh báo nhẹ.' },
+        ]},
+        { title: 'Success / Error', tokens: [
+          { name: 'success-600', hex: '#1e7729', usage: 'QUIZ correct only. Không dùng cho POLL.' },
+          { name: 'success-100', hex: '#d7f5d7', usage: 'Tint nền correct.' },
+          { name: 'error-600', hex: '#be222a', usage: 'QUIZ incorrect, error state form. Không dùng cho POLL.' },
+          { name: 'error-100', hex: '#ffe5e1', usage: 'Tint nền incorrect/error.' },
+        ]},
+      ],
+      typeScale: [
+        { name: 'Display', font: 'Manrope', weight: 800, size: '40px', lineHeight: '48px', spec: '40/48 · 800', sample: 'RayCert' },
+        { name: 'H1', font: 'Manrope', weight: 700, size: '32px', lineHeight: '40px', spec: '32/40 · 700', sample: 'Trainer Dashboard' },
+        { name: 'H2', font: 'Manrope', weight: 700, size: '24px', lineHeight: '32px', spec: '24/32 · 700', sample: 'Câu hỏi 3 / 10' },
+        { name: 'H3', font: 'Manrope', weight: 600, size: '19px', lineHeight: '28px', spec: '19/28 · 600', sample: 'Kết quả phiên' },
+        { name: 'Body Large', font: 'Inter', weight: 500, size: '17px', lineHeight: '26px', spec: '17/26 · 500', sample: 'Đâu là thủ đô của Việt Nam?' },
+        { name: 'Body', font: 'Inter', weight: 400, size: '16px', lineHeight: '24px', spec: '16/24 · 400', sample: 'Nhấn Start để bắt đầu câu hỏi.' },
+        { name: 'Label', font: 'Inter', weight: 600, size: '13px', lineHeight: '18px', spec: '13/18 · 600 · upper', sample: 'RESPONSE COUNT' },
+        { name: 'Caption', font: 'Inter', weight: 400, size: '12px', lineHeight: '16px', spec: '12/16 · 400', sample: '32 người đã trả lời' },
+        { name: 'Button', font: 'Inter', weight: 600, size: '14px', lineHeight: '20px', spec: '14/20 · 600', sample: 'Start Question' },
+      ],
+      spacingScale: [
+        { name: 'xs', px: 4, pxLabel: '4px' }, { name: 'sm', px: 8, pxLabel: '8px' },
+        { name: 'md', px: 12, pxLabel: '12px' }, { name: 'lg', px: 16, pxLabel: '16px' },
+        { name: 'xl', px: 24, pxLabel: '24px' }, { name: '2xl', px: 32, pxLabel: '32px' },
+        { name: '3xl', px: 48, pxLabel: '48px' }, { name: '4xl', px: 64, pxLabel: '64px' },
+      ],
+      radiusScale: [
+        { name: 'sm — 8px', px: 8, usage: 'Button / Input mặc định' },
+        { name: 'md — 10px', px: 10, usage: 'Button / Input lớn hơn' },
+        { name: 'lg — 12px', px: 12, usage: 'Card, Modal' },
+        { name: 'pill — 999px', px: 999, usage: 'Badge only' },
+      ],
+      shadowScale: [
+        { name: 'shadow-sm', css: '0 1px 2px rgba(15,23,42,0.04)', usage: 'Card mặc định' },
+        { name: 'shadow-md', css: '0 4px 12px rgba(15,23,42,0.06)', usage: 'Card hover, dropdown' },
+        { name: 'shadow-lg', css: '0 12px 32px rgba(15,23,42,0.10)', usage: 'Modal, popover' },
+      ],
+      quizStates: [
+        { name: 'Default', border: '1.5px solid #dfe2e4', bg: '#fff', color: '#181b1d' },
+        { name: 'Hover', border: '1.5px solid #345f95', bg: '#f7faff', color: '#181b1d' },
+        { name: 'Selected', border: '2px solid #1d4371', bg: '#e2ecf9', color: '#1d4371' },
+        { name: 'Submitted (locked)', border: '2px solid #1d4371', bg: '#e2ecf9', color: '#1d4371' },
+        { name: 'Correct', border: '1.5px solid #1e7729', bg: '#d7f5d7', color: '#1e7729' },
+        { name: 'Incorrect', border: '1.5px solid #be222a', bg: '#ffe5e1', color: '#be222a' },
+        { name: 'Disabled', border: '1.5px solid #eef0f1', bg: '#f7f7f8', color: '#7d8183' },
+      ],
+      pollStates: [
+        { name: 'Default', border: '1.5px solid #dfe2e4', bg: '#fff', color: '#181b1d' },
+        { name: 'Hover', border: '1.5px solid #2ca2a2', bg: '#f0fbfa', color: '#181b1d' },
+        { name: 'Selected', border: '2px solid #2ca2a2', bg: '#d5f2f1', color: '#1c6e6e' },
+        { name: 'Submitted (locked)', border: '2px solid #2ca2a2', bg: '#d5f2f1', color: '#1c6e6e' },
+        { name: 'Disabled', border: '1.5px solid #eef0f1', bg: '#f7f7f8', color: '#7d8183' },
+      ],
+      breakpoints: [
+        { name: 'Desktop', range: '≥ 1024px', rule: 'Trainer & Host chính. Sidebar + canvas, multi-column, projector-friendly, chữ lớn ở Host Question/Result.' },
+        { name: 'Tablet', range: '768–1023px', rule: 'Trainer dùng phụ. Sidebar thu vào drawer, single-column editor, vẫn dùng tay + chuột.' },
+        { name: 'Mobile', range: '< 768px', rule: 'Participant chính. Single column, answer option full-width xếp dọc, action chính neo dưới màn hình, tap target ≥44px.' },
+      ],
+      a11y: [
+        'Contrast: text thường tối thiểu 4.5:1, text lớn (H1–H2) tối thiểu 3:1 trên mọi nền.',
+        'Focus visible: ring 2px brand-700, offset 2px, áp dụng cho mọi element tương tác kể cả answer option.',
+        'Không dùng màu là kênh duy nhất: correct/incorrect luôn kèm icon + text (Đúng/Sai), answer option luôn có label A/B/C/D.',
+        'Touch target tối thiểu 44×44px trên participant, kể cả khi option ngắn.',
+        'Chart/Result Bar luôn hiện số liệu (%, số lượng) cạnh bar, không chỉ dựa vào độ dài bar.',
+        'Timer chuyển sang amber-600 khi sắp hết giờ kèm số giây hiển thị rõ — không chỉ dựa vào animation.',
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

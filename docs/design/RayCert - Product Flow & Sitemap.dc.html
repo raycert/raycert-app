@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin: 0; background: #fafaf9; }
+  @media (max-width: 900px) { .flow-row { flex-wrap: wrap; } }
+</style>
+</helmet>
+<div style="font-family: -apple-system, Helvetica, Arial, sans-serif; color: #1c1c1a; max-width: 1180px; margin: 0 auto; padding: 64px 40px 100px; display: flex; flex-direction: column; gap: 72px;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #e2e0dc; padding-bottom: 28px;">
+    <div style="font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8a8780;">RayCert — UI/UX Design</div>
+    <h1 style="font-size: 34px; font-weight: 700; margin: 0; letter-spacing: -0.01em;">Product Flow &amp; Sitemap</h1>
+    <div style="font-size: 15px; color: #6b6862;">v3 — bổ sung Import câu hỏi từ Excel (.xlsx) và Upload hình minh hoạ cho câu hỏi. Design Direction 1b, Design System V1, QUIZ/POLL, Host desktop-first / Participant mobile-first — giữ nguyên.</div>
+  </div>
+
+  <!-- SECTION: PRODUCT FLOW -->
+  <div style="display: flex; flex-direction: column; gap: 32px;">
+    <h2 style="font-size: 22px; font-weight: 700; margin: 0;">1. Product Flow</h2>
+
+    <!-- Trainer Flow -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 14px; font-weight: 700; color: #3d3b36;">Trainer Flow</div>
+      <div class="flow-row" style="display: flex; align-items: center; gap: 0; flex-wrap: wrap;">
+        <sc-for list="{{ trainerFlow }}" as="step" hint-placeholder-count="12">
+          <div style="display: flex; align-items: center; gap: 0;">
+            <div style="background: #fff; border: 1px solid #e2e0dc; border-radius: 8px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">{{ step.label }}</div>
+            <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 0 8px; color: #b0ada5; font-size: 15px;">→</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size: 12.5px; color: #8a8780; background: #f3f1ed; border-radius: 8px; padding: 10px 14px;">
+        Quyết định: <strong>"Create Quiz" và "Quiz Editor" gộp thành một màn hình duy nhất</strong> (Quiz Editor), khác nhau ở state — tạo mới (draft rỗng) vs. chỉnh sửa (đã có dữ liệu). Đơn giản hơn, ít route, ít điều hướng thừa.
+      </div>
+    </div>
+
+    <!-- Import Excel Flow -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 14px; font-weight: 700; color: #3d3b36;">Trainer — Import câu hỏi từ Excel (.xlsx)</div>
+      <div class="flow-row" style="display: flex; align-items: center; gap: 0; flex-wrap: wrap;">
+        <sc-for list="{{ importFlow }}" as="step" hint-placeholder-count="5">
+          <div style="display: flex; align-items: center; gap: 0;">
+            <div style="background: #fff; border: 1px solid #e2e0dc; border-radius: 8px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">{{ step.label }}</div>
+            <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 0 8px; color: #b0ada5; font-size: 15px;">→</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size: 12.5px; color: #8a8780; background: #f3f1ed; border-radius: 8px; padding: 10px 14px;">
+        Truy cập từ Quiz Editor (bên cạnh "Add Question"). Lỗi hiển thị <strong>theo từng dòng</strong> trong bảng preview (dòng nào, cột nào, lý do) — trainer sửa file gốc và tải lại, hoặc bỏ qua các dòng lỗi và chỉ import dòng hợp lệ. Không tự sửa dữ liệu.
+      </div>
+    </div>
+
+    <!-- Image Upload Flow -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 14px; font-weight: 700; color: #3d3b36;">Trainer — Upload hình minh hoạ cho câu hỏi</div>
+      <div class="flow-row" style="display: flex; align-items: center; gap: 0; flex-wrap: wrap;">
+        <sc-for list="{{ imageFlow }}" as="step" hint-placeholder-count="5">
+          <div style="display: flex; align-items: center; gap: 0;">
+            <div style="background: #fff; border: 1px solid #e2e0dc; border-radius: 8px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">{{ step.label }}</div>
+            <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 0 8px; color: #b0ada5; font-size: 15px;">→</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size: 12.5px; color: #8a8780; background: #f3f1ed; border-radius: 8px; padding: 10px 14px;">
+        Tối đa <strong>1 hình / câu hỏi</strong>, áp dụng cho cả QUIZ và POLL — nằm trong QUIZ Editor / POLL Editor, không phải màn hình riêng. Hình hiển thị phía trên câu hỏi ở cả Host Question và Participant Answer. States: Empty → Uploading → Preview → Replace / Remove → Error (sai định dạng/quá dung lượng).
+      </div>
+    </div>
+
+    <!-- Participant Flow -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 14px; font-weight: 700; color: #3d3b36;">Participant Flow</div>
+      <div class="flow-row" style="display: flex; align-items: center; gap: 0; flex-wrap: wrap;">
+        <sc-for list="{{ participantFlow }}" as="step" hint-placeholder-count="10">
+          <div style="display: flex; align-items: center; gap: 0;">
+            <div style="background: #fff; border: 1px solid #e2e0dc; border-radius: 8px; padding: 12px 16px; font-size: 13.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">{{ step.label }}</div>
+            <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 0 8px; color: #b0ada5; font-size: 15px;">→</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size: 12.5px; color: #8a8780; background: #f3f1ed; border-radius: 8px; padding: 10px 14px;">
+        "Submitted" không phải route riêng — là một UI state của màn hình Participant Answer (QUIZ/POLL), hiện sau khi trả lời và trước khi host đóng câu hỏi.
+      </div>
+    </div>
+
+    <!-- Participant Error / Reconnect Flows -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 14px; font-weight: 700; color: #3d3b36;">Participant — Error &amp; Reconnect Flows</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px;">
+        <sc-for list="{{ errorFlows }}" as="err" hint-placeholder-count="6">
+          <div style="background: #fff; border: 1px solid #e2e0dc; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 12.5px; font-weight: 700;">{{ err.trigger }}</div>
+            <div style="font-size: 12px; color: #6b6862; line-height: 1.5;">{{ err.result }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- QUIZ Flow -->
+    <div style="background: #fff; border: 1px solid #e2e0dc; border-radius: 12px; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="background: #1c1c1a; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; padding: 4px 9px; border-radius: 5px;">QUIZ</div>
+        <div style="font-size: 14px; font-weight: 700; color: #3d3b36;">Có đáp án đúng · có điểm · có leaderboard</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; gap: 10px; align-items: baseline;">
+          <div style="width: 68px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: #8a8780; text-transform: uppercase;">Host</div>
+          <div class="flow-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0; font-size: 13px; color: #3d3b36;">
+            <sc-for list="{{ quizHostFlow }}" as="step" hint-placeholder-count="7">
+              <div style="display: flex; align-items: center;">
+                <div style="white-space: nowrap;">{{ step.label }}</div>
+                <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}"><div style="padding: 0 7px; color: #c7c4bd;">→</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: baseline;">
+          <div style="width: 68px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: #8a8780; text-transform: uppercase;">Participant</div>
+          <div class="flow-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0; font-size: 13px; color: #3d3b36;">
+            <sc-for list="{{ quizParticipantFlow }}" as="step" hint-placeholder-count="5">
+              <div style="display: flex; align-items: center;">
+                <div style="white-space: nowrap;">{{ step.label }}</div>
+                <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}"><div style="padding: 0 7px; color: #c7c4bd;">→</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POLL Flow -->
+    <div style="background: #fff; border: 1px solid #e2e0dc; border-radius: 12px; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="background: #fff; color: #1c1c1a; border: 1.5px solid #1c1c1a; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; padding: 3.5px 8.5px; border-radius: 5px;">POLL</div>
+        <div style="font-size: 14px; font-weight: 700; color: #3d3b36;">Không đáp án đúng · không điểm · chỉ distribution</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; gap: 10px; align-items: baseline;">
+          <div style="width: 68px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: #8a8780; text-transform: uppercase;">Host</div>
+          <div class="flow-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0; font-size: 13px; color: #3d3b36;">
+            <sc-for list="{{ pollHostFlow }}" as="step" hint-placeholder-count="5">
+              <div style="display: flex; align-items: center;">
+                <div style="white-space: nowrap;">{{ step.label }}</div>
+                <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}"><div style="padding: 0 7px; color: #c7c4bd;">→</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: baseline;">
+          <div style="width: 68px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: #8a8780; text-transform: uppercase;">Participant</div>
+          <div class="flow-row" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0; font-size: 13px; color: #3d3b36;">
+            <sc-for list="{{ pollParticipantFlow }}" as="step" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center;">
+                <div style="white-space: nowrap;">{{ step.label }}</div>
+                <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}"><div style="padding: 0 7px; color: #c7c4bd;">→</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size: 12.5px; color: #8a8780; line-height: 1.6;">
+      Điểm khác biệt cốt lõi: QUIZ hiện correct/incorrect + score + rank sau khi đóng câu hỏi. POLL không bao giờ hiện correct/incorrect, score, hoặc rank — participant chỉ thấy phân bổ lựa chọn (distribution).
+    </div>
+  </div>
+
+  <!-- SECTION: SITEMAP -->
+  <div style="display: flex; flex-direction: column; gap: 28px;">
+    <h2 style="font-size: 22px; font-weight: 700; margin: 0;">2. Sitemap / Screen Map</h2>
+    <div style="font-size: 13.5px; color: #6b6862;">27 màn hình. Import Excel là 1 màn hình mới (modal/panel); Upload hình minh hoạ là field/state thêm vào QUIZ Editor &amp; POLL Editor, không phải màn hình riêng.</div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
+      <sc-for list="{{ sitemapGroups }}" as="group" hint-placeholder-count="6">
+        <div style="background: #fff; border: 1px solid #e2e0dc; border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <div style="font-size: 14px; font-weight: 700; color: #1c1c1a;">{{ group.title }}</div>
+            <div style="font-size: 11px; font-weight: 600; color: #8a8780; background: #f3f1ed; padding: 2px 8px; border-radius: 999px;">{{ group.who }}</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0;">
+            <sc-for list="{{ group.screens }}" as="screen" hint-placeholder-count="5">
+              <div style="display: flex; align-items: baseline; gap: 10px; padding: 7px 0; border-top: 1px solid #f0eeea;">
+                <div style="font-size: 11px; font-weight: 700; color: #b0ada5; width: 20px; flex-shrink: 0;">{{ screen.num }}</div>
+                <div style="font-size: 13.5px; color: #2c2b28;">{{ screen.name }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="border-top: 1px solid #e2e0dc; padding-top: 20px; font-size: 12.5px; color: #8a8780;">
+    Chưa đi vào visual design (màu, font, component chi tiết) — chờ review flow &amp; sitemap này trước.
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const chain = (labels) => labels.map((l, i, a) => ({ label: l, hasNext: i < a.length - 1 }));
+
+    return {
+      trainerFlow: chain(['Dashboard','My Quizzes','Quiz Editor (create/edit)','Add Question / Import Excel','QUIZ/POLL (+ optional image)','Save','Preview','Host','Lobby','Start','Questions','Host Final Results','Report']),
+      participantFlow: chain(['Join','PIN','Nickname','Waiting Room','Question','Submit','Submitted (state)','Result','Next Question','Participant Final Result']),
+      quizHostFlow: chain(['Start','Question + Timer + Response Count','End/Timeout','Correct Answer + Distribution','Leaderboard','Next']),
+      quizParticipantFlow: chain(['Answer','Locked','(after close) Correct/Incorrect + Score']),
+      pollHostFlow: chain(['Start Poll','Timer + Vote Count','End/Timeout','Distribution','Next']),
+      pollParticipantFlow: chain(['Vote','Locked','Distribution (no correct/incorrect)']),
+      importFlow: chain(['Select .xlsx file','Validate (format, số câu, options)','Preview + lỗi theo dòng','Sửa file & tải lại (nếu có lỗi)','Confirm import']),
+      imageFlow: chain(['Empty (chưa có ảnh)','Uploading','Preview ảnh trong câu hỏi','Replace / Remove','Error (định dạng/dung lượng)']),
+      errorFlows: [
+        { trigger: 'PIN không tồn tại', result: 'Thông báo lỗi tại Join Game, giữ nguyên form để thử lại.' },
+        { trigger: 'Game đã bắt đầu', result: 'Chặn join, báo "phiên đã bắt đầu", không vào Waiting Room.' },
+        { trigger: 'Game đã kết thúc', result: 'Chặn join, báo "phiên đã kết thúc".' },
+        { trigger: 'Nickname bị trùng', result: 'Báo lỗi tại Nickname Entry, yêu cầu chọn tên khác.' },
+        { trigger: 'Mất kết nối / Reconnecting', result: 'Overlay "Đang kết nối lại" phủ trên state hiện tại, không mất vị trí trong flow.' },
+        { trigger: 'Kết nối lại thành công', result: 'Tự động vào đúng session, đúng câu hỏi/kết quả đang diễn ra.' },
+      ],
+      sitemapGroups: [
+        { title: 'Entry / Participant Join', who: 'Participant', screens: [
+          {num:'01', name:'Home'}, {num:'02', name:'Join Game'}, {num:'03', name:'Nickname Entry'}, {num:'04', name:'Waiting Room'},
+        ]},
+        { title: 'Trainer — Manage', who: 'Trainer', screens: [
+          {num:'05', name:'Trainer Dashboard'}, {num:'06', name:'My Quizzes'}, {num:'07', name:'Quiz Editor (create & edit)'}, {num:'08', name:'Add Question'},
+          {num:'08b', name:'Import Questions from Excel (.xlsx)'},
+          {num:'09', name:'QUIZ Editor (+ optional 1 image)'}, {num:'10', name:'POLL Editor (+ optional 1 image)'}, {num:'11', name:'Quiz Preview'}, {num:'12', name:'Quiz Detail'},
+        ]},
+        { title: 'Host — Live Session', who: 'Trainer (projector)', screens: [
+          {num:'13', name:'Host Lobby'}, {num:'14', name:'Host Question'}, {num:'15', name:'QUIZ Result — Host'}, {num:'16', name:'POLL Result — Host'}, {num:'17', name:'Leaderboard'}, {num:'18', name:'Host Final Results'},
+        ]},
+        { title: 'Participant — Live Session', who: 'Participant (mobile)', screens: [
+          {num:'19', name:'Participant QUIZ Answer (incl. submitted state)'}, {num:'20', name:'Participant POLL Answer (incl. submitted state)'},
+          {num:'21', name:'QUIZ Result — Participant'}, {num:'22', name:'POLL Result — Participant'}, {num:'23', name:'Participant Final Result'},
+        ]},
+        { title: 'Post-Session / Reporting', who: 'Trainer', screens: [
+          {num:'24', name:'Results Dashboard'}, {num:'25', name:'Game Report'},
+        ]},
+        { title: 'System States', who: 'Cross-cutting', screens: [
+          {num:'26', name:'Empty / Loading / Error / Reconnecting (+ PIN sai, game đã bắt đầu/kết thúc, nickname trùng, reconnect thành công)'},
+        ]},
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

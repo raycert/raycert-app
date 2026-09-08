@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #f2f6f9; }
+  a { color: #1d4371; }
+  a:hover { color: #345f95; }
+  .hf-h2 { font-family: Manrope, sans-serif; font-weight: 800; font-size: 22px; color: #181b1d; margin: 0; }
+  .hf-h3 { font-family: Manrope, sans-serif; font-weight: 700; font-size: 15px; color: #181b1d; margin: 0; }
+  .hf-note { font-size: 12px; color: #4a4e50; line-height: 1.7; background: #fff; border: 1px solid #dfe2e4; border-radius: 10px; padding: 12px 16px; }
+</style>
+</helmet>
+
+<div style="font-family: Inter, -apple-system, sans-serif; color: #181b1d; max-width: 1220px; margin: 0 auto; padding: 60px 40px 120px; display: flex; flex-direction: column; gap: 60px;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #dfe2e4; padding-bottom: 26px;">
+    <div style="font-family: Inter; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #7d8183;">RayCert — UI/UX Design</div>
+    <h1 style="font-family: Manrope; font-size: 32px; font-weight: 800; margin: 0;">High-Fidelity Design V1</h1>
+    <div style="font-size: 14px; color: #4a4e50;">Signal Blue · Manrope + Inter · Design System V1. Áp dụng đúng Product Flow &amp; Wireframe đã chốt — chưa code backend.</div>
+    <div style="display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; padding-top: 6px;">
+      <a href="#interaction">Interaction Pattern</a><a href="#trainer">Trainer</a><a href="#host">Host</a><a href="#participant">Participant</a><a href="#reporting">Reporting</a><a href="#errors">Error/Recovery</a><a href="#final">Final Notes</a>
+    </div>
+  </div>
+
+  <!-- INTERACTION PATTERN DECISION -->
+  <div id="interaction" style="display: flex; flex-direction: column; gap: 20px;">
+    <h2 class="hf-h2">Quyết định Interaction Pattern — Participant Answer</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 20px;">
+      <div style="background: #fff; border: 1px solid #dfe2e4; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+        <div class="hf-h3">Option A — Tap = Submit</div>
+        <div style="border: 1.5px solid #999; border-radius: 22px; padding: 18px 14px; width: 220px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; background: #f2f6f9;">
+          <div style="font-family: Manrope; font-weight: 700; font-size: 12.5px; text-align: center;">Đâu là thủ đô VN?</div>
+          <div style="border: 2px solid #1d4371; background: #e2ecf9; border-radius: 8px; padding: 9px; font-size: 11.5px; font-weight: 600; color: #1d4371;">A. Hà Nội ✓ locked</div>
+          <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 9px; font-size: 11.5px; color: #7d8183;">B. TP.HCM</div>
+        </div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">1 tap → submit ngay, lock toàn bộ. Nhanh nhất, ít bước nhất.</div>
+        <div style="font-size: 11.5px; color: #4a4e50; display: flex; flex-direction: column; gap: 4px;">
+          <div>+ Thao tác nhanh, giống phản xạ tự nhiên</div>
+          <div style="color:#a13c2c;">− Rủi ro bấm nhầm cao trên di động, không có cơ hội sửa</div>
+        </div>
+      </div>
+      <div style="background: #fff; border: 1px solid #dfe2e4; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+        <div class="hf-h3">Option B — Select + Confirm</div>
+        <div style="border: 1.5px solid #999; border-radius: 22px; padding: 18px 14px; width: 220px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; background: #f2f6f9;">
+          <div style="font-family: Manrope; font-weight: 700; font-size: 12.5px; text-align: center;">Đâu là thủ đô VN?</div>
+          <div style="border: 2px solid #1d4371; background: #e2ecf9; border-radius: 8px; padding: 9px; font-size: 11.5px; font-weight: 600; color: #1d4371;">A. Hà Nội (selected)</div>
+          <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 9px; font-size: 11.5px; color: #7d8183;">B. TP.HCM</div>
+          <div style="background: #1d4371; color: #fff; text-align: center; border-radius: 8px; padding: 9px; font-size: 11.5px; font-weight: 700; margin-top: 4px;">Gửi câu trả lời</div>
+        </div>
+        <div style="font-size: 12px; color: #4a4e50; line-height: 1.7;">Tap chọn → state Selected → xác nhận bằng CTA riêng → mới Submitted/Locked.</div>
+        <div style="font-size: 11.5px; color: #4a4e50; display: flex; flex-direction: column; gap: 4px;">
+          <div>+ Cho phép đổi ý trước khi gửi, tránh bấm nhầm — phù hợp bối cảnh đào tạo/chứng chỉ</div>
+          <div style="color:#a13c2c;">− Thêm 1 bước, chậm hơn 1 nhịp</div>
+        </div>
+      </div>
+    </div>
+    <div style="background: #e2ecf9; border: 1px solid #345f95; border-radius: 10px; padding: 16px 18px; font-size: 13px; color: #1d4371; line-height: 1.7;">
+      <strong>Quyết định: Option B — Select + Confirm</strong>, áp dụng nhất quán cho cả QUIZ và POLL. Lý do: RayCert dùng cho đào tạo/certify — sai một câu có thể ảnh hưởng kết quả đánh giá, nên ưu tiên tránh bấm nhầm hơn tốc độ tối đa. "Gửi câu trả lời" cũng là 1 CTA rõ ràng, dễ nhận biết trên mobile hơn so với việc mọi option đều là "nút submit ngầm". Timer vẫn tạo áp lực thời gian hợp lý mà không cần tap=submit.
+    </div>
+  </div>
+
+  <!-- TRAINER -->
+  <div id="trainer" style="display: flex; flex-direction: column; gap: 44px;">
+    <h2 class="hf-h2">Trainer</h2>
+
+    <!-- 1. Trainer Dashboard -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">1 · Trainer Dashboard <span style="color:#7d8183; font-weight:500; font-size:12px;">— Desktop</span></div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,0.04); overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #eef0f1;">
+          <div style="font-family: Manrope; font-weight: 800; font-size: 16px; color: #1d4371;">RayCert</div>
+          <div style="display: flex; gap: 24px; font-size: 13px; font-weight: 600; color: #4a4e50;"><div>My Quizzes</div><div>Results</div></div>
+          <div style="background: #1d4371; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 10px;">+ Create Quiz</div>
+        </div>
+        <div style="display: grid; grid-template-columns: 190px 1fr;">
+          <div style="border-right: 1px solid #eef0f1; padding: 20px 16px; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px;">
+            <div style="background: #e2ecf9; color: #1d4371; font-weight: 700; padding: 9px 12px; border-radius: 8px;">Dashboard</div>
+            <div style="color: #4a4e50; padding: 9px 12px;">My Quizzes</div>
+            <div style="color: #4a4e50; padding: 9px 12px;">Recent Sessions</div>
+            <div style="color: #4a4e50; padding: 9px 12px;">Results</div>
+          </div>
+          <div style="padding: 24px 28px; display: flex; flex-direction: column; gap: 18px;">
+            <div style="font-family: Inter; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #7d8183; letter-spacing: 0.04em;">Recent Sessions</div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="border: 1px solid #dfe2e4; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 13.5px; font-weight: 600;">Onboarding Quiz <span style="color:#7d8183; font-weight:400;">· hosted 2h ago</span></div>
+                <div style="display: flex; gap: 8px;"><div style="border:1.5px solid #1d4371; color:#1d4371; padding:6px 14px; border-radius:8px; font-size:12.5px; font-weight:600;">Edit</div><div style="background:#1d4371; color:#fff; padding:6px 14px; border-radius:8px; font-size:12.5px; font-weight:600;">Host</div></div>
+              </div>
+              <div style="border: 1px solid #dfe2e4; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 13.5px; font-weight: 600;">Compliance Poll <span style="color:#7d8183; font-weight:400;">· hosted yesterday</span></div>
+                <div style="display: flex; gap: 8px;"><div style="border:1.5px solid #1d4371; color:#1d4371; padding:6px 14px; border-radius:8px; font-size:12.5px; font-weight:600;">Edit</div><div style="background:#1d4371; color:#fff; padding:6px 14px; border-radius:8px; font-size:12.5px; font-weight:600;">Host</div></div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <div style="flex:1; background: #f2f6f9; border-radius: 10px; padding: 16px; text-align: center; font-size: 12.5px; font-weight: 600; color: #345f95;">My Quizzes →</div>
+              <div style="flex:1; background: #f2f6f9; border-radius: 10px; padding: 16px; text-align: center; font-size: 12.5px; font-weight: 600; color: #345f95;">Results →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> tối đa 2 action chính (Create Quiz, Recent Sessions Edit/Host) — không thêm metric widget ở MVP. <strong>Component:</strong> Sidebar item, Button primary/secondary, Card. <strong>State:</strong> Empty (chưa có session) hiện illustration + "Create your first quiz".</div>
+    </div>
+
+    <!-- 2. My Quizzes -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">2 · My Quizzes <span style="color:#7d8183; font-weight:500; font-size:12px;">— Desktop</span></div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,0.04); padding: 20px 24px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+          <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 9px 14px; font-size: 13px; color: #7d8183; width: 240px;">Search quizzes…</div>
+          <div style="background: #1d4371; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 10px;">+ Create Quiz</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1.4fr 1fr 1fr 1.6fr; gap: 10px; font-size: 11px; font-weight: 700; color: #7d8183; text-transform: uppercase; padding: 0 14px;"><div>Title</div><div>Questions</div><div>Mix</div><div>Updated</div><div>Status</div><div>Actions</div></div>
+          <sc-for list="{{ quizRows }}" as="q" hint-placeholder-count="3">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1.4fr 1fr 1fr 1.6fr; gap: 10px; align-items: center; border: 1px solid #eef0f1; border-radius: 10px; padding: 14px; font-size: 13.5px;">
+              <div style="font-weight: 600;">{{ q.title }}</div><div style="color:#4a4e50;">{{ q.count }}</div><div style="color:#4a4e50;">{{ q.mix }}</div><div style="color:#4a4e50;">{{ q.updated }}</div>
+              <div><span style="background:#f2f6f9; color:#345f95; font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px;">{{ q.status }}</span></div>
+              <div style="display: flex; gap: 6px;"><div style="border:1.5px solid #1d4371; color:#1d4371; padding:5px 12px; border-radius:8px; font-size:11.5px; font-weight:600;">Edit</div><div style="background:#1d4371; color:#fff; padding:5px 12px; border-radius:8px; font-size:11.5px; font-weight:600;">Host</div><div style="border:1.5px solid #dfe2e4; color:#4a4e50; padding:5px 10px; border-radius:8px; font-size:11.5px;">···</div></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> search + list là chính, không cần filter phức tạp ở MVP. <strong>Component:</strong> Input, Table row, Badge (status), Button. <strong>State:</strong> Empty ("Chưa có quiz nào" + CTA), search no-result.</div>
+    </div>
+
+    <!-- 3. Quiz Editor -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">3 · Quiz Editor <span style="color:#7d8183; font-weight:500; font-size:12px;">— Desktop</span></div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,0.04); overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 22px; border-bottom: 1px solid #eef0f1;">
+          <div style="font-size: 14px; font-weight: 700;">Onboarding Quiz <span style="color:#7d8183; font-weight:500; font-size:12px;">· Đã lưu</span></div>
+          <div style="display: flex; gap: 8px;">
+            <div style="border:1.5px solid #dfe2e4; color:#4a4e50; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:600;">Import Excel</div>
+            <div style="border:1.5px solid #1d4371; color:#1d4371; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:600;">Preview</div>
+            <div style="background:#1d4371; color:#fff; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:600;">Host</div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 260px 1fr; min-height: 300px;">
+          <div style="border-right: 1px solid #eef0f1; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="border: 2px solid #1d4371; background: #e2ecf9; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; display: flex; justify-content: space-between; align-items: center;"><div>1 · Đâu là thủ đô…</div><span style="background:#1d4371; color:#fff; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:999px;">QUIZ</span></div>
+            <div style="border: 1px solid #dfe2e4; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; color: #4a4e50; display: flex; justify-content: space-between; align-items: center;"><div>2 · Mức độ hài lòng…</div><span style="background:#fff; border:1.5px solid #2ca2a2; color:#2ca2a2; font-size:9.5px; font-weight:700; padding:1.5px 7px; border-radius:999px;">POLL</span></div>
+            <div style="border: 1px solid #ffe5e1; background: #fff8f7; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; color: #be222a; display: flex; justify-content: space-between; align-items: center;"><div>3 · Câu hỏi thiếu…</div><span>⚠</span></div>
+            <div style="border: 1.5px dashed #dfe2e4; border-radius: 8px; padding: 12px; font-size: 12.5px; color: #7d8183; text-align: center; margin-top: 4px;">+ Add Question</div>
+          </div>
+          <div style="padding: 24px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="background:#1d4371; color:#fff; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:999px;">QUIZ</span><div style="font-size: 12px; color: #7d8183;">Câu hỏi 1</div></div>
+            <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 14px; font-size: 14px; font-weight: 600;">Đâu là thủ đô của Việt Nam?</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div style="border: 2px solid #1d4371; background: #e2ecf9; border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 600; color: #1d4371;">A. Hà Nội ✓</div>
+              <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 12px; font-size: 13px;">B. TP.HCM</div>
+            </div>
+            <div style="display: flex; gap: 10px; font-size: 12.5px; color: #4a4e50;"><div style="border:1.5px solid #dfe2e4; border-radius:8px; padding:7px 12px;">Timer: 20s ▾</div><div style="border:1.5px solid #dfe2e4; border-radius:8px; padding:7px 12px;">Points: 1000 ▾</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> sidebar giữ mắt luôn thấy toàn bộ cấu trúc quiz; incomplete question có màu error nhẹ để nổi bật không gây hoảng. <strong>Component:</strong> Sidebar item (QUIZ/POLL badge, incomplete state), Question Editor shell, Timer/Points select. <strong>Responsive:</strong> tablet thu sidebar thành drawer trượt. <strong>State:</strong> New Quiz rỗng, Unsaved changes (đổi label "Đã lưu" → "Đang lưu…").</div>
+    </div>
+
+    <!-- 4. Add Question Modal -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">4 · Add Question Modal <span style="color:#7d8183; font-weight:500; font-size:12px;">— Desktop</span></div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #eef1f3; padding: 40px; display: flex; justify-content: center;">
+        <div style="background: #fff; border-radius: 12px; padding: 28px; width: 480px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 12px 32px rgba(15,23,42,0.10);">
+          <div style="font-family: Manrope; font-size: 16px; font-weight: 700;">Thêm câu hỏi</div>
+          <div style="display: flex; gap: 14px;">
+            <div style="flex: 1; border: 2px solid #1d4371; background: #e2ecf9; border-radius: 10px; padding: 22px; text-align: center;">
+              <div style="font-size: 14px; font-weight: 700; color: #1d4371;">Trắc nghiệm</div>
+              <div style="font-size: 11.5px; color: #345f95; margin-top: 6px;">Có đáp án đúng, có điểm, leaderboard</div>
+            </div>
+            <div style="flex: 1; border: 1.5px solid #dfe2e4; border-radius: 10px; padding: 22px; text-align: center;">
+              <div style="font-size: 14px; font-weight: 700;">Bình chọn</div>
+              <div style="font-size: 11.5px; color: #7d8183; margin-top: 6px;">Không đáp án đúng, chỉ distribution</div>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 10px;"><div style="border:1.5px solid #dfe2e4; padding:9px 16px; border-radius:8px; font-size:12.5px; font-weight:600;">Cancel</div></div>
+        </div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> chỉ 2 lựa chọn lớn, không danh sách dropdown — tránh nhầm loại thứ 3. <strong>Component:</strong> Modal, Card selectable. <strong>State:</strong> default only.</div>
+    </div>
+
+    <!-- 5. QUIZ Editor -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">5 · QUIZ Editor <span style="color:#7d8183; font-weight:500; font-size:12px;">— Desktop</span></div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,0.04); padding: 24px; display: flex; flex-direction: column; gap: 14px; max-width: 640px;">
+        <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 14px; font-size: 14px; font-weight: 600;">Đâu là thủ đô của Việt Nam?</div>
+        <div style="border: 1.5px dashed #dfe2e4; border-radius: 10px; padding: 18px; display: flex; align-items: center; gap: 10px; color: #7d8183; font-size: 12.5px;">🖼 Image (optional, tối đa 1) — kéo thả hoặc <span style="color:#1d4371; font-weight:600;">Browse</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px; border: 2px solid #1d4371; background: #f7faff; border-radius: 8px; padding: 11px 14px; font-size: 13px;"><div style="width:18px; height:18px; border-radius:50%; border:2px solid #1d4371; background:#1d4371;"></div>A. Hà Nội <span style="margin-left:auto; font-size:11px; color:#1e7729; font-weight:700;">✓ correct</span></div>
+          <div style="display: flex; align-items: center; gap: 10px; border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 11px 14px; font-size: 13px;"><div style="width:18px; height:18px; border-radius:50%; border:2px solid #dfe2e4;"></div>B. TP.HCM</div>
+          <div style="display: flex; align-items: center; gap: 10px; border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 11px 14px; font-size: 13px;"><div style="width:18px; height:18px; border-radius:50%; border:2px solid #dfe2e4;"></div>C. Đà Nẵng <div style="margin-left:auto; font-size:11.5px; color:#7d8183;">Remove ×</div></div>
+          <div style="border: 1.5px dashed #dfe2e4; border-radius: 8px; padding: 10px; font-size: 12.5px; color: #7d8183; text-align: center;">+ Add option (tối đa 4)</div>
+        </div>
+        <div style="display: flex; gap: 10px; font-size: 12.5px;"><div style="border:1.5px solid #dfe2e4; border-radius:8px; padding:8px 14px;">Timer: 20s ▾</div><div style="border:1.5px solid #dfe2e4; border-radius:8px; padding:8px 14px;">Points: 1000 ▾</div></div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> radio chọn đúng nằm ngay trên option, feedback "correct" hiện ngay khi chọn. <strong>Component:</strong> Image Upload (empty state), Answer Option (editor variant), Timer/Points select, Validation banner (khi thiếu đáp án đúng). <strong>State:</strong> validation error, incomplete.</div>
+    </div>
+
+    <!-- 6. POLL Editor -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">6 · POLL Editor <span style="color:#7d8183; font-weight:500; font-size:12px;">— Desktop</span></div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,0.04); padding: 24px; display: flex; flex-direction: column; gap: 14px; max-width: 640px;">
+        <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 14px; font-size: 14px; font-weight: 600;">Mức độ hài lòng buổi training?</div>
+        <div style="border: 1.5px solid #2ca2a2; background: #d5f2f1; border-radius: 10px; padding: 14px; display: flex; align-items: center; gap: 10px; color: #1c6e6e; font-size: 12.5px;">🖼 Ảnh minh hoạ đã tải — <span style="text-decoration: underline; font-weight:600;">Replace</span> · <span style="text-decoration: underline; font-weight:600;">Remove</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 11px 14px; font-size: 13px;">A. Rất hài lòng</div>
+          <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 11px 14px; font-size: 13px;">B. Bình thường</div>
+          <div style="border: 1.5px solid #dfe2e4; border-radius: 8px; padding: 11px 14px; font-size: 13px;">C. Chưa hài lòng <div style="float:right; font-size:11.5px; color:#7d8183;">Remove ×</div></div>
+          <div style="border: 1.5px dashed #dfe2e4; border-radius: 8px; padding: 10px; font-size: 12.5px; color: #7d8183; text-align: center;">+ Add option (tối đa 6)</div>
+        </div>
+        <div style="display: flex; gap: 10px; font-size: 12.5px;"><div style="border:1.5px solid #dfe2e4; border-radius:8px; padding:8px 14px;">Timer: 15s ▾</div></div>
+        <div style="font-size: 11.5px; color: #7d8183;">Không có: đáp án đúng, điểm, speed bonus.</div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> component Image Upload/Option giống hệt QUIZ Editor để trainer không phải học lại UI, chỉ khác không có radio đúng/sai. <strong>Component:</strong> Image Upload (preview state), Answer Option (poll variant), Timer select. <strong>State:</strong> incomplete (thiếu text hoặc &lt;2 option).</div>
+    </div>
+
+    <!-- 7. Import Excel Modal -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">7 · Import Excel Modal <span style="color:#7d8183; font-weight:500; font-size:12px;">— Desktop</span></div>
+      <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px; border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="font-size: 11px; font-weight: 700; color: #7d8183; text-transform: uppercase;">Empty</div>
+          <div style="border: 2px dashed #dfe2e4; border-radius: 10px; padding: 28px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; background: #f7faff;">
+            <div style="font-size: 12.5px; color: #4a4e50;">Kéo thả file .xlsx vào đây</div>
+            <div style="border: 1.5px solid #1d4371; color: #1d4371; padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;">Browse File</div>
+            <div style="font-size: 11.5px; color: #345f95; text-decoration: underline;">Download Template</div>
+          </div>
+        </div>
+        <div style="flex: 1; min-width: 300px; border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="font-size: 11px; font-weight: 700; color: #7d8183; text-transform: uppercase;">Validating</div>
+          <div style="border: 1px solid #eef0f1; border-radius: 10px; padding: 28px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+            <div style="font-size: 12.5px; font-weight: 600;">onboarding_quiz.xlsx</div>
+            <div style="width: 80%; height: 6px; background: #eef0f1; border-radius: 999px; overflow: hidden;"><div style="width: 65%; height: 100%; background: #1d4371;"></div></div>
+            <div style="font-size: 11.5px; color: #7d8183;">Đang kiểm tra dữ liệu…</div>
+          </div>
+        </div>
+      </div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 11px; font-weight: 700; color: #7d8183; text-transform: uppercase;">Preview + Errors</div>
+        <div style="display: flex; gap: 18px; font-size: 12.5px; color: #4a4e50;"><div>onboarding_quiz.xlsx</div><div>Tổng: <strong>10</strong></div><div>QUIZ: 7</div><div>POLL: 3</div><div style="color:#1e7729; font-weight:700;">Hợp lệ: 8</div><div style="color:#be222a; font-weight:700;">Lỗi: 2</div></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: grid; grid-template-columns: 40px 60px 2fr 90px 1.8fr; gap: 8px; font-size: 10.5px; font-weight: 700; color: #7d8183; text-transform: uppercase; padding: 0 10px;"><div>Row</div><div>Type</div><div>Question</div><div>Status</div><div>Error</div></div>
+          <sc-for list="{{ importRows }}" as="r" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: 40px 60px 2fr 90px 1.8fr; gap: 8px; align-items: center; border: 1px solid #eef0f1; border-radius: 8px; padding: 10px; font-size: 12px; background: {{ r.bg }};">
+              <div>{{ r.row }}</div><div>{{ r.type }}</div><div>{{ r.q }}</div>
+              <div style="color: {{ r.statusColor }}; font-weight: 700;">{{ r.status }}</div><div style="color: #be222a;">{{ r.error }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <div style="border: 1.5px solid #dfe2e4; padding: 9px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 600;">Cancel</div>
+          <div style="border: 1.5px solid #1d4371; color: #1d4371; padding: 9px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 600;">Upload lại file</div>
+          <div style="background: #1d4371; color: #fff; padding: 9px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 600;">Import 8 câu hợp lệ</div>
+        </div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> lỗi luôn kèm row+column+lý do; import chỉ phần hợp lệ được ưu tiên hơn buộc sửa hết trước. <strong>Component:</strong> Dropzone, Progress, Excel Import Preview Table, Button. <strong>State:</strong> toàn bộ lỗi (CTA disabled), import thành công (toast).</div>
+    </div>
+
+  </div>
+
+  <!-- HOST -->
+  <div id="host" style="display: flex; flex-direction: column; gap: 44px;">
+    <h2 class="hf-h2">Host Live Session</h2>
+    <div style="font-size: 12.5px; color: #7d8183;">Desktop, projector-friendly — không sidebar, chữ lớn, distraction thấp.</div>
+
+    <!-- 8. Host Lobby -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">8 · Host Lobby</div>
+      <div style="border-radius: 14px; background: #07294f; color: #fff; padding: 48px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;">
+        <div style="font-family: Manrope; font-size: 14px; color: #a9c3e6;">RayCert · Onboarding Quiz</div>
+        <div style="font-size: 13px; color: #a9c3e6;">Game PIN</div>
+        <div style="font-family: Manrope; font-size: 64px; font-weight: 800; letter-spacing: 0.06em;">482 913</div>
+        <div style="font-size: 15px; color: #d7e4f5;">12 participants joined</div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 640px;">
+          <sc-for list="{{ joinedNames }}" as="n" hint-placeholder-count="8">
+            <div style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 600;">{{ n }}</div>
+          </sc-for>
+        </div>
+        <div style="background: #fff; color: #07294f; font-size: 15px; font-weight: 700; padding: 14px 36px; border-radius: 10px; margin-top: 12px;">Start Game</div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> PIN là focal point tuyệt đối, cỡ chữ lớn nhất trong toàn hệ thống. <strong>Component:</strong> tên participant dạng pill, không avatar màu game-show. <strong>State:</strong> chưa ai join (chỉ hiện PIN + "Đang chờ participant…"), Start disabled khi 0 người.</div>
+    </div>
+
+    <!-- 9/10. Host Question — QUIZ & POLL -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">9–10 · Host Question — QUIZ / POLL</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="border-radius: 14px; background: #07294f; color: #fff; padding: 28px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 12.5px; color: #a9c3e6; display: flex; gap: 8px; align-items: center;">Câu 3/10 <span style="background:#fff; color:#07294f; font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px;">QUIZ</span></div>
+            <div style="display: flex; align-items: center; gap: 16px;"><div style="width:44px; height:44px; border-radius:50%; border:4px solid rgba(255,255,255,0.25); border-top-color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:Manrope;">14</div><div style="font-size: 12.5px; color: #d7e4f5;">8/12</div></div>
+          </div>
+          <div style="font-family: Manrope; font-size: 22px; font-weight: 700; text-align: center;">Đâu là thủ đô của Việt Nam?</div>
+          <div style="border: 1.5px dashed rgba(255,255,255,0.3); border-radius: 8px; padding: 10px; text-align: center; font-size: 11px; color: #a9c3e6;">optional image — contain, giới hạn chiều cao</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="border: 1.5px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 14px; font-size: 14px; text-align: center;">A. Hà Nội</div>
+            <div style="border: 1.5px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 14px; font-size: 14px; text-align: center;">B. TP.HCM</div>
+            <div style="border: 1.5px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 14px; font-size: 14px; text-align: center;">C. Đà Nẵng</div>
+            <div style="border: 1.5px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 14px; font-size: 14px; text-align: center;">D. Huế</div>
+          </div>
+          <div style="display: flex; justify-content: center;"><div style="background: #fff; color: #07294f; font-size: 13px; font-weight: 700; padding: 10px 26px; border-radius: 8px;">End Question</div></div>
+        </div>
+        <div style="border-radius: 14px; background: #07294f; color: #fff; padding: 28px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 12.5px; color: #a9c3e6; display: flex; gap: 8px; align-items: center;">Câu 4/10 <span style="background:transparent; border:1.5px solid #2ca2a2; color:#7fd8d8; font-size:10px; font-weight:700; padding:1.5px 8px; border-radius:999px;">POLL</span></div>
+            <div style="display: flex; align-items: center; gap: 16px;"><div style="width:44px; height:44px; border-radius:50%; border:4px solid rgba(255,255,255,0.25); border-top-color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:Manrope;">10</div><div style="font-size: 12.5px; color: #d7e4f5;">10/12</div></div>
+          </div>
+          <div style="font-family: Manrope; font-size: 22px; font-weight: 700; text-align: center;">Mức độ hài lòng buổi training?</div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="border: 1.5px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 14px; font-size: 14px; text-align: center;">A. Rất hài lòng</div>
+            <div style="border: 1.5px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 14px; font-size: 14px; text-align: center;">B. Bình thường</div>
+            <div style="border: 1.5px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 14px; font-size: 14px; text-align: center;">C. Chưa hài lòng</div>
+          </div>
+          <div style="display: flex; justify-content: center;"><div style="background: #fff; color: #07294f; font-size: 13px; font-weight: 700; padding: 10px 26px; border-radius: 8px;">End Poll</div></div>
+        </div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> thứ tự progress→timer/response→question→image→options→End, đúng ưu tiên đã chốt. QUIZ dùng brand blue border, POLL dùng teal outline cho badge — options giữ neutral để không lộ gợi ý đúng/sai. <strong>Component:</strong> Timer (ring), Badge, Answer Option (host preview, không click). <strong>State:</strong> timer ≤5s → ring amber-600; timeout tự End.</div>
+    </div>
+
+    <!-- 11/12. Result — Host -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">11–12 · QUIZ / POLL Result — Host</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="border-radius: 14px; background: #07294f; color: #fff; padding: 28px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="font-size: 13px; color: #a9c3e6;">Đáp án đúng: <strong style="color:#fff;">A. Hà Nội</strong> · Correct rate: 62%</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">A</div><div style="flex:1; height:24px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden;"><div style="width:62%; height:100%; background:#3fae52;"></div></div><div style="width:36px; font-size:12px; text-align:right;">62%</div></div>
+            <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">B</div><div style="flex:1; height:24px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden;"><div style="width:20%; height:100%; background:#345f95;"></div></div><div style="width:36px; font-size:12px; text-align:right;">20%</div></div>
+            <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">C</div><div style="flex:1; height:24px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden;"><div style="width:12%; height:100%; background:#345f95;"></div></div><div style="width:36px; font-size:12px; text-align:right;">12%</div></div>
+            <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">D</div><div style="flex:1; height:24px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden;"><div style="width:6%; height:100%; background:#345f95;"></div></div><div style="width:36px; font-size:12px; text-align:right;">6%</div></div>
+          </div>
+          <div style="font-size: 12px; color: #a9c3e6;">12 người đã trả lời</div>
+          <div style="display: flex; justify-content: center; gap: 12px;"><div style="border: 1.5px solid rgba(255,255,255,0.3); color:#fff; font-size: 13px; font-weight: 700; padding: 10px 22px; border-radius: 8px;">Leaderboard</div><div style="background: #fff; color: #07294f; font-size: 13px; font-weight: 700; padding: 10px 22px; border-radius: 8px;">Next</div></div>
+        </div>
+        <div style="border-radius: 14px; background: #07294f; color: #fff; padding: 28px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="font-size: 13px; color: #a9c3e6;">Distribution — không đúng/sai</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">A</div><div style="flex:1; height:24px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden;"><div style="width:45%; height:100%; background:#2ca2a2;"></div></div><div style="width:36px; font-size:12px; text-align:right;">45%</div></div>
+            <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">B</div><div style="flex:1; height:24px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden;"><div style="width:35%; height:100%; background:#2ca2a2;"></div></div><div style="width:36px; font-size:12px; text-align:right;">35%</div></div>
+            <div style="display: flex; align-items: center; gap: 10px;"><div style="width:16px; font-size:12px;">C</div><div style="flex:1; height:24px; background:rgba(255,255,255,0.1); border-radius:6px; overflow:hidden;"><div style="width:20%; height:100%; background:#2ca2a2;"></div></div><div style="width:36px; font-size:12px; text-align:right;">20%</div></div>
+          </div>
+          <div style="font-size: 12px; color: #a9c3e6;">10 votes</div>
+          <div style="display: flex; justify-content: center;"><div style="background: #fff; color: #07294f; font-size: 13px; font-weight: 700; padding: 10px 22px; border-radius: 8px;">Next</div></div>
+        </div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> QUIZ dùng success green cho đáp án đúng, còn lại brand-500 nhạt; POLL toàn bộ dùng teal đồng nhất — tránh mọi gợi ý đúng/sai. <strong>Component:</strong> Result Bar. <strong>State:</strong> 0 response.</div>
+    </div>
+
+    <!-- 13. Leaderboard -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">13 · Leaderboard — Host</div>
+      <div style="border-radius: 14px; background: #07294f; color: #fff; padding: 32px; display: flex; flex-direction: column; gap: 10px; max-width: 480px; margin: 0 auto; width: 100%;">
+        <div style="font-family: Manrope; font-size: 15px; font-weight: 700; text-align: center;">Leaderboard</div>
+        <sc-for list="{{ leaderRows }}" as="r" hint-placeholder-count="5">
+          <div style="display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.08); padding: 12px 18px; border-radius: 10px;"><div style="width: 24px; font-family: Manrope; font-weight: 700;">{{ r.rank }}</div><div style="flex: 1; font-size: 14.5px; font-weight: 600;">{{ r.name }}</div><div style="font-weight: 700;">{{ r.score }}</div></div>
+        </sc-for>
+        <div style="display: flex; justify-content: center; margin-top: 10px;"><div style="background: #fff; color: #07294f; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 8px;">Next Question</div></div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> rank số thứ tự đơn giản, không medal màu vàng/bạc/đồng. <strong>Component:</strong> Leaderboard Row. <strong>State:</strong> tie score (hiện = rank).</div>
+    </div>
+
+    <!-- 14. Host Final Results -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">14 · Host Final Results</div>
+      <div style="border-radius: 14px; background: #07294f; color: #fff; padding: 32px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-family: Manrope; font-size: 17px; font-weight: 700; text-align: center;">Session hoàn tất</div>
+        <div style="display: flex; justify-content: center; gap: 28px; font-size: 12.5px; color: #d7e4f5;"><div>12 participants</div><div>7 QUIZ</div><div>3 POLL</div><div>Avg correct rate: 68%</div></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 420px; margin: 0 auto; width: 100%;">
+          <sc-for list="{{ leaderRows }}" as="r" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.08); padding: 11px 18px; border-radius: 10px;"><div style="width: 24px; font-weight: 700;">{{ r.rank }}</div><div style="flex: 1; font-size: 14px; font-weight: 600;">{{ r.name }}</div><div style="font-weight: 700;">{{ r.score }}</div></div>
+          </sc-for>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 12px;"><div style="border: 1.5px solid rgba(255,255,255,0.3); color:#fff; font-size: 13px; font-weight: 700; padding: 10px 22px; border-radius: 8px;">End Session</div><div style="background: #fff; color: #07294f; font-size: 13px; font-weight: 700; padding: 10px 22px; border-radius: 8px;">View Report</div></div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> session toàn POLL ẩn hẳn khối leaderboard, chỉ còn participant/QUIZ/POLL count + View Report. <strong>Component:</strong> Leaderboard Row, Button.</div>
+    </div>
+
+  </div>
+
+  <!-- PARTICIPANT -->
+  <div id="participant" style="display: flex; flex-direction: column; gap: 44px;">
+    <h2 class="hf-h2">Participant — Mobile</h2>
+    <div style="font-size: 12.5px; color: #7d8183;">Viewport tham chiếu 390×844. Interaction pattern: Select + Confirm (đã chốt ở trên).</div>
+
+    <div style="display: flex; gap: 22px; flex-wrap: wrap;">
+
+      <!-- 15. Join Game -->
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 280px;">
+        <div class="hf-h3" style="font-size:13px;">15 · Join Game</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 26px; background: #fff; padding: 26px 20px; display: flex; flex-direction: column; gap: 22px; min-height: 480px; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <div style="text-align: center; font-family: Manrope; font-weight: 800; font-size: 16px; color: #1d4371;">RayCert</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 14px; justify-content: center;">
+            <div style="font-size: 13px; color: #7d8183; text-align: center;">Nhập Game PIN</div>
+            <div style="border: 1.5px solid #dfe2e4; border-radius: 10px; padding: 16px; font-size: 24px; font-weight: 700; letter-spacing: 0.1em; text-align: center; color: #dfe2e4;">000 000</div>
+          </div>
+          <div style="background: #1d4371; color: #fff; text-align: center; font-size: 15px; font-weight: 700; padding: 15px; border-radius: 10px;">Continue</div>
+        </div>
+      </div>
+
+      <!-- 16. Nickname Entry -->
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 280px;">
+        <div class="hf-h3" style="font-size:13px;">16 · Nickname Entry</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 26px; background: #fff; padding: 26px 20px; display: flex; flex-direction: column; gap: 16px; min-height: 480px; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <div style="font-size: 13px; color: #345f95; font-weight: 600;">← Đổi PIN</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; justify-content: center;">
+            <div style="font-size: 13px; color: #7d8183; text-align: center;">Nhập tên hiển thị</div>
+            <div style="border: 1.5px solid #be222a; border-radius: 10px; padding: 15px; font-size: 15px; color: #181b1d;">An</div>
+            <div style="font-size: 11.5px; color: #be222a; text-align: center;">Tên này đã được dùng, chọn tên khác.</div>
+          </div>
+          <div style="background: #1d4371; color: #fff; text-align: center; font-size: 15px; font-weight: 700; padding: 15px; border-radius: 10px;">Join Game</div>
+        </div>
+      </div>
+
+      <!-- 17. Waiting Room -->
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 280px;">
+        <div class="hf-h3" style="font-size:13px;">17 · Waiting Room</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 26px; background: #fff; padding: 26px 20px; display: flex; flex-direction: column; gap: 16px; min-height: 480px; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: #e2ecf9; color: #1d4371; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: Manrope;">An</div>
+          <div style="font-size: 15px; font-weight: 700;">Bạn đã vào phòng</div>
+          <div style="font-size: 13px; color: #7d8183;">Onboarding Quiz</div>
+          <div style="font-size: 13px; color: #7d8183;">Đang chờ giảng viên bắt đầu…</div>
+        </div>
+      </div>
+
+      <!-- 18. QUIZ Answer -->
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 280px;">
+        <div class="hf-h3" style="font-size:13px;">18 · QUIZ Answer</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 26px; background: #fff; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 480px; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <div style="display: flex; justify-content: space-between; align-items: center;"><div style="font-size: 12px; color: #7d8183;">Câu 3/10</div><div style="width:30px; height:30px; border-radius:50%; border:3px solid #1d4371; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:#1d4371;">14</div></div>
+          <div style="font-family: Manrope; font-size: 16px; font-weight: 700; text-align: center;">Đâu là thủ đô của Việt Nam?</div>
+          <div style="border: 1.5px dashed #dfe2e4; border-radius: 8px; padding: 8px; font-size: 10.5px; color: #7d8183; text-align: center;">optional image (contain, giới hạn cao)</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="border: 2px solid #1d4371; background: #e2ecf9; border-radius: 10px; padding: 15px; font-size: 14px; font-weight: 600; color: #1d4371;">A. Hà Nội</div>
+            <div style="border: 1.5px solid #dfe2e4; border-radius: 10px; padding: 15px; font-size: 14px;">B. TP.HCM</div>
+            <div style="border: 1.5px solid #dfe2e4; border-radius: 10px; padding: 15px; font-size: 14px;">C. Đà Nẵng</div>
+            <div style="border: 1.5px solid #dfe2e4; border-radius: 10px; padding: 15px; font-size: 14px;">D. Huế</div>
+          </div>
+          <div style="background: #1d4371; color: #fff; text-align: center; font-size: 14px; font-weight: 700; padding: 13px; border-radius: 10px;">Gửi câu trả lời</div>
+        </div>
+      </div>
+
+      <!-- 19. POLL Answer -->
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 280px;">
+        <div class="hf-h3" style="font-size:13px;">19 · POLL Answer</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 26px; background: #fff; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 480px; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <div style="display: flex; justify-content: space-between; align-items: center;"><div style="font-size: 12px; color: #7d8183; display:flex; align-items:center; gap:6px;">Câu 4/10 <span style="border:1.5px solid #2ca2a2; color:#2ca2a2; font-size:9.5px; font-weight:700; padding:1.5px 7px; border-radius:999px;">POLL</span></div><div style="width:30px; height:30px; border-radius:50%; border:3px solid #2ca2a2; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:#2ca2a2;">10</div></div>
+          <div style="font-family: Manrope; font-size: 16px; font-weight: 700; text-align: center;">Mức độ hài lòng buổi training?</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="border: 2px solid #2ca2a2; background: #d5f2f1; border-radius: 10px; padding: 14px; font-size: 14px; font-weight: 600; color: #1c6e6e;">A. Rất hài lòng</div>
+            <div style="border: 1.5px solid #dfe2e4; border-radius: 10px; padding: 14px; font-size: 14px;">B. Bình thường</div>
+            <div style="border: 1.5px solid #dfe2e4; border-radius: 10px; padding: 14px; font-size: 14px;">C. Chưa hài lòng</div>
+          </div>
+          <div style="background: #1c6e6e; color: #fff; text-align: center; font-size: 14px; font-weight: 700; padding: 13px; border-radius: 10px;">Gửi câu trả lời</div>
+        </div>
+      </div>
+
+      <!-- 20. Submitted State -->
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 280px;">
+        <div class="hf-h3" style="font-size:13px;">20 · Submitted (state)</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 26px; background: #fff; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 480px; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <div style="display: flex; justify-content: space-between; align-items: center;"><div style="font-size: 12px; color: #7d8183;">Câu 3/10</div><div style="width:30px; height:30px; border-radius:50%; border:3px solid #dfe2e4; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:#7d8183;">7</div></div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; text-align: center;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: #e2ecf9; color: #1d4371; display: flex; align-items: center; justify-content: center; font-size: 18px;">✓</div>
+            <div style="font-size: 15px; font-weight: 700;">Đã gửi câu trả lời</div>
+            <div style="border: 2px solid #1d4371; border-radius: 10px; padding: 12px 22px; font-size: 13.5px; font-weight: 600; color: #1d4371;">A. Hà Nội</div>
+            <div style="font-size: 12px; color: #7d8183;">Đang chờ kết quả…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 21. QUIZ Result -->
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 280px;">
+        <div class="hf-h3" style="font-size:13px;">21 · QUIZ Result</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 26px; background: #fff; padding: 26px 20px; display: flex; flex-direction: column; gap: 14px; min-height: 480px; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: #d7f5d7; color: #1e7729; display: flex; align-items: center; justify-content: center; font-size: 24px;">✓</div>
+          <div style="font-size: 17px; font-weight: 700; color: #1e7729;">Đúng!</div>
+          <div style="font-size: 13px; color: #4a4e50;">+850 điểm</div>
+          <div style="border-top: 1px solid #eef0f1; width: 100%; padding-top: 12px; font-size: 13px; color: #4a4e50;">Tổng điểm: <strong style="color:#181b1d;">2,850</strong></div>
+          <div style="font-size: 11.5px; color: #7d8183;">Đang chờ câu tiếp theo…</div>
+        </div>
+      </div>
+
+      <!-- 22. POLL Result -->
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 280px;">
+        <div class="hf-h3" style="font-size:13px;">22 · POLL Result</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 26px; background: #fff; padding: 26px 20px; display: flex; flex-direction: column; gap: 14px; min-height: 480px; justify-content: center; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <div style="font-size: 12.5px; color: #7d8183; text-align: center;">Bạn đã chọn: <strong style="color:#1c6e6e;">A. Rất hài lòng</strong></div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width:14px; font-size:11px;">A</div><div style="flex:1; height:20px; background:#eef0f1; border-radius:6px; overflow:hidden;"><div style="width:55%; height:100%; background:#2ca2a2;"></div></div><div style="width:32px; font-size:11.5px; text-align:right;">55%</div></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width:14px; font-size:11px;">B</div><div style="flex:1; height:20px; background:#eef0f1; border-radius:6px; overflow:hidden;"><div style="width:30%; height:100%; background:#2ca2a2;"></div></div><div style="width:32px; font-size:11.5px; text-align:right;">30%</div></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width:14px; font-size:11px;">C</div><div style="flex:1; height:20px; background:#eef0f1; border-radius:6px; overflow:hidden;"><div style="width:15%; height:100%; background:#2ca2a2;"></div></div><div style="width:32px; font-size:11.5px; text-align:right;">15%</div></div>
+          </div>
+          <div style="font-size: 11.5px; color: #7d8183; text-align: center;">Đang chờ câu tiếp theo…</div>
+        </div>
+      </div>
+
+      <!-- 23. Participant Final Result -->
+      <div style="display: flex; flex-direction: column; gap: 12px; width: 280px;">
+        <div class="hf-h3" style="font-size:13px;">23 · Final Result</div>
+        <div style="border: 1px solid #dfe2e4; border-radius: 26px; background: #fff; padding: 26px 20px; display: flex; flex-direction: column; gap: 14px; min-height: 480px; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <div style="font-size: 12.5px; color: #7d8183;">Bạn xếp thứ</div>
+          <div style="font-family: Manrope; font-size: 44px; font-weight: 800; color: #1d4371;">#2</div>
+          <div style="font-size: 13.5px; color: #4a4e50;">Tổng điểm: <strong style="color:#181b1d;">2,850</strong></div>
+          <div style="font-size: 13.5px; color: #4a4e50;">Đúng 6/7 câu QUIZ</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="hf-note"><strong>UX:</strong> mọi option ≥44px tap target, text chính ≥16px (button 14px giữ contrast/weight bù lại). Select+Confirm nhất quán QUIZ/POLL — màu selected khác nhau (brand blue vs teal) để phân biệt loại câu. Với POLL 5–6 option cho phép scroll dọc trong khung, CTA "Gửi câu trả lời" luôn neo cố định phía dưới (không scroll theo). <strong>Component:</strong> Answer Option, Timer, Result Bar, Reconnecting Overlay (không vẽ riêng — xem mục Error/Recovery).</div>
+  </div>
+
+  <!-- REPORTING -->
+  <div id="reporting" style="display: flex; flex-direction: column; gap: 44px;">
+    <h2 class="hf-h2">Reporting</h2>
+
+    <!-- 24. Results Dashboard -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">24 · Results Dashboard <span style="color:#7d8183; font-weight:500; font-size:12px;">— Desktop</span></div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,0.04); padding: 20px 24px;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.2fr; gap: 10px; font-size: 11px; font-weight: 700; color: #7d8183; text-transform: uppercase; padding: 0 14px;"><div>Quiz</div><div>Date</div><div>Participants</div><div>Avg Score</div><div>Correct Rate</div><div></div></div>
+        <sc-for list="{{ sessionRows }}" as="s" hint-placeholder-count="2">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.2fr; gap: 10px; align-items: center; border: 1px solid #eef0f1; border-radius: 10px; padding: 14px; font-size: 13.5px; margin-top: 8px;">
+            <div style="font-weight: 600;">{{ s.name }}</div><div style="color:#4a4e50;">{{ s.date }}</div><div style="color:#4a4e50;">{{ s.count }}</div><div style="color:#4a4e50;">{{ s.avg }}</div><div style="color:#4a4e50;">{{ s.rate }}</div>
+            <div style="border:1.5px solid #1d4371; color:#1d4371; padding:6px 12px; border-radius:8px; font-size:11.5px; font-weight:600; text-align:center;">View Report</div>
+          </div>
+        </sc-for>
+      </div>
+      <div class="hf-note"><strong>Component:</strong> Table row, Button secondary. <strong>State:</strong> Empty ("Chưa host session nào").</div>
+    </div>
+
+    <!-- 25. Game Report -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="hf-h3">25 · Game Report <span style="color:#7d8183; font-weight:500; font-size:12px;">— Desktop</span></div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,0.04); padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #7d8183;">Overview</div>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+            <div style="background: #f2f6f9; border-radius: 10px; padding: 14px; text-align: center;"><div style="font-family:Manrope; font-size:18px; font-weight:800; color:#1d4371;">12</div><div style="font-size:11px; color:#7d8183;">Participants</div></div>
+            <div style="background: #f2f6f9; border-radius: 10px; padding: 14px; text-align: center;"><div style="font-family:Manrope; font-size:18px; font-weight:800; color:#1d4371;">7</div><div style="font-size:11px; color:#7d8183;">QUIZ</div></div>
+            <div style="background: #f2f6f9; border-radius: 10px; padding: 14px; text-align: center;"><div style="font-family:Manrope; font-size:18px; font-weight:800; color:#1d4371;">3</div><div style="font-size:11px; color:#7d8183;">POLL</div></div>
+            <div style="background: #f2f6f9; border-radius: 10px; padding: 14px; text-align: center;"><div style="font-family:Manrope; font-size:18px; font-weight:800; color:#1d4371;">1,980</div><div style="font-size:11px; color:#7d8183;">Avg score</div></div>
+            <div style="background: #f2f6f9; border-radius: 10px; padding: 14px; text-align: center;"><div style="font-family:Manrope; font-size:18px; font-weight:800; color:#1d4371;">68%</div><div style="font-size:11px; color:#7d8183;">Avg correct rate</div></div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #7d8183;">Participant Results</div>
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; font-size: 10.5px; font-weight: 700; color: #7d8183; padding: 0 12px;"><div>Nickname</div><div>Correct</div><div>Incorrect</div><div>Score</div><div>Rank</div></div>
+          <div style="border: 1px solid #eef0f1; border-radius: 8px; padding: 12px; font-size: 13px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;"><div style="font-weight:600;">An</div><div>6</div><div>1</div><div>2,850</div><div>1</div></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #7d8183;">QUIZ Analysis</div>
+          <div style="border: 1px solid #eef0f1; border-radius: 8px; padding: 12px 14px; font-size: 12.5px; color: #4a4e50;">Câu 1 · Correct rate 62% · Distribution bar · Response time trung bình 8.2s</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #7d8183;">POLL Analysis</div>
+          <div style="border: 1px solid #eef0f1; border-radius: 8px; padding: 12px 14px; font-size: 12.5px; color: #4a4e50;">Câu 4 · Vote distribution (A 45% / B 35% / C 20%) · Participation 10/12 — không có correct rate</div>
+        </div>
+      </div>
+      <div class="hf-note"><strong>UX:</strong> Overview cards tách bạch bằng nền neutral nhạt, tránh nhồi số liệu vào 1 dòng. QUIZ Analysis và POLL Analysis luôn tách riêng, không trộn correct rate của POLL vào tổng. <strong>Component:</strong> Overview card, Table, Analysis row.</div>
+    </div>
+  </div>
+
+  <!-- ERROR / RECOVERY -->
+  <div id="errors" style="display: flex; flex-direction: column; gap: 18px;">
+    <h2 class="hf-h2">Error &amp; Recovery States</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px;">
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="hf-h3">PIN invalid / Nickname trùng</div>
+        <div style="border: 1.5px solid #be222a; border-radius: 10px; padding: 14px; font-size: 13px; color: #181b1d; max-width: 260px;">482 91X</div>
+        <div style="font-size: 11.5px; color: #be222a;">⚠ PIN không đúng hoặc đã hết hạn. Kiểm tra lại.</div>
+      </div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="hf-h3">Game đã bắt đầu / đã kết thúc</div>
+        <div style="background: #ffe5e1; border-radius: 10px; padding: 16px; font-size: 13px; color: #be222a; text-align: center;">Phiên này đã bắt đầu. Không thể tham gia lúc này.</div>
+      </div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="hf-h3">Image upload error</div>
+        <div style="border: 1.5px dashed #be222a; background: #fff8f7; border-radius: 10px; padding: 16px; font-size: 12.5px; color: #be222a; text-align: center;">File quá 5MB hoặc sai định dạng. Chỉ hỗ trợ JPG/PNG.</div>
+      </div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="hf-h3">Excel validation error</div>
+        <div style="border: 1px solid #ffe5e1; background: #fff8f7; border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #be222a;">Dòng 3, cột "Correct Answer": có 2 đáp án đúng, chỉ được chọn 1.</div>
+      </div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #07294f; padding: 20px; display: flex; flex-direction: column; gap: 10px; color: #fff;">
+        <div class="hf-h3" style="color:#fff;">Reconnecting overlay</div>
+        <div style="background: rgba(0,0,0,0.35); border-radius: 10px; padding: 20px; text-align: center; font-size: 13px;">🔄 Đang kết nối lại…</div>
+      </div>
+      <div style="border: 1px solid #dfe2e4; border-radius: 12px; background: #07294f; padding: 20px; display: flex; flex-direction: column; gap: 10px; color: #fff;">
+        <div class="hf-h3" style="color:#fff;">Reconnect failed</div>
+        <div style="background: rgba(190,34,42,0.25); border-radius: 10px; padding: 16px; text-align: center; font-size: 13px; display: flex; flex-direction: column; gap: 10px; align-items: center;">Không thể kết nối lại.<div style="background:#fff; color:#07294f; font-size:12px; font-weight:700; padding:8px 18px; border-radius:8px;">Thử lại</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL NOTES -->
+  <div id="final" style="display: flex; flex-direction: column; gap: 24px;">
+    <h2 class="hf-h2">Final Notes</h2>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="hf-h3">Final Screen Inventory</div>
+      <div class="hf-note">25 màn hình hi-fi: Trainer (1–7) · Host (8–14) · Participant (15–23) · Reporting (24–25). Submitted State (20) là state của Answer screen, không route riêng. Số thứ tự khớp với Wireframe V1 sau khi thêm Import Excel Panel và tách Host Question theo QUIZ/POLL.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="hf-h3">Component Inventory (cập nhật)</div>
+      <div class="hf-note" style="display: flex; flex-direction: column; gap: 6px;">
+        <div>Button (primary/secondary/ghost), Input, Textarea, Select, Card, Modal, Tabs, Sidebar item, Badge (QUIZ/POLL), Timer, Progress, Toast — theo Design System V1, không đổi.</div>
+        <div><strong>Answer Option</strong> — thêm state Selected-pending-confirm (mới, do Select+Confirm pattern) trước Submitted/Locked.</div>
+        <div><strong>Image Upload</strong> — mới: Empty, Hover/dropzone, Uploading, Preview, Replace, Remove, Error. Dùng chung cho QUIZ &amp; POLL, không có ở answer option.</div>
+        <div><strong>Excel Import Preview Table</strong> — mới: row/type/question/status/error, không tái dùng nơi khác.</div>
+        <div><strong>Result Bar, Leaderboard Row</strong> — không đổi so với Design System V1.</div>
+        <div><strong>Reconnecting Overlay / Reconnect Failed</strong> — mới: overlay tối phủ toàn màn hình, không chặn hẳn navigation gốc (participant vẫn thấy context phía sau).</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="hf-h3">Design Decisions</div>
+      <div class="hf-note" style="display: flex; flex-direction: column; gap: 6px;">
+        <div>Interaction pattern: <strong>Select + Confirm</strong> cho cả QUIZ và POLL (xem mục đầu trang).</div>
+        <div>Host Question thứ tự: progress/badge → timer/response → question text → optional image → answer options → End Question.</div>
+        <div>Image: contain + max-height, không crop; nếu quá cao, question + phần đầu answer options vẫn ưu tiên hiển thị hơn ép toàn bộ vào 1 viewport.</div>
+        <div>POLL 5–6 option: cho phép scroll dọc có kiểm soát trong khung answer list, CTA gửi câu trả lời neo cố định.</div>
+        <div>Host screens dùng nền navy đậm (brand-900) riêng biệt với Trainer Dashboard (nền sáng) để phân định rõ "chế độ trình chiếu" — không phải màn hình quản trị.</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="hf-h3">Unresolved Questions</div>
+      <div class="hf-note" style="display: flex; flex-direction: column; gap: 6px;">
+        <div>Participant có cần xem Leaderboard giữa game, hay chỉ Host mới thấy? (hiện tại: chỉ Host — cần xác nhận).</div>
+        <div>Excel template: có cần hỗ trợ cột ảnh (link ảnh) trong lần import đầu, hay ảnh luôn add tay sau import?</div>
+        <div>Tablet layout cho Quiz Editor: sidebar-drawer đã đề xuất ở Wireframe — cần hi-fi riêng hay đủ dùng bản desktop scale down?</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      quizRows: [
+        { title: 'Onboarding Quiz', count: '10', mix: '8 QUIZ / 2 POLL', updated: '2h ago', status: 'Published' },
+        { title: 'Compliance Refresher', count: '6', mix: '6 QUIZ', updated: '1d ago', status: 'Published' },
+        { title: 'Team Pulse Check', count: '4', mix: '4 POLL', updated: '5d ago', status: 'Draft' },
+      ],
+      joinedNames: ['An','Bình','Chi','Đức','Giang','Hà','Khoa','Linh'],
+      leaderRows: [
+        { rank: 1, name: 'An', score: '2,850' }, { rank: 2, name: 'Chi', score: '2,610' },
+        { rank: 3, name: 'Khoa', score: '2,400' }, { rank: 4, name: 'Hà', score: '2,150' }, { rank: 5, name: 'Linh', score: '1,980' },
+      ],
+      importRows: [
+        { row: 2, type: 'QUIZ', q: 'Đâu là thủ đô...', status: 'OK', statusColor: '#1e7729', error: '—', bg: '#fff' },
+        { row: 3, type: 'QUIZ', q: 'Tổng doanh thu Q1...', status: 'Lỗi', statusColor: '#be222a', error: 'Có 2 đáp án đúng (chỉ được 1)', bg: '#ffe5e1' },
+        { row: 4, type: 'POLL', q: 'Mức độ hài lòng...', status: 'Lỗi', statusColor: '#be222a', error: 'Cột "Correct Answer" không hợp lệ cho POLL', bg: '#ffe5e1' },
+        { row: 5, type: 'QUIZ', q: 'Quy trình an toàn...', status: 'OK', statusColor: '#1e7729', error: '—', bg: '#fff' },
+      ],
+      sessionRows: [
+        { name: 'Onboarding Quiz', date: '08/09', count: 12, avg: '1,980', rate: '68%' },
+        { name: 'Compliance Refresher', date: '05/09', count: 9, avg: '2,240', rate: '74%' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
