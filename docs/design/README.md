@@ -178,13 +178,13 @@ Components: `ParticipantLeaderboard` + `ParticipantRankCard` (`components/leader
 **23 · Participant Final Result** — `/play/[sessionId]` (phase=`FINISHED`) · Mobile. **Implemented (minimal).**
 Shows final rank + total score once the mock question sequence ends. The all-POLL-session variant (hide rank/score, participation summary only) is **deferred** — the Phase 6 mock sequence always includes QUIZ questions, so a scoreless session was never exercised.
 
-**24 · Results Dashboard** — `/results` · Trainer · Desktop.
-Components: `SessionTable`, `Button` (View Report).
-States: empty.
+**24 · Results Dashboard** — `/results` · Trainer · Desktop. **Implemented.**
+Components: `ReportFilters` (search + mix filter), `CompletedSessionsTable`, `Button` (View Report).
+States: empty (no sessions at all), empty (search/filter yields zero rows) — both via `EmptyState`.
 
-**25 · Game Report** — `/results/[sessionId]` · Trainer · Desktop.
-Components: `OverviewCard` ×5, `ParticipantResultsTable`, `QuizAnalysisRow`, `PollAnalysisRow`.
-States: all-POLL or all-QUIZ session (hide the irrelevant analysis block); never merge POLL into correct-rate.
+**25 · Game Report** — `/results/[sessionId]` · Trainer · Desktop. **Implemented.**
+Components: `SessionReportView` (orchestrator) → `ReportSummary` + `ReportMetricCard` grid, `KnowledgeGapSection`, `QuizQuestionAnalytics`/`PollQuestionAnalytics` (via `QuestionAnalyticsCard` + `ResponseDistribution`), `ParticipantResultsTable`/`ParticipantResultRow`, `ParticipantDetailDialog`, `ExportReportButton`.
+States: all-POLL session (rank/score/highest-lowest hidden, no QUIZ Analysis block, participant table shows "—" for score/rank) and all-QUIZ session (no POLL Analysis block) both exercised by mock data; POLL never merged into correct-rate/score/knowledge-gap anywhere. Unknown `sessionId` shows a not-found state with a back link (same pattern as `/quizzes/[quizId]`).
 
 ---
 
@@ -253,12 +253,20 @@ components/
     ParticipantRankCard.tsx
     HostLeaderboard.tsx      # replaces the earlier Leaderboard.tsx/LeaderboardRow.tsx placeholder names
     FinalLeaderboard.tsx
-  reports/
-    OverviewCard.tsx
+  reports/                   # Milestone 8 — implemented
+    ReportSummary.tsx         # session header + overview metric grid
+    ReportMetricCard.tsx
+    CompletedSessionsTable.tsx # Results Dashboard list (design's "SessionTable")
+    ReportFilters.tsx          # search + QUIZ/POLL mix filter, Results Dashboard only
+    QuestionAnalyticsCard.tsx  # shared header shell: order, type badge, knowledge-gap flag
+    QuizQuestionAnalytics.tsx
+    PollQuestionAnalytics.tsx
+    ResponseDistribution.tsx   # CSS bar list, reused by QUIZ (correct=green) and POLL (teal)
+    KnowledgeGapSection.tsx    # QUIZ correct rate < 70% mock rule, never applied to POLL
     ParticipantResultsTable.tsx
-    QuizAnalysisRow.tsx
-    PollAnalysisRow.tsx
-    SessionTable.tsx
+    ParticipantResultRow.tsx
+    ParticipantDetailDialog.tsx # click-through per-participant per-question breakdown
+    ExportReportButton.tsx     # client-side .xlsx via exceljs, mirrors lib/excel/template.ts
   import/
     ExcelImportDialog.tsx    # orchestrator: state machine + parse/validate/import wiring
     ExcelDropzone.tsx        # empty/drag-over — file picker + Download Template
@@ -648,7 +656,7 @@ Provide a `mocks/` module (e.g. `mocks/quizzes.ts`, `mocks/session.ts`) covering
 - **`QuestionResult` mock** for the QUIZ question (distribution summing to 100%, correctRate 62%).
 - **`PollResult` mock** for the POLL question (distribution summing to 100%, no correct field at all — omit the key, don't set it to null, to make its absence type-checkable).
 - **`LeaderboardEntry[]`** mock (5 entries, descending score, one tie).
-- **`Game Report` mock**: overview numbers + `ParticipantAnswer[]` for 1 full session + one QUIZ analysis row + one POLL analysis row.
+- **`Game Report` mock** (Phase 8, superseded the single-session placeholder above): `mockSessionReports`/`mockCompletedSessions`/`getSessionReport(sessionId)` in `mocks/reports.ts` — 3 full completed sessions, each with per-question `QuestionAnalytics[]` (QUIZ: correct/incorrect %, option distribution, avg response time, `isKnowledgeGap` when correct rate < 70%; POLL: option distribution/%, total voters, no correct field), a full `ParticipantResultRow[]` + `ParticipantDetail` (per-question responses) for all 12 mock participants, and a derived `knowledgeGaps` list. Sessions: `report-onboarding` (mixed 8 QUIZ/2 POLL, 3 knowledge-gap questions, 3 unanswered cases, high/low performer spread), `report-compliance` (all-QUIZ, 6 questions, 1 clear + 1 borderline knowledge gap), `report-team-pulse` (all-POLL, 4 questions, no rank/score/knowledge-gap at all). Answer generation is deterministic (skill-ranked `mockParticipants` order + a small per-question jitter, no `Math.random()`) so results are stable across renders/SSR.
 - **`ImportPreviewRow[]`** mock: 4 rows, 2 valid, 2 with distinct error types (multiple correct answers; correct-answer column present on a POLL row) — matches the example already shown in High-Fidelity V1.
 - **Join flow resolvers** (Phase 5, updated): `resolveSessionByPin(pin)` and `resolveSessionByCode(sessionCode)` in `mocks/session.ts`, both looking up the single mock `GameSession` — `id` (sessionCode) and `pin` are now the **same value, `"123456"`** (this mock has no concept of a separate opaque session code yet, so PIN entry and QR/Join Link resolve identically either way). Also: `getSessionQuizTitle(session)` (looks up the quiz title via `quizId`, for Nickname Entry / Waiting Room) and `isNicknameTaken(nickname)` (case-insensitive check against `mockParticipants`, backing the "duplicate nickname" mock state). Frontend-only stand-ins for what a real backend will resolve server-side.
 - **Gameplay sequence** (Phase 6, added): `mockGameplayQuestions`/`mockGameplayResults`/`getGameplayResult` in `mocks/gameplay.ts` — 4 fixed questions covering every combination the manual tests need (QUIZ+image, QUIZ no image, POLL×4 options, POLL×6 options), reusing `mockActiveQuizQuestion`/`mockQuestionResult` from `mocks/session.ts` for question 1. Drives `/play/[sessionId]`'s entire gameplay loop.

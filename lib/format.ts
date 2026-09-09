@@ -11,3 +11,19 @@ export function formatRelativeTime(iso: string): string {
   if (Math.abs(diffHours) < 24) return relativeTimeFormatter.format(diffHours, "hour");
   return relativeTimeFormatter.format(diffDays, "day");
 }
+
+const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+/** "27/08/2026" — fixed calendar date, for report/session timestamps. */
+export function formatDate(iso: string): string {
+  return dateFormatter.format(new Date(iso));
+}
+
+/** 8400 -> "8.4s" — average response time, one decimal place. */
+export function formatResponseSeconds(ms: number): string {
+  return `${(ms / 1000).toFixed(1)}s`;
+}
