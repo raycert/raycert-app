@@ -5,7 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { resolveSessionByCode } from "@/mocks/session";
+import { getSessionQuizTitle, isNicknameTaken, resolveSessionByCode } from "@/mocks/session";
+
+type NicknameStatus = "idle" | "joining" | "invalid" | "duplicate";
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const MAX_NICKNAME_LENGTH = 20;
 
 /**
  * Reached via QR scan, Join Link, or redirect from /join after a valid PIN
@@ -18,7 +26,7 @@ export default function JoinSessionPage() {
   const session = resolveSessionByCode(sessionCode);
 
   const [nickname, setNickname] = useState("");
-  const [error, setError] = useState<string | undefined>();
+  const [status, setStatus] = useState<NicknameStatus>("idle");
 
   if (!session) {
     return (
@@ -37,15 +45,36 @@ export default function JoinSessionPage() {
     );
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  const quizTitle = getSessionQuizTitle(session);
+  const trimmed = nickname.trim();
+  const isValidLength = trimmed.length >= 2 && trimmed.length <= MAX_NICKNAME_LENGTH;
+  const busy = status === "joining";
+
+  function handleNicknameChange(next: string) {
+    setNickname(next);
+    if (status === "invalid" || status === "duplicate") setStatus("idle");
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (nickname.trim().length < 2) {
-      setError("Nickname cần ít nhất 2 ký tự");
+    if (!isValidLength || busy) return;
+
+    if (isNicknameTaken(trimmed)) {
+      setStatus("duplicate");
       return;
     }
-    setError(undefined);
-    router.push(`/play/${session!.id}`);
+
+    setStatus("joining");
+    await wait(450);
+    router.push(`/play/${session!.id}?nickname=${encodeURIComponent(trimmed)}`);
   }
+
+  const error =
+    status === "duplicate"
+      ? "Nickname đã có người dùng trong phiên này, vui lòng chọn tên khác"
+      : status === "invalid"
+        ? "Nickname cần 2–20 ký tự"
+        : undefined;
 
   return (
     <form
@@ -57,25 +86,35 @@ export default function JoinSessionPage() {
           Nhập nickname
         </h1>
         <p className="text-base text-muted-foreground">
-          PIN: <span className="font-semibold text-heading">{session.pin}</span>
+          {quizTitle} · PIN: <span className="font-semibold text-heading">{session.pin}</span>
         </p>
       </div>
 
       <div className="flex w-full max-w-xs flex-col gap-1.5">
+        <label htmlFor="nickname" className="sr-only">
+          Nickname
+        </label>
         <Input
+          id="nickname"
           autoFocus
-          maxLength={20}
+          maxLength={MAX_NICKNAME_LENGTH}
           placeholder="Nickname của bạn"
           aria-invalid={!!error}
+          aria-describedby={error ? "nickname-error" : undefined}
+          disabled={busy}
           value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
+          onChange={(e) => handleNicknameChange(e.target.value)}
           className="h-14 text-center text-lg"
         />
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        {error ? (
+          <p id="nickname-error" role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        ) : null}
       </div>
 
-      <Button type="submit" size="touch" className="w-full max-w-xs">
-        Join Game
+      <Button type="submit" size="touch" className="w-full max-w-xs" disabled={!isValidLength || busy}>
+        {busy ? "Đang tham gia…" : "Join Game"}
       </Button>
 
       <Link href="/join" className="text-sm font-medium text-primary hover:underline">

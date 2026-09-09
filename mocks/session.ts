@@ -86,10 +86,10 @@ export const mockLeaderboard: LeaderboardEntry[] = [
 ];
 
 export const mockGameSession: GameSession = {
-  id: "session-mock-1",
+  id: "123456",
   quizId: mockQuizzes[0].id,
-  pin: "482913",
-  phase: "question",
+  pin: "123456",
+  phase: "lobby",
   currentQuestionIndex: 0,
   currentQuestion: mockActiveQuizQuestion,
 };
@@ -97,9 +97,12 @@ export const mockGameSession: GameSession = {
 export const mockGameSessions: GameSession[] = [mockGameSession];
 
 /**
- * Frontend-only mock resolution for the Join flow (§ QR Code / Join Link
- * update). A real backend will look sessions up by PIN/code server-side —
- * this just lets /join and /join/[sessionCode] work against mock data.
+ * Frontend-only mock resolution for the Join flow (Phase 5). A real backend
+ * will look sessions up by PIN/code server-side — this just lets /join and
+ * /join/[sessionCode] work against mock data. `id`/sessionCode and `pin` are
+ * intentionally the same value ("123456") on the one mock session: this
+ * mock has no concept of a separate opaque session code yet, so PIN entry
+ * and QR/Join Link both resolve to the identical session either way.
  */
 export function resolveSessionByCode(sessionCode: string): GameSession | undefined {
   return mockGameSessions.find((session) => session.id === sessionCode);
@@ -107,6 +110,16 @@ export function resolveSessionByCode(sessionCode: string): GameSession | undefin
 
 export function resolveSessionByPin(pin: string): GameSession | undefined {
   return mockGameSessions.find((session) => session.pin === pin);
+}
+
+export function getSessionQuizTitle(session: GameSession): string {
+  return mockQuizzes.find((quiz) => quiz.id === session.quizId)?.title ?? "Quiz";
+}
+
+/** Mock "duplicate nickname" check — case-insensitive against the seeded roster. */
+export function isNicknameTaken(nickname: string): boolean {
+  const normalized = nickname.trim().toLowerCase();
+  return mockParticipants.some((p) => p.nickname.toLowerCase() === normalized);
 }
 
 /**

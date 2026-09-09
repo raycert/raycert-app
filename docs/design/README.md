@@ -141,44 +141,45 @@ Components: `HostShell`, `Leaderboard` (Top 3–5), `Button` (View Report, End S
 States: all-POLL session (hide leaderboard block, show counts only).
 Data: `session summary`, `leaderboard`.
 
-**15 · Join Game** — `/join` · Participant · Mobile.
+**15 · Join Game** — `/join` · Participant · Mobile. **Implemented (Phase 5).**
 Manual-entry path only — reached when a participant opens RayCert directly (not via QR/Join Link).
 Components: `MobileShell`, `PinInput`, `Button`.
-Primary CTA: Continue. On a valid PIN, redirects to `/join/[sessionCode]` (screen 16) — same destination as the QR/Link path.
-States: PIN invalid, game started, game ended.
+Primary CTA: Continue — disabled until the PIN is exactly 6 digits. On submit, an `idle → validating → invalid | success` state machine runs (mock ~500ms delay) before redirecting to `/join/[sessionCode]` (screen 16) — same destination as the QR/Link path.
+States: idle, validating ("Đang kiểm tra…", input+button disabled), invalid ("PIN không hợp lệ", `role="alert"`, `aria-describedby`-linked), success ("Đang chuyển hướng…").
 
-**16 · Nickname Entry** — `/join/[sessionCode]` · Participant · Mobile.
-Shared destination for all 3 join paths (QR Code scan, Join Link, or PIN redirect from screen 15) — the session is already resolved from the URL, so this screen never asks for a PIN.
-Components: `MobileShell`, `TextInput`, `Button`, back link.
-Primary CTA: Join Game.
-States: nickname duplicate, **invalid/expired session code** (blocking message + link back to `/join`), session invalidated mid-entry.
+**16 · Nickname Entry** — `/join/[sessionCode]` · Participant · Mobile. **Implemented (Phase 5).**
+Shared destination for all 3 join paths (QR Code scan, Join Link, or PIN redirect from screen 15) — the session is already resolved from the URL, so this screen never asks for a PIN. Now also shows the quiz title next to the PIN (`getSessionQuizTitle`).
+Components: `MobileShell`, `Input` (labelled, sr-only `<label>`), `Button`, back link.
+Primary CTA: Join Game — disabled until nickname is 2–20 trimmed characters. Submit runs `idle → joining → invalid | duplicate` (mock ~450ms delay), then navigates to `/play/[sessionId]?nickname=...` (nickname carried via the URL — this mock has no session persistence, so the query string *is* the state, which also makes a page refresh keep the participant in place).
+States: nickname duplicate (`isNicknameTaken`, checked against the mock roster), invalid/expired session code (blocking message + link back to `/join`), joining (loading, disabled).
 
-**17 · Waiting Room** — `/play/[sessionId]` (phase=`waiting`) · Participant · Mobile.
-Components: `MobileShell`, `Avatar`, status text.
-States: reconnecting.
+**17 · Waiting Room** — `/play/[sessionId]` · Participant · Mobile. **Implemented (Phase 5).**
+Reads `nickname` from the URL query (set by screen 16); a bare visit with no `nickname` redirects to `/join/[sessionId]` rather than showing a broken/anonymous room.
+Components: `MobileShell`, `AvatarChip`, status text.
+Shows: quiz title, `AvatarChip` + nickname, "✓ Đã tham gia" badge, an `aria-live="polite"` pulsing waiting indicator + "Đang chờ người hướng dẫn bắt đầu...", mock participant count (`mockParticipants.length + 1`), mock connection status ("Đã kết nối"). No self-start control.
+States: session not found (blocking message + link to `/join`). Reconnecting/disconnected mock states are **deferred** (no realtime yet).
 
-**18–19 · Participant QUIZ/POLL Answer** — `/play/[sessionId]` (phase=`question`) · Mobile.
-Components: `MobileShell`, `Timer`, `QuestionImageDisplay`, `AnswerOptionPlayer` (interactive), `Button` (Gửi câu trả lời, disabled until a selection is made).
-Primary CTA: Gửi câu trả lời. 
-States: default, selected (pending confirm), submitted/locked, timeout-no-answer.
-Data: `question: Question`.
+**18–19 · Participant QUIZ/POLL Answer** — `/play/[sessionId]` (phase=`QUESTION_ACTIVE`) · Mobile. **Implemented (Phase 6).**
+Components: `ParticipantGameShell` (phase switcher, owns `useParticipantGameplay`), `GameProgress`, `ParticipantTimer`, `ParticipantQuestion`, `ParticipantAnswerOption` (radiogroup), `SubmitAnswerButton`.
+Primary CTA: Gửi câu trả lời — disabled until a selection is made. Select + Confirm: tapping an option only selects it (re-selectable); nothing is sent until Submit.
+States: default, selected (pending confirm), submitted/locked (→ screen 20), timeout-no-answer (timer reaches 0 with nothing selected). Image (when present): question text → image (`object-fit: contain`, capped height, no crop) → options.
+Data: `ParticipantQuestion` (`lib/game/participant-question.ts`) — **never carries `isCorrect`**, at the type level, not just hidden in the UI (§14 security boundary). The countdown reaching 0 is what closes the question (simulating the host), independent of this participant's own submit.
 
-**20 · Submitted (state)** — `/play/[sessionId]`, same phase as 18/19 · Mobile. Not a route.
-Shows locked selection + "Đang chờ kết quả…".
+**20 · Submitted (state)** — `/play/[sessionId]`, same phase as 18/19 · Mobile. Not a route. **Implemented.**
+Component: `AnswerSubmittedState` — replaces the options+submit area entirely (not a disabled option list). Shows a checkmark, the locked answer chip, and "Đang chờ người hướng dẫn kết thúc câu hỏi..." — never reveals correctness here.
 
-**21 · QUIZ Result — Participant** — `/play/[sessionId]` (phase=`result`) · Mobile.
-Components: `MobileShell`, correct/incorrect badge (icon+text), score delta, running total.
-States: no-answer (timeout) → "Không trả lời", not styled as incorrect.
+**21 · QUIZ Result — Participant** — `/play/[sessionId]` (phase=`QUESTION_RESULTS`) · Mobile. **Implemented.**
+Component: `QuizResult` (`components/game/`) — correct/incorrect/unanswered icon+text (never color-only), participant's own answer, the correct answer (shown whenever not correct), points earned (+ response time), running total score.
+States: correct (success green), incorrect (error red, always names the correct answer), **no-answer/timeout is its own neutral state — never styled as incorrect** (`isCorrect: null`).
 
-**22 · POLL Result — Participant** — `/play/[sessionId]` (phase=`result`) · Mobile.
-Components: `MobileShell`, `ResultBar` (teal only), selected-choice highlight.
+**22 · POLL Result — Participant** — `/play/[sessionId]` (phase=`QUESTION_RESULTS`) · Mobile. **Implemented.**
+Components: `PollResult` + `PollResultBar` (`components/game/`) — teal-only distribution bars (label, %, count), the participant's own bar visually highlighted, total voter count. Never renders correct/incorrect/points/rank — those props don't exist on this component at all.
 
-**22b · Participant Leaderboard** (QUIZ only) — `/play/[sessionId]` (phase=`leaderboard`) · Mobile.
-Components: `ParticipantLeaderboard` (compact: your rank + nearby/Top 5).
+**22b · Participant Leaderboard** (QUIZ only) — `/play/[sessionId]` (phase=`LEADERBOARD`) · Mobile. **Implemented.**
+Components: `ParticipantLeaderboard` + `ParticipantRankCard` (`components/leaderboard/`) — big "Bạn xếp thứ #N" card + a compact row list (top 5 if the participant is in it, else top 3 + rows nearby their own rank, own row highlighted). Never shown after POLL — POLL results advance straight to the next question.
 
-**23 · Participant Final Result** — `/play/[sessionId]` (phase=`final`) · Mobile.
-Components: rank, total score, correct count.
-States: all-POLL session → hide rank/score, show participation summary only.
+**23 · Participant Final Result** — `/play/[sessionId]` (phase=`FINISHED`) · Mobile. **Implemented (minimal).**
+Shows final rank + total score once the mock question sequence ends. The all-POLL-session variant (hide rank/score, participation summary only) is **deferred** — the Phase 6 mock sequence always includes QUIZ questions, so a scoreless session was never exercised.
 
 **24 · Results Dashboard** — `/results` · Trainer · Desktop.
 Components: `SessionTable`, `Button` (View Report).
@@ -220,23 +221,34 @@ components/
     QuizRow.tsx
     QuizStatusBadge.tsx
   game/
-    Timer.tsx
-    ResponseCounter.tsx
-    ResultBar.tsx
-    AnswerOptionPlayer.tsx
+    Timer.tsx               # Host-side — spec'd, not yet built (see ParticipantTimer for participant's)
+    ResponseCounter.tsx     # Host-side — spec'd, not yet built
+    ResultBar.tsx           # Host-side — spec'd, not yet built (see QuizResult/PollResult for participant's)
+    AnswerOptionPlayer.tsx  # Host-side — spec'd, not yet built (see ParticipantAnswerOption)
     GameQRCode.tsx          # QR for a join URL passed via props — never hard-codes a domain
     GamePin.tsx             # replaces the earlier PinDisplay placeholder name
     JoinInstructions.tsx
     CopyJoinLinkButton.tsx
     HostLobbyPanel.tsx      # composes the 4 above + participant chips for Host Lobby
+    QuizResult.tsx          # participant QUIZ result card (correct/incorrect/unanswered)
+    PollResult.tsx          # participant POLL result (distribution)
+    PollResultBar.tsx
   participant/
     PinInput.tsx
     AvatarChip.tsx
-    ReconnectOverlay.tsx
+    ReconnectOverlay.tsx     # spec'd, not yet built — no realtime to reconnect to
+    ParticipantGameShell.tsx # phase switcher: WAITING/ACTIVE/SUBMITTED/RESULTS/LEADERBOARD/FINISHED
+    ParticipantQuestion.tsx
+    ParticipantAnswerOption.tsx
+    ParticipantTimer.tsx
+    SubmitAnswerButton.tsx
+    AnswerSubmittedState.tsx
+    GameProgress.tsx
   leaderboard/
-    Leaderboard.tsx
-    LeaderboardRow.tsx
+    Leaderboard.tsx          # Host-side — spec'd, not yet built (no Host Live controller)
+    LeaderboardRow.tsx       # Host-side — spec'd, not yet built
     ParticipantLeaderboard.tsx
+    ParticipantRankCard.tsx
   reports/
     OverviewCard.tsx
     ParticipantResultsTable.tsx
@@ -256,6 +268,8 @@ components/
 ```
 
 Non-`components/` additions (Phase 3): `hooks/use-quiz-editor.ts` (all Quiz Editor local state — add/select/edit question, add/remove option, set correct answer, save-status simulation) and `lib/validation/question.ts` (Zod schemas + `isQuestionComplete`/`getQuestionValidationMessages`, backing both the sidebar's incomplete badge and each editor's `ValidationMessage`).
+
+Non-`components/` additions (Phase 6): `hooks/use-participant-gameplay.ts` (the `WAITING → QUESTION_ACTIVE → ANSWER_SUBMITTED → QUESTION_RESULTS → LEADERBOARD → FINISHED` state machine — countdown, auto-advance timers simulating the host, per-question answers, cumulative score, live leaderboard); `lib/game/participant-question.ts` (`ParticipantQuestion`/`toParticipantQuestion` — the §14 security-boundary type, strips `isCorrect` before a question ever reaches participant-facing components); `lib/game/scoring.ts` (`calculateMockQuizPoints` — client mock only, illustrates the CLAUDE.md §10 formula, never authoritative).
 
 ### Key component specs
 
@@ -319,7 +333,9 @@ Non-`components/` additions (Phase 3): `hooks/use-quiz-editor.ts` (all Quiz Edit
 
 **`HostLobbyPanel`** — Responsibility: composes `GameQRCode` + `GamePin` + `JoinInstructions` + `CopyJoinLinkButton` + participant chips + Start Game for `/host/[sessionId]/lobby`. Props: `sessionCode: string`, `pin: string`, `participants: Participant[]`. State: `joinUrl` — seeded with the relative path (`/join/[sessionCode]`) so server and first client render match, then upgraded to an absolute URL (`window.location.origin + ...`) after mount to avoid a hydration mismatch.
 
-**`PinInput`** — Props: `value: string`, `onChange: (value: string) => void`, `error?: string`. Numeric, 6-digit, large centered text. Used in: Join Game (`/join`).
+**`PinInput`** — Props: `value: string`, `onChange: (value: string) => void`, `error?: string`, `disabled?: boolean`. Numeric, 6-digit, large centered text; labelled (sr-only `<label for="game-pin">`), error linked via `aria-describedby`/`role="alert"`. Used in: Join Game (`/join`).
+
+**`AvatarChip`** — Props: `nickname: string`, `size?: 'md'|'lg'`. Decorative (`aria-hidden`) initials circle — the adjacent visible nickname text is what's announced to assistive tech, not this chip. Used in: Waiting Room.
 
 **`TrainerSidebarDrawer`** — Responsibility: menu-button + `Sheet` (`side="left"`) wrapping `SidebarNavList`, visible only `<1024px` (`SidebarNav`'s fixed `<aside>` takes over `≥1024px`). No props — reads the active route itself via `usePathname`. Closes on navigation. Used in: `NavBar`, every Trainer route.
 
@@ -453,9 +469,11 @@ export interface ImageUploadState {
 
 ## 6. QUIZ / POLL Component Rules
 
-**QUIZ `AnswerOptionPlayer` states**: `default → hover → selected (pending confirm) → submitted (locked)`; then, only once `session.phase === 'result'`: `correct` or `incorrect`. `disabled` applies to all non-selected options once locked. Correct/incorrect are never rendered before the question ends.
+**Implemented as `ParticipantAnswerOption`** (`components/participant/`) — the participant-facing half of what this section originally called `AnswerOptionPlayer`; the Host-side read-only variant (`components/game/AnswerOptionPlayer.tsx`) is still spec'd but not built (no Host Live controller yet).
 
-**POLL `AnswerOptionPlayer` states**: `default → hover → selected (pending confirm) → submitted (locked) → disabled` (for non-selected). **Never** renders `correct`/`incorrect`, and never uses success/error color tokens for an option, under any circumstance — enforce this by not exposing those props on the `variant: 'poll'` branch of the component (a type-level guard, not just a visual convention).
+**QUIZ `ParticipantAnswerOption` states**: `default → selected (pending confirm)` during `QUESTION_ACTIVE`; then the options are **replaced by `AnswerSubmittedState`** once submitted (not rendered disabled-in-place) — so there's no `submitted`/`disabled` visual state on the option itself. `correct`/`incorrect` exist on the component's type but are only ever passed once a result is known, and only from a payload that already went through `lib/game/participant-question.ts`'s security boundary.
+
+**POLL `ParticipantAnswerOption` states**: `default → selected` only. **Never** renders `correct`/`incorrect` — enforced as a discriminated union (`variant: 'poll'` props literally don't have a `state` value for them, a compile error, not just a visual convention) in `ParticipantAnswerOption`'s prop types.
 
 ---
 
@@ -626,7 +644,8 @@ Provide a `mocks/` module (e.g. `mocks/quizzes.ts`, `mocks/session.ts`) covering
 - **`LeaderboardEntry[]`** mock (5 entries, descending score, one tie).
 - **`Game Report` mock**: overview numbers + `ParticipantAnswer[]` for 1 full session + one QUIZ analysis row + one POLL analysis row.
 - **`ImportPreviewRow[]`** mock: 4 rows, 2 valid, 2 with distinct error types (multiple correct answers; correct-answer column present on a POLL row) — matches the example already shown in High-Fidelity V1.
-- **Join flow resolvers** (added): `resolveSessionByPin(pin)` and `resolveSessionByCode(sessionCode)` in `mocks/session.ts`, both looking up the single mock `GameSession` (`pin: "482913"`, `id`/session code: `"session-mock-1"`). Frontend-only stand-ins for what a real backend will resolve server-side by PIN/code.
+- **Join flow resolvers** (Phase 5, updated): `resolveSessionByPin(pin)` and `resolveSessionByCode(sessionCode)` in `mocks/session.ts`, both looking up the single mock `GameSession` — `id` (sessionCode) and `pin` are now the **same value, `"123456"`** (this mock has no concept of a separate opaque session code yet, so PIN entry and QR/Join Link resolve identically either way). Also: `getSessionQuizTitle(session)` (looks up the quiz title via `quizId`, for Nickname Entry / Waiting Room) and `isNicknameTaken(nickname)` (case-insensitive check against `mockParticipants`, backing the "duplicate nickname" mock state). Frontend-only stand-ins for what a real backend will resolve server-side.
+- **Gameplay sequence** (Phase 6, added): `mockGameplayQuestions`/`mockGameplayResults`/`getGameplayResult` in `mocks/gameplay.ts` — 4 fixed questions covering every combination the manual tests need (QUIZ+image, QUIZ no image, POLL×4 options, POLL×6 options), reusing `mockActiveQuizQuestion`/`mockQuestionResult` from `mocks/session.ts` for question 1. Drives `/play/[sessionId]`'s entire gameplay loop.
 - **`RecentSessionSummary[]`** mock (added): `mockRecentSessions` in `mocks/session.ts` — 3 entries referencing the 2 published quizzes, `hostedAt` computed as `Date.now() - offset` (not a fixed ISO string) so "2 giờ trước" stays accurate whenever the dashboard is viewed. Not a core domain type — `GameSession` alone has no quiz title or hosted-at timestamp.
 
 ---

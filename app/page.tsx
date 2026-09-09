@@ -22,13 +22,13 @@ export default function Home() {
           <Link href="/dashboard">Trainer Dashboard (shell)</Link>
         </Button>
         <Button variant="secondary" asChild>
-          <Link href="/host/session-mock-1/lobby">Host Lobby</Link>
+          <Link href="/host/123456/lobby">Host Lobby</Link>
         </Button>
         <Button variant="secondary" asChild>
-          <Link href="/join/session-mock-1">Join via Link (mock)</Link>
+          <Link href="/join/123456">Join via Link (mock)</Link>
         </Button>
         <Button variant="secondary" asChild>
-          <Link href="/play/session-mock-1">Participant Session (shell)</Link>
+          <Link href="/play/123456?nickname=Demo">Waiting Room (mock)</Link>
         </Button>
         <Button variant="ghost" asChild>
           <Link href="/design-system">/design-system</Link>
