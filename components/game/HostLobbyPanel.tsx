@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { Participant } from "@/types";
 import { Button } from "@/components/ui/button";
 import { GameQRCode } from "./GameQRCode";
@@ -57,9 +58,15 @@ export function HostLobbyPanel({
             </span>
           ))}
         </div>
-        <Button size="lg" disabled={participants.length === 0} className="mt-2">
-          Start Game
-        </Button>
+        {participants.length === 0 ? (
+          <Button size="lg" disabled className="mt-2">
+            Start Game
+          </Button>
+        ) : (
+          <Button size="lg" className="mt-2" asChild>
+            <Link href={`/host/${sessionCode}/live`}>Start Game</Link>
+          </Button>
+        )}
       </div>
     </div>
   );

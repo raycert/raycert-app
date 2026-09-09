@@ -115,31 +115,28 @@ States: empty → selected → validating → preview → importing → success 
 **08 · Host Lobby** — `/host/[sessionId]/lobby` · Trainer(Host) · Desktop, projector.
 Layout: full-bleed navy panel, `GameQRCode` | `GamePin` side-by-side focal point (stacks vertically <640px), `JoinInstructions`, `CopyJoinLinkButton`, participant chips, Start Game.
 Components: `HostShell` (no sidebar/nav), `GameQRCode`, `GamePin`, `JoinInstructions`, `CopyJoinLinkButton`, `ParticipantChip`.
-Primary CTA: Start Game (disabled at 0 participants). Secondary: Copy Join Link (toast "Đã sao chép liên kết"), End session.
+Primary CTA: Start Game — disabled at 0 participants; once enabled, navigates to `/host/[sessionId]/live` (Phase 7). Secondary: Copy Join Link (toast "Đã sao chép liên kết"), End session.
 States: no-join-yet, joining, ready.
 Data: `session: GameSession`, `participants: Participant[]` (realtime). Join URL is derived client-side from the page's own origin + the session code — never a hard-coded domain.
+Note: `HostShell` gained an optional `wide` prop (Phase 7) — Lobby keeps the original centered `max-w-5xl`; `/live` opts into `max-w-[1600px]` for projector/desktop breathing room. Each host route now composes its own `HostShell` directly (the old shared `app/host/[sessionId]/layout.tsx` was removed) so Lobby and Live can size it differently.
 
-**09–10 · Host Question — QUIZ / POLL** — `/host/[sessionId]/live` (phase=`question`) · Desktop, projector.
-Components: `HostShell`, `QuestionTypeBadge`, `Timer`, `ResponseCounter`, `QuestionImageDisplay`, `AnswerOptionPlayer` (host, non-interactive), `Button` (End Question/Poll).
-Primary CTA: End Question / End Poll. Secondary: none (deliberately minimal while live).
-States: timer running, timer ≤5s (amber ring), timeout auto-end.
-Data: `question: Question`, `responseCount: number`, `totalParticipants: number`.
+**09–10 · Host Question — QUIZ / POLL** — `/host/[sessionId]/live` (phase=`QUESTION_ACTIVE`) · Desktop, projector. **Implemented (Phase 7).**
+Components: `HostGameShell` (phase switcher, owns `useHostGameplay`), `HostProgress`, `HostTimer`, `HostQuestionView` (question/image/read-only options — takes a `ParticipantQuestion`, never the raw `Question`, same §14 security boundary as the participant screen), `HostResponseCounter`, `HostGameControls`.
+Primary CTA: Close Question / Close Poll. Secondary: End Game (host-initiated early stop, jumps straight to Final Results).
+States: timer running, timer ≤5s (amber ring), timeout auto-closes the question (same as clicking Close). Response count ticks up on its own (mock — no realtime), capped at `totalParticipants`; a clearly-labelled dev-only control (`HostDevMockControls`) can bump it manually.
+Data: `participantQuestion: ParticipantQuestion`, `responseCount: number`, `totalParticipants: number`.
 
-**11–12 · QUIZ / POLL Result — Host** — `/host/[sessionId]/live` (phase=`result`) · Desktop, projector.
-Components: `HostShell`, `ResultBar` (QUIZ: success/brand mix; POLL: teal only), `Button` (Leaderboard/Next).
-Primary CTA: Next. Secondary (QUIZ only): Leaderboard.
-States: 0 responses.
-Data: `result: QuestionResult | PollResult`.
+**11–12 · QUIZ / POLL Result — Host** — `/host/[sessionId]/live` (phase=`QUESTION_RESULTS`) · Desktop, projector. **Implemented.**
+Components: `HostQuizResults` / `HostPollResults`, both built on the shared `ResultBar` (QUIZ: correct option success-600, others brand-500; POLL: teal-500 only — same component, different `variant`). `HostGameControls` renders "Leaderboard" (QUIZ) or "Next Question" (POLL) as the sole action here.
+Data: `question: Question` (full — safe now, the question is closed) + `result: QuestionResult | PollResult`.
 
-**13 · Leaderboard — Host** — `/host/[sessionId]/live` (phase=`leaderboard`, QUIZ only) · Desktop, projector.
-Components: `HostShell`, `Leaderboard`, `LeaderboardRow`, `Button` (Next Question).
-States: tie score.
-Data: `leaderboard: LeaderboardEntry[]`.
+**13 · Leaderboard — Host** — `/host/[sessionId]/live` (phase=`LEADERBOARD`, QUIZ only) · Desktop, projector. **Implemented.**
+Component: `HostLeaderboard` (top 10, rank/nickname/score, rank-change arrow + score-gained badge — never color-only, always paired with a number/icon). `Button` (Next Question).
+Data: `leaderboard: HostLeaderboardEntry[]` (`LeaderboardEntry` + `previousRank`/`delta`).
 
-**14 · Host Final Results** — `/host/[sessionId]/live` (phase=`final`) · Desktop, projector.
-Components: `HostShell`, `Leaderboard` (Top 3–5), `Button` (View Report, End Session).
-States: all-POLL session (hide leaderboard block, show counts only).
-Data: `session summary`, `leaderboard`.
+**14 · Host Final Results** — `/host/[sessionId]/live` (phase=`FINISHED`) · Desktop, projector. **Implemented.**
+Component: `FinalLeaderboard` — "Session hoàn tất", participant/QUIZ/POLL counts + avg correct rate (QUIZ only, never blended with POLL), top 3, `Button` (View Results — placeholder toast referencing Phase 8, Back to Dashboard).
+States: reached either by exhausting every question or by the host clicking **End Game** from any `QUESTION_ACTIVE` screen.
 
 **15 · Join Game** — `/join` · Participant · Mobile. **Implemented (Phase 5).**
 Manual-entry path only — reached when a participant opens RayCert directly (not via QR/Join Link).
@@ -221,10 +218,6 @@ components/
     QuizRow.tsx
     QuizStatusBadge.tsx
   game/
-    Timer.tsx               # Host-side — spec'd, not yet built (see ParticipantTimer for participant's)
-    ResponseCounter.tsx     # Host-side — spec'd, not yet built
-    ResultBar.tsx           # Host-side — spec'd, not yet built (see QuizResult/PollResult for participant's)
-    AnswerOptionPlayer.tsx  # Host-side — spec'd, not yet built (see ParticipantAnswerOption)
     GameQRCode.tsx          # QR for a join URL passed via props — never hard-codes a domain
     GamePin.tsx             # replaces the earlier PinDisplay placeholder name
     JoinInstructions.tsx
@@ -232,7 +225,18 @@ components/
     HostLobbyPanel.tsx      # composes the 4 above + participant chips for Host Lobby
     QuizResult.tsx          # participant QUIZ result card (correct/incorrect/unanswered)
     PollResult.tsx          # participant POLL result (distribution)
-    PollResultBar.tsx
+    PollResultBar.tsx       # participant POLL bars — teal only
+    ResultBar.tsx           # Host QUIZ/POLL bars — shared, variant: quiz-correct|quiz-other|poll
+    HostProgress.tsx
+    HostTimer.tsx           # projector-scale ring (bigger than ParticipantTimer)
+    HostResponseCounter.tsx
+    HostQuestionView.tsx    # takes ParticipantQuestion — same security boundary as participant's
+    HostQuizResults.tsx
+    HostPollResults.tsx
+    HostGameControls.tsx    # Close Question / End Game / Leaderboard / Next — contextual per phase
+    HostGameShell.tsx       # phase switcher, owns useHostGameplay
+  dev/
+    HostDevMockControls.tsx # clearly-labelled dev-only response-count bump — never part of prod UI
   participant/
     PinInput.tsx
     AvatarChip.tsx
@@ -245,10 +249,10 @@ components/
     AnswerSubmittedState.tsx
     GameProgress.tsx
   leaderboard/
-    Leaderboard.tsx          # Host-side — spec'd, not yet built (no Host Live controller)
-    LeaderboardRow.tsx       # Host-side — spec'd, not yet built
     ParticipantLeaderboard.tsx
     ParticipantRankCard.tsx
+    HostLeaderboard.tsx      # replaces the earlier Leaderboard.tsx/LeaderboardRow.tsx placeholder names
+    FinalLeaderboard.tsx
   reports/
     OverviewCard.tsx
     ParticipantResultsTable.tsx
@@ -268,6 +272,8 @@ components/
 ```
 
 Non-`components/` additions (Phase 3): `hooks/use-quiz-editor.ts` (all Quiz Editor local state — add/select/edit question, add/remove option, set correct answer, save-status simulation) and `lib/validation/question.ts` (Zod schemas + `isQuestionComplete`/`getQuestionValidationMessages`, backing both the sidebar's incomplete badge and each editor's `ValidationMessage`).
+
+Non-`components/` additions (Phase 7): `hooks/use-host-gameplay.ts` — same phase vocabulary as Phase 6's participant hook (`QUESTION_ACTIVE → QUESTION_RESULTS → LEADERBOARD → FINISHED`) but **action-driven, not timer-auto-advance**: the host clicks Close Question/Leaderboard/Next Question/End Game; the countdown reaching 0 auto-closes as a convenience, mirroring what clicking Close Question does. Reuses `mocks/gameplay.ts` and `lib/game/participant-question.ts` from Phase 6 rather than duplicating them.
 
 Non-`components/` additions (Phase 6): `hooks/use-participant-gameplay.ts` (the `WAITING → QUESTION_ACTIVE → ANSWER_SUBMITTED → QUESTION_RESULTS → LEADERBOARD → FINISHED` state machine — countdown, auto-advance timers simulating the host, per-question answers, cumulative score, live leaderboard); `lib/game/participant-question.ts` (`ParticipantQuestion`/`toParticipantQuestion` — the §14 security-boundary type, strips `isCorrect` before a question ever reaches participant-facing components); `lib/game/scoring.ts` (`calculateMockQuizPoints` — client mock only, illustrates the CLAUDE.md §10 formula, never authoritative).
 
