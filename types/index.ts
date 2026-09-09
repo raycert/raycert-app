@@ -17,6 +17,8 @@ export interface Question {
   type: QuestionType;
   text: string;
   imageUrl?: string; // max 1 image, uploaded manually
+  imageFileName?: string; // local file name — a11y alt text, no backend storage
+  imageMimeType?: string; // client-validated MIME type of the uploaded file
   options: AnswerOption[]; // QUIZ: 2-4, POLL: 2-6
   timerSeconds: number;
   points?: number; // QUIZ only

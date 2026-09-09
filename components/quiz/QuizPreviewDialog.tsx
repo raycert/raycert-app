@@ -57,7 +57,7 @@ export function QuizPreviewDialog({
                   // eslint-disable-next-line @next/next/no-img-element -- local object/mock URL
                   <img
                     src={question.imageUrl}
-                    alt=""
+                    alt={question.imageFileName ?? ""}
                     className="max-h-40 w-fit rounded-lg object-contain"
                   />
                 ) : null}

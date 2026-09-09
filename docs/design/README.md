@@ -107,9 +107,10 @@ Components: `PollQuestionEditor`, `QuestionImageUpload` (shared), `AnswerOptionE
 Primary CTA: implicit save (debounced). Secondary: add/remove option (2–6), delete question.
 States: incomplete (empty text or <2 options), via the same `ValidationMessage`. No correct-answer / points fields ever rendered — enforced by `QuestionSettings`'s `points`/`onPointsChange` props being optional and omitted entirely for POLL.
 
-**07 · Import Excel Modal** — overlay on `/quizzes/[quizId]` · Trainer · Desktop.
-**Phase 3 scope: dialog shell only, no parser.** Components: `ExcelImportDialog` — dropzone visual + "Browse File" + "Download Template", all mock (toast: "Import Excel sẽ được triển khai đầy đủ ở phase sau"). The full `Dropzone` + `Progress` + `ExcelPreviewTable` state machine (empty → selected → validating → preview/errors → importing → success) described below is **deferred**, not built in Phase 3.
-States (deferred): empty, selected, validating, preview (partial error), full error (CTA disabled), importing, success (toast, closes modal).
+**07 · Import Excel Modal** — overlay on `/quizzes/[quizId]` (and `/quizzes/new`) · Trainer · Desktop.
+**Fully implemented (Phase 4), client-side only** — `.xlsx` read via `exceljs` (dynamically imported, only loaded when the dialog opens/downloads), no upload to any backend, no macro/formula execution (exceljs reads formula cells' last computed result only). Components: `ExcelImportDialog` (orchestrator) + `ExcelDropzone` + `ExcelImportSummary` + `ExcelPreviewTable` + `ExcelValidationMessage`.
+Primary CTA: `Import N câu hợp lệ` (disabled at 0 valid rows). Secondary: Upload lại file, Cancel, Download Template.
+States: empty → selected → validating → preview → importing → success (toast, closes + resets on next open). Invalid rows are never auto-corrected — each gets exactly one `{errorColumn, errorMessage}` pair (docs in §5/§13). A wrong extension or unparseable file shows a friendly inline error and stays on `empty` for retry.
 
 **08 · Host Lobby** — `/host/[sessionId]/lobby` · Trainer(Host) · Desktop, projector.
 Layout: full-bleed navy panel, `GameQRCode` | `GamePin` side-by-side focal point (stacks vertically <640px), `JoinInstructions`, `CopyJoinLinkButton`, participant chips, Start Game.
@@ -243,9 +244,11 @@ components/
     PollAnalysisRow.tsx
     SessionTable.tsx
   import/
-    ExcelImportDialog.tsx
+    ExcelImportDialog.tsx    # orchestrator: state machine + parse/validate/import wiring
+    ExcelDropzone.tsx        # empty/drag-over — file picker + Download Template
+    ExcelImportSummary.tsx   # file name + total/QUIZ/POLL/valid/error counts
     ExcelPreviewTable.tsx
-    Dropzone.tsx
+    ExcelValidationMessage.tsx
   media/
     QuestionImageUpload.tsx
     QuestionImageDisplay.tsx
@@ -294,9 +297,15 @@ Non-`components/` additions (Phase 3): `hooks/use-quiz-editor.ts` (all Quiz Edit
 
 **`ParticipantLeaderboard`** — Props: `entries: LeaderboardEntry[]` (nearby ranks or top 5), `myRank: number`. Distinct compact styling from `Leaderboard`. Used in: `/play/[sessionId]` after QUIZ result.
 
-**`ExcelImportDialog`** — **Phase 3 scope: shell only.** Props: `open`, `onOpenChange`. Renders the "empty" dropzone visual (Kéo thả .xlsx / Browse File / Download Template) with every action wired to a toast ("Import Excel sẽ được triển khai đầy đủ ở phase sau") instead of real logic. The full props/behavior below (`state: ImportState`, `previewRows: ImportPreviewRow[]`, `onFileSelect`, `onReupload`, `onConfirm`, `onCancel`, composed of `Dropzone` + `Progress` + `ExcelPreviewTable`) is the target shape for a later phase, not yet implemented. Used in: Quiz Editor ("Import Excel" button).
+**`ExcelImportDialog`** — Props: `open`, `onOpenChange`, `onImportQuestions: (questions: Question[]) => void`. Owns the `ImportState` state machine (`empty → selected → validating → preview → importing → success`), calls `parseExcelFile` (`lib/excel/parse.ts`) + `validateImportRow` (`lib/excel/validate.ts`) per row, and on confirm calls `onImportQuestions` with only the valid rows' pre-built `Question`s (in file order). Resets to `empty` whenever it closes. Used in: Quiz Editor ("Import Excel" button).
 
-**`ExcelPreviewTable`** — Props: `rows: ImportPreviewRow[]`. Renders row/type/question/status/error columns; error rows get an error-100 background.
+**`ExcelDropzone`** — Props: `onFileSelected: (file: File) => void`, `onDownloadTemplate: () => void`, `disabled?`. Drag-and-drop + Browse + Download Template (`lib/excel/template.ts`'s `generateTemplateBlob`, downloaded client-side, never sent anywhere). Used in: `ExcelImportDialog`, `empty` state.
+
+**`ExcelImportSummary`** — Props: `fileName: string`, `summary: ImportSummary` (`{total, quizCount, pollCount, validCount, errorCount}`). Used in: `ExcelImportDialog`, `preview` state.
+
+**`ExcelPreviewTable`** — Props: `rows: ValidatedImportRow[]` (an `ImportPreviewRow` plus an optional `builtQuestion`). Renders row/type/question/status/error columns; error rows get an error-100 background.
+
+**`ExcelValidationMessage`** — Props: `errorColumn?: string`, `errorMessage?: string`. Renders `**{column}** · {message}` (e.g. "**Correct Answer** · POLL không được có Correct Answer") or nothing when there's no error. Used in: `ExcelPreviewTable`'s Error column.
 
 **`ReconnectOverlay`** — Props: `status: 'reconnecting'|'failed'`, `onRetry?`, `onLeave?`. Semi-opaque overlay over current screen content (keeps context visible underneath). Used in: any participant/host live route.
 
@@ -345,6 +354,8 @@ export interface Question {
   type: QuestionType;
   text: string;
   imageUrl?: string;       // max 1 image, uploaded manually
+  imageFileName?: string;  // local file name (a11y alt text) — no backend storage
+  imageMimeType?: string;  // client-validated MIME type of the uploaded file
   options: AnswerOption[]; // QUIZ: 2-4, POLL: 2-6
   timerSeconds: number;
   points?: number;         // QUIZ only
@@ -534,16 +545,18 @@ Load both via `next/font/google`; set `--font-manrope` / `--font-inter` and map 
 
 ## 12. Image Component Specification
 
+**Implemented (Phase 3 foundation, Phase 4 completes real file selection).**
+
 **`QuestionImageUpload`** (editor)
 | State | Behavior |
 |---|---|
 | empty | Dashed dropzone, "kéo thả hoặc Browse" |
 | drag-over | Dropzone border/background shifts to brand-100/brand-700 |
-| uploading | Progress bar + filename, upload cancellable |
+| uploading | ~650ms simulated progress bar + "Đang tải ảnh lên…" (not cancellable — too brief to warrant it) |
 | preview | Shows image thumbnail + Replace / Remove actions |
-| error | Inline error-600 message below dropzone, previous image (if any) retained |
+| error | Inline error-600 message below dropzone (or below the retained preview, on a failed Replace), previous image (if any) retained |
 
-Allowed types: `image/jpeg, image/png, image/webp`. Max size: 5MB. Max: 1 per question. Reject with inline error otherwise; never silently downscale or convert.
+Allowed types: `image/jpeg, image/png, image/webp`. Max size: 5MB. Max: 1 per question. Reject with inline error otherwise; never silently downscale or convert. Uses `URL.createObjectURL` (revoked on replace/remove/unmount) — never uploaded anywhere.
 
 **`QuestionImageDisplay`** (read-only, host & participant) — spec in §11.
 
@@ -551,16 +564,21 @@ Allowed types: `image/jpeg, image/png, image/webp`. Max size: 5MB. Max: 1 per qu
 
 ## 13. Excel Import Specification
 
-**`ExcelImportDialog` states**: `empty → selected → validating → preview (partial error | full error) → importing → success`.
+**Implemented (Phase 4).** `ExcelImportDialog` states: `empty → selected → validating → preview → importing → success`.
 
-- **empty**: Download Template, Dropzone, Browse.
-- **selected/validating**: filename + indeterminate/percent progress + "Đang kiểm tra dữ liệu…".
-- **preview**: summary counts (total, QUIZ, POLL, valid, error) + `ExcelPreviewTable`. Every error row must carry `row`, `errorColumn` (if determinable), and a human `errorMessage` (e.g. "QUIZ có nhiều hơn một correct answer", "POLL có correct answer", "thiếu option", "quá số option cho phép", "timer không hợp lệ").
-- **full error** (0 valid rows): "Import Valid Questions" CTA disabled.
-- **importing**: brief loading state while rows are written to the quiz.
-- **success**: toast, modal closes, new questions appear at the end of `QuestionList`.
+- **empty**: Download Template (`lib/excel/template.ts`), `ExcelDropzone` (drag-and-drop or Browse, `.xlsx` only).
+- **selected/validating**: filename + progress + "Đang kiểm tra dữ liệu…".
+- **preview**: `ExcelImportSummary` (file name, total, QUIZ, POLL, valid, error counts) + `ExcelPreviewTable`. Every error row carries `errorColumn` + a human `errorMessage` when the offending column is known (row/type/question/status always shown regardless).
+- **0 valid rows**: `Import N câu hợp lệ` CTA disabled (N=0) — only Upload lại file / Cancel remain usable.
+- **importing**: brief loading state, then the valid rows' pre-built `Question`s are appended to the live Quiz Editor state (`useQuizEditor`'s `importQuestions`) in file order, and the first imported question is auto-selected.
+- **success**: toast ("Đã import N câu hỏi"), dialog closes.
 
-V1 does not parse or accept an image-URL column — any such column is ignored, not errored.
+**Template columns** (`lib/excel/template.ts`, must match header names exactly — matching is case/whitespace-insensitive): `Type`, `Question`, `Option A`–`Option F`, `Correct Answer`, `Time`, `Points`. No image-URL column — images are always uploaded manually after import, never referenced from Excel.
+
+**Validation rules** (`lib/excel/validate.ts`, one error per row — never auto-corrected):
+`Type` must be `QUIZ`/`POLL` · `Question` required · `Option A`/`Option B` required · options must be filled contiguously from A (no gaps) · QUIZ ≤4 options, POLL ≤6 · QUIZ requires `Correct Answer` matching a filled option (A–D) · POLL must leave `Correct Answer` blank · `Time` must be a positive number · QUIZ `Points` must be a positive number · POLL `Points` must be 0 or blank.
+
+Security: parsing never executes macros or formulas (only a formula's last computed result is read as text); a wrong extension or corrupt/non-.xlsx file is caught with a friendly inline message, never a crash; cell content is only ever rendered as plain React text (auto-escaped), never trusted as HTML/executable content.
 
 ---
 

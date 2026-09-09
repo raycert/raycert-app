@@ -188,6 +188,17 @@ export function useQuizEditor(initialQuiz: Quiz) {
     [updateQuestions]
   );
 
+  const importQuestions = useCallback(
+    (newQuestions: Question[]) => {
+      if (newQuestions.length === 0) return;
+      updateQuestions((questions) =>
+        [...questions, ...newQuestions].map((q, i) => ({ ...q, order: i + 1 }))
+      );
+      setSelectedQuestionId(newQuestions[0].id);
+    },
+    [updateQuestions]
+  );
+
   const selectedQuestion = quiz.questions.find((q) => q.id === selectedQuestionId) ?? null;
   const hasIncompleteQuestions =
     quiz.questions.length === 0 || quiz.questions.some((q) => !q.isComplete);
@@ -208,5 +219,6 @@ export function useQuizEditor(initialQuiz: Quiz) {
     removeOption,
     updateOptionText,
     setCorrectOption,
+    importQuestions,
   };
 }

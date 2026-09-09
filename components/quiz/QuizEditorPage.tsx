@@ -30,6 +30,7 @@ export function QuizEditorPage({ initialQuiz }: { initialQuiz: Quiz }) {
     removeOption,
     updateOptionText,
     setCorrectOption,
+    importQuestions,
   } = useQuizEditor(initialQuiz);
 
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -40,7 +41,7 @@ export function QuizEditorPage({ initialQuiz }: { initialQuiz: Quiz }) {
     : 0;
 
   return (
-    <div className="flex h-[calc(100vh-8.5rem)] min-h-[520px] flex-col">
+    <div className="flex h-[calc(100vh-8.5rem)] min-h-130 flex-col">
       <QuizEditorShell
         quizTitle={quiz.title}
         onTitleChange={setTitle}
@@ -67,8 +68,20 @@ export function QuizEditorPage({ initialQuiz }: { initialQuiz: Quiz }) {
               order={selectedOrder}
               validationMessages={getQuestionValidationMessages(selectedQuestion)}
               onChangeText={(text) => patchQuestion(selectedQuestion.id, { text })}
-              onUploadImage={(url) => patchQuestion(selectedQuestion.id, { imageUrl: url })}
-              onRemoveImage={() => patchQuestion(selectedQuestion.id, { imageUrl: undefined })}
+              onUploadImage={(url, fileName, mimeType) =>
+                patchQuestion(selectedQuestion.id, {
+                  imageUrl: url,
+                  imageFileName: fileName,
+                  imageMimeType: mimeType,
+                })
+              }
+              onRemoveImage={() =>
+                patchQuestion(selectedQuestion.id, {
+                  imageUrl: undefined,
+                  imageFileName: undefined,
+                  imageMimeType: undefined,
+                })
+              }
               onAddOption={() => addOption(selectedQuestion.id)}
               onRemoveOption={(optionId) => removeOption(selectedQuestion.id, optionId)}
               onChangeOptionText={(optionId, text) =>
@@ -87,8 +100,20 @@ export function QuizEditorPage({ initialQuiz }: { initialQuiz: Quiz }) {
               order={selectedOrder}
               validationMessages={getQuestionValidationMessages(selectedQuestion)}
               onChangeText={(text) => patchQuestion(selectedQuestion.id, { text })}
-              onUploadImage={(url) => patchQuestion(selectedQuestion.id, { imageUrl: url })}
-              onRemoveImage={() => patchQuestion(selectedQuestion.id, { imageUrl: undefined })}
+              onUploadImage={(url, fileName, mimeType) =>
+                patchQuestion(selectedQuestion.id, {
+                  imageUrl: url,
+                  imageFileName: fileName,
+                  imageMimeType: mimeType,
+                })
+              }
+              onRemoveImage={() =>
+                patchQuestion(selectedQuestion.id, {
+                  imageUrl: undefined,
+                  imageFileName: undefined,
+                  imageMimeType: undefined,
+                })
+              }
               onAddOption={() => addOption(selectedQuestion.id)}
               onRemoveOption={(optionId) => removeOption(selectedQuestion.id, optionId)}
               onChangeOptionText={(optionId, text) =>
@@ -120,7 +145,11 @@ export function QuizEditorPage({ initialQuiz }: { initialQuiz: Quiz }) {
         quiz={quiz}
         hasIncompleteQuestions={hasIncompleteQuestions}
       />
-      <ExcelImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      <ExcelImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImportQuestions={importQuestions}
+      />
     </div>
   );
 }

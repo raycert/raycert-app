@@ -1,56 +1,159 @@
 "use client";
 
+import { useState } from "react";
 import { toast } from "sonner";
-import { UploadCloudIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import type { ImportState, Question } from "@/types";
+import { ExcelParseError, parseExcelFile } from "@/lib/excel/parse";
+import { summarizeRows, validateImportRow, type ValidatedImportRow } from "@/lib/excel/validate";
+import { downloadBlob, generateTemplateBlob, TEMPLATE_FILENAME } from "@/lib/excel/template";
+import { ExcelDropzone } from "./ExcelDropzone";
+import { ExcelImportSummary } from "./ExcelImportSummary";
+import { ExcelPreviewTable } from "./ExcelPreviewTable";
 
-/**
- * Phase 3 scope: dialog shell only — no real .xlsx parser. Actions are
- * mock/inert and just confirm the interaction via a toast.
- */
 export function ExcelImportDialog({
   open,
   onOpenChange,
+  onImportQuestions,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onImportQuestions: (questions: Question[]) => void;
 }) {
+  const [state, setState] = useState<ImportState>("empty");
+  const [fileName, setFileName] = useState("");
+  const [rows, setRows] = useState<ValidatedImportRow[]>([]);
+  const [parseError, setParseError] = useState<string | undefined>();
+
+  function reset() {
+    setState("empty");
+    setFileName("");
+    setRows([]);
+    setParseError(undefined);
+  }
+
+  function handleOpenChange(next: boolean) {
+    if (!next) reset();
+    onOpenChange(next);
+  }
+
+  async function handleFileSelected(file: File) {
+    setParseError(undefined);
+    setFileName(file.name);
+    setState("selected");
+    // Yield a tick so "selected" actually paints before "validating" —
+    // otherwise React batches both updates into one render.
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    setState("validating");
+    try {
+      const rawRows = await parseExcelFile(file);
+      setRows(rawRows.map(validateImportRow));
+      setState("preview");
+    } catch (error) {
+      setParseError(
+        error instanceof ExcelParseError
+          ? error.message
+          : "Không thể đọc file. Vui lòng thử lại."
+      );
+      setState("empty");
+    }
+  }
+
+  async function handleDownloadTemplate() {
+    const blob = await generateTemplateBlob();
+    downloadBlob(blob, TEMPLATE_FILENAME);
+  }
+
+  function handleImport() {
+    const validQuestions = rows
+      .filter((r) => r.status === "valid" && r.builtQuestion)
+      .map((r) => r.builtQuestion!);
+    if (validQuestions.length === 0) return;
+
+    setState("importing");
+    setTimeout(() => {
+      onImportQuestions(validQuestions);
+      toast.success(`Đã import ${validQuestions.length} câu hỏi`);
+      handleOpenChange(false);
+    }, 400);
+  }
+
+  const summary = summarizeRows(rows);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="font-heading">Import Excel</DialogTitle>
           <DialogDescription>
-            Import Excel sẽ được triển khai đầy đủ ở phase sau — đây là placeholder giao diện.
+            Chỉ hỗ trợ file .xlsx theo đúng template RayCert. Dữ liệu được đọc hoàn toàn ở trình
+            duyệt — không upload lên server.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-2.5 rounded-lg border-2 border-dashed border-border bg-secondary/40 px-6 py-8 text-center">
-          <UploadCloudIcon className="size-6 text-muted-foreground" />
-          <p className="text-[12.5px] text-body">Kéo thả file .xlsx vào đây</p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => toast("Import Excel sẽ được triển khai đầy đủ ở phase sau")}
-          >
-            Browse File
-          </Button>
-          <button
-            type="button"
-            onClick={() => toast("Import Excel sẽ được triển khai đầy đủ ở phase sau")}
-            className="text-[11.5px] font-semibold text-brand-500 underline"
-          >
-            Download Template
-          </button>
-        </div>
+        {state === "empty" ? (
+          <div className="flex flex-col gap-2">
+            <ExcelDropzone
+              onFileSelected={handleFileSelected}
+              onDownloadTemplate={handleDownloadTemplate}
+            />
+            {parseError ? (
+              <p role="alert" className="text-[12.5px] text-error-600">
+                {parseError}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {state === "selected" || state === "validating" ? (
+          <div className="flex flex-col items-center gap-2.5 rounded-lg border border-border px-6 py-8 text-center">
+            <p className="text-[12.5px] font-semibold">{fileName}</p>
+            <Progress value={state === "validating" ? 65 : 15} className="max-w-80" />
+            <p className="text-[11.5px] text-muted-foreground">Đang kiểm tra dữ liệu…</p>
+          </div>
+        ) : null}
+
+        {state === "preview" || state === "importing" ? (
+          <div className="flex flex-col gap-3.5">
+            <ExcelImportSummary fileName={fileName} summary={summary} />
+            <ExcelPreviewTable rows={rows} />
+          </div>
+        ) : null}
+
+        <DialogFooter>
+          {state === "preview" || state === "importing" ? (
+            <>
+              <Button type="button" variant="outline" onClick={reset} disabled={state === "importing"}>
+                Upload lại file
+              </Button>
+              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleImport}
+                disabled={summary.validCount === 0 || state === "importing"}
+              >
+                {state === "importing"
+                  ? "Đang import…"
+                  : `Import ${summary.validCount} câu hợp lệ`}
+              </Button>
+            </>
+          ) : (
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+              Cancel
+            </Button>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -12,11 +12,13 @@ type Phase = "idle" | "drag-over" | "uploading" | "error";
 
 export function QuestionImageUpload({
   imageUrl,
+  imageFileName,
   onUploaded,
   onRemove,
 }: {
   imageUrl?: string;
-  onUploaded: (url: string, fileName: string) => void;
+  imageFileName?: string;
+  onUploaded: (url: string, fileName: string, mimeType: string) => void;
   onRemove: () => void;
 }) {
   const [phase, setPhase] = useState<Phase>("idle");
@@ -58,7 +60,7 @@ export function QuestionImageUpload({
       if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
       const url = URL.createObjectURL(file);
       objectUrlRef.current = url;
-      onUploaded(url, file.name);
+      onUploaded(url, file.name, file.type);
       setPhase("idle");
     }, 650);
   }
@@ -91,7 +93,11 @@ export function QuestionImageUpload({
       ) : imageUrl ? (
         <div className="flex items-center gap-2.5 rounded-lg border-[1.5px] border-teal-500 bg-teal-100 px-3.5 py-3.5 text-[12.5px] text-[#1c6e6e]">
           {/* eslint-disable-next-line @next/next/no-img-element -- local object/mock URL, not an optimizable remote asset */}
-          <img src={imageUrl} alt="" className="size-10 shrink-0 rounded object-cover" />
+          <img
+            src={imageUrl}
+            alt={imageFileName ?? ""}
+            className="size-10 shrink-0 rounded object-cover"
+          />
           <span>Ảnh minh hoạ đã tải —</span>
           <button
             type="button"

@@ -30,7 +30,7 @@ export function QuizQuestionEditor({
   order: number;
   validationMessages: string[];
   onChangeText: (text: string) => void;
-  onUploadImage: (url: string, fileName: string) => void;
+  onUploadImage: (url: string, fileName: string, mimeType: string) => void;
   onRemoveImage: () => void;
   onAddOption: () => void;
   onRemoveOption: (optionId: string) => void;
@@ -69,6 +69,7 @@ export function QuizQuestionEditor({
 
       <QuestionImageUpload
         imageUrl={question.imageUrl}
+        imageFileName={question.imageFileName}
         onUploaded={onUploadImage}
         onRemove={onRemoveImage}
       />
