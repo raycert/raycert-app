@@ -25,6 +25,8 @@ export function QuizQuestionEditor({
   onTimerChange,
   onPointsChange,
   onDelete,
+  pointsInputMode,
+  showTimer,
 }: {
   question: Question;
   order: number;
@@ -39,6 +41,8 @@ export function QuizQuestionEditor({
   onTimerChange: (seconds: number) => void;
   onPointsChange: (points: number) => void;
   onDelete: () => void;
+  pointsInputMode?: "preset" | "custom"; // "custom" = Post-test (addendum §2), default = Live Quiz preset
+  showTimer?: boolean; // false = Post-test (no per-question timer), default = Live Quiz (shown)
 }) {
   return (
     <div className="flex max-w-[640px] flex-col gap-3.5">
@@ -103,6 +107,8 @@ export function QuizQuestionEditor({
         onTimerChange={onTimerChange}
         points={question.points}
         onPointsChange={onPointsChange}
+        pointsInputMode={pointsInputMode}
+        showTimer={showTimer}
       />
 
       <ValidationMessage messages={validationMessages} />

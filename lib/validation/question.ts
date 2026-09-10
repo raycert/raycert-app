@@ -26,7 +26,7 @@ const quizQuestionSchema = z.object({
   type: z.literal("QUIZ"),
   text: z.string().min(1, "Câu hỏi không được để trống"),
   options: quizOptionsSchema,
-  points: z.number().positive("Điểm phải lớn hơn 0"),
+  points: z.number().int("Điểm phải là số nguyên").positive("Điểm phải lớn hơn 0"),
 });
 
 const pollQuestionSchema = z.object({

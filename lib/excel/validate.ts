@@ -1,11 +1,16 @@
-import type { AnswerOption, ImportPreviewRow, Question, QuestionType } from "@/types";
+import type { ActivityMode, AnswerOption, ImportPreviewRow, Question, QuestionType } from "@/types";
 import { isQuestionComplete } from "@/lib/validation/question";
 import type { RawExcelRow } from "./parse";
 
 const LABELS = ["A", "B", "C", "D", "E", "F"];
+// `Question.timerSeconds` is a required field on the shared model (LIVE_QUIZ needs it) but
+// Post-test never displays or reads it anywhere (Assessment Editor's QuestionSettings renders
+// with showTimer={false}; only `settings.timeLimitMinutes` — the overall assessment timer —
+// matters for POST_TEST). This default only keeps the shared shape filled in, nothing more.
+const POST_TEST_DEFAULT_TIMER_SECONDS = 20;
 
 export interface ValidatedImportRow extends ImportPreviewRow {
-  /** Only set when `status === "valid"` — ready to append to the Quiz Editor. */
+  /** Only set when `status === "valid"` — ready to append to the Quiz/Assessment Editor. */
   builtQuestion?: Question;
 }
 
@@ -31,18 +36,26 @@ function buildQuestion(params: {
     options,
     timerSeconds: Math.round(params.time),
     points: params.type === "QUIZ" ? params.points : undefined,
-    order: 0, // reassigned when merged into the Quiz Editor's question list
+    order: 0, // reassigned when merged into the Quiz/Assessment Editor's question list
     isComplete: false,
   };
   return { ...question, isComplete: isQuestionComplete(question) };
 }
 
 /**
- * Validates one parsed Excel row against the RayCert QUIZ/POLL rules
- * (docs/design/README.md §12, CLAUDE.md §2). Never auto-corrects data — a
- * row either satisfies every rule or is reported as an error, verbatim.
+ * Validates one parsed Excel row against RayCert's rules — same column
+ * layout for both activity modes (docs/design/README.md §12, CLAUDE.md §2),
+ * but the accepted `Type`/`Points`/`Time` rules differ by `mode`
+ * (Phase 9B §16): `LIVE_QUIZ` keeps every check byte-for-byte as before;
+ * `POST_TEST` only accepts QUIZ rows, defaults blank Points to 1, requires
+ * integer Points, and never fails on Time (parsed for template
+ * compatibility only — Post-test has no per-question timer). Never
+ * auto-corrects data beyond that one documented default.
  */
-export function validateImportRow(raw: RawExcelRow): ValidatedImportRow {
+export function validateImportRow(
+  raw: RawExcelRow,
+  mode: ActivityMode = "LIVE_QUIZ"
+): ValidatedImportRow {
   const typeRaw = raw.type.trim().toUpperCase();
   const question = raw.question.trim();
   const options = raw.options.map((o) => o.trim());
@@ -59,10 +72,15 @@ export function validateImportRow(raw: RawExcelRow): ValidatedImportRow {
     errorMessage,
   });
 
-  if (typeRaw !== "QUIZ" && typeRaw !== "POLL") {
+  if (mode === "POST_TEST") {
+    if (typeRaw !== "QUIZ") {
+      return fail("Type", "Post-test chỉ hỗ trợ QUIZ");
+    }
+  } else if (typeRaw !== "QUIZ" && typeRaw !== "POLL") {
     return fail("Type", "Type phải là QUIZ hoặc POLL");
   }
-  const type: QuestionType = typeRaw;
+  // POST_TEST already rejected anything but QUIZ above, so this is always safe.
+  const resolvedType: QuestionType = mode === "POST_TEST" ? "QUIZ" : (typeRaw as QuestionType);
 
   if (!question) {
     return fail("Question", "Thiếu nội dung câu hỏi");
@@ -82,12 +100,17 @@ export function validateImportRow(raw: RawExcelRow): ValidatedImportRow {
   }
 
   const filledCount = firstEmptyIndex === -1 ? options.length : firstEmptyIndex;
-  const maxOptions = type === "QUIZ" ? 4 : 6;
+  const maxOptions = resolvedType === "QUIZ" ? 4 : 6;
   if (filledCount > maxOptions) {
-    return fail(`Option ${LABELS[maxOptions]}`, `${type} chỉ được tối đa ${maxOptions} lựa chọn`);
+    return fail(
+      `Option ${LABELS[maxOptions]}`,
+      mode === "POST_TEST"
+        ? "Post-test chỉ hỗ trợ tối đa 4 đáp án"
+        : `${resolvedType} chỉ được tối đa ${maxOptions} lựa chọn`
+    );
   }
 
-  if (type === "QUIZ") {
+  if (resolvedType === "QUIZ") {
     if (!correctRaw) {
       return fail("Correct Answer", "QUIZ cần Correct Answer (A/B/C/D)");
     }
@@ -102,13 +125,40 @@ export function validateImportRow(raw: RawExcelRow): ValidatedImportRow {
     return fail("Correct Answer", "POLL không được có Correct Answer");
   }
 
-  const time = Number(timeRaw);
-  if (!timeRaw || !Number.isFinite(time) || time <= 0) {
-    return fail("Time", "Time không hợp lệ (phải là số giây dương)");
+  let time: number;
+  if (mode === "POST_TEST") {
+    // Not required, not validated as an error — Post-test has no per-question
+    // timer at runtime; parsed only so the shared Question shape stays filled.
+    const parsedTime = Number(timeRaw);
+    time = timeRaw && Number.isFinite(parsedTime) && parsedTime > 0
+      ? parsedTime
+      : POST_TEST_DEFAULT_TIMER_SECONDS;
+  } else {
+    const parsedTime = Number(timeRaw);
+    if (!timeRaw || !Number.isFinite(parsedTime) || parsedTime <= 0) {
+      return fail("Time", "Time không hợp lệ (phải là số giây dương)");
+    }
+    time = parsedTime;
   }
 
   let points: number | undefined;
-  if (type === "QUIZ") {
+  if (mode === "POST_TEST") {
+    if (!pointsRaw) {
+      points = 1; // blank -> default 1 (Phase 9A/9B rule), the one documented auto-correction
+    } else {
+      const parsedPoints = Number(pointsRaw);
+      if (!Number.isFinite(parsedPoints)) {
+        return fail("Points", "Điểm phải là số");
+      }
+      if (!Number.isInteger(parsedPoints)) {
+        return fail("Points", "Điểm phải là số nguyên");
+      }
+      if (parsedPoints <= 0) {
+        return fail("Points", "Điểm phải lớn hơn 0");
+      }
+      points = parsedPoints;
+    }
+  } else if (resolvedType === "QUIZ") {
     const parsedPoints = Number(pointsRaw);
     if (!pointsRaw || !Number.isFinite(parsedPoints) || parsedPoints <= 0) {
       return fail("Points", "QUIZ Points không hợp lệ (phải > 0)");
@@ -122,7 +172,7 @@ export function validateImportRow(raw: RawExcelRow): ValidatedImportRow {
   }
 
   const builtQuestion = buildQuestion({
-    type,
+    type: resolvedType,
     question,
     optionTexts: options.slice(0, filledCount),
     correctLabel: correctRaw,
@@ -132,7 +182,7 @@ export function validateImportRow(raw: RawExcelRow): ValidatedImportRow {
 
   return {
     row: raw.rowNumber,
-    type,
+    type: resolvedType,
     question,
     status: "valid",
     builtQuestion,
@@ -145,6 +195,8 @@ export interface ImportSummary {
   pollCount: number;
   validCount: number;
   errorCount: number;
+  /** Sum of `points` across valid QUIZ rows — meaningful for POST_TEST imports. */
+  totalPoints: number;
 }
 
 export function summarizeRows(rows: ValidatedImportRow[]): ImportSummary {
@@ -154,5 +206,9 @@ export function summarizeRows(rows: ValidatedImportRow[]): ImportSummary {
     pollCount: rows.filter((r) => r.type === "POLL").length,
     validCount: rows.filter((r) => r.status === "valid").length,
     errorCount: rows.filter((r) => r.status === "error").length,
+    totalPoints: rows.reduce(
+      (sum, r) => sum + (r.status === "valid" ? (r.builtQuestion?.points ?? 0) : 0),
+      0
+    ),
   };
 }

@@ -12,22 +12,36 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import type { ImportState, Question } from "@/types";
+import type { ActivityMode, ImportState, Question } from "@/types";
 import { ExcelParseError, parseExcelFile } from "@/lib/excel/parse";
 import { summarizeRows, validateImportRow, type ValidatedImportRow } from "@/lib/excel/validate";
-import { downloadBlob, generateTemplateBlob, TEMPLATE_FILENAME } from "@/lib/excel/template";
+import {
+  downloadBlob,
+  generatePostTestTemplateBlob,
+  generateTemplateBlob,
+  POST_TEST_TEMPLATE_FILENAME,
+  TEMPLATE_FILENAME,
+} from "@/lib/excel/template";
 import { ExcelDropzone } from "./ExcelDropzone";
 import { ExcelImportSummary } from "./ExcelImportSummary";
 import { ExcelPreviewTable } from "./ExcelPreviewTable";
 
+/**
+ * Reused as-is by Quiz Editor (`mode="LIVE_QUIZ"`, default — unchanged
+ * behavior) and Assessment Editor (`mode="POST_TEST"` — Phase 9B): QUIZ-only,
+ * blank Points default to 1, its own template variant. Parsing stays
+ * format-agnostic; only validation/labels/template branch on `mode`.
+ */
 export function ExcelImportDialog({
   open,
   onOpenChange,
   onImportQuestions,
+  mode = "LIVE_QUIZ",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImportQuestions: (questions: Question[]) => void;
+  mode?: ActivityMode;
 }) {
   const [state, setState] = useState<ImportState>("empty");
   const [fileName, setFileName] = useState("");
@@ -56,7 +70,7 @@ export function ExcelImportDialog({
     setState("validating");
     try {
       const rawRows = await parseExcelFile(file);
-      setRows(rawRows.map(validateImportRow));
+      setRows(rawRows.map((r) => validateImportRow(r, mode)));
       setState("preview");
     } catch (error) {
       setParseError(
@@ -69,8 +83,9 @@ export function ExcelImportDialog({
   }
 
   async function handleDownloadTemplate() {
-    const blob = await generateTemplateBlob();
-    downloadBlob(blob, TEMPLATE_FILENAME);
+    const blob =
+      mode === "POST_TEST" ? await generatePostTestTemplateBlob() : await generateTemplateBlob();
+    downloadBlob(blob, mode === "POST_TEST" ? POST_TEST_TEMPLATE_FILENAME : TEMPLATE_FILENAME);
   }
 
   function handleImport() {
@@ -93,10 +108,13 @@ export function ExcelImportDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="font-heading">Import Excel</DialogTitle>
+          <DialogTitle className="font-heading">
+            {mode === "POST_TEST" ? "Import Excel — Post-test" : "Import Excel"}
+          </DialogTitle>
           <DialogDescription>
-            Chỉ hỗ trợ file .xlsx theo đúng template RayCert. Dữ liệu được đọc hoàn toàn ở trình
-            duyệt — không upload lên server.
+            {mode === "POST_TEST"
+              ? "Chỉ hỗ trợ file .xlsx theo template Post-test — chỉ QUIZ (không POLL), Points bỏ trống sẽ mặc định = 1. Dữ liệu được đọc hoàn toàn ở trình duyệt — không upload lên server."
+              : "Chỉ hỗ trợ file .xlsx theo đúng template RayCert. Dữ liệu được đọc hoàn toàn ở trình duyệt — không upload lên server."}
           </DialogDescription>
         </DialogHeader>
 
@@ -124,8 +142,8 @@ export function ExcelImportDialog({
 
         {state === "preview" || state === "importing" ? (
           <div className="flex flex-col gap-3.5">
-            <ExcelImportSummary fileName={fileName} summary={summary} />
-            <ExcelPreviewTable rows={rows} />
+            <ExcelImportSummary fileName={fileName} summary={summary} mode={mode} />
+            <ExcelPreviewTable rows={rows} mode={mode} />
           </div>
         ) : null}
 

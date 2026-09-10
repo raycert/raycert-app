@@ -6,5 +6,6 @@ export interface TrainerNavItem {
 export const trainerNavItems: TrainerNavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "My Quizzes", href: "/quizzes" },
+  { label: "Assessments", href: "/assessments" },
   { label: "Results", href: "/results" },
 ];

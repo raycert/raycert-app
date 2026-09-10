@@ -27,3 +27,20 @@ export function formatDate(iso: string): string {
 export function formatResponseSeconds(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
+
+/** 1782 -> "29:42" — MM:SS countdown display (Post-test overall timer). */
+export function formatCountdown(totalSeconds: number): string {
+  const clamped = Math.max(0, Math.round(totalSeconds));
+  const minutes = Math.floor(clamped / 60);
+  const seconds = clamped % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+/** 72 -> "72%", 70.8 -> "70.8%" — integer when it divides evenly, else at
+ * most 1 decimal place (Post-test Result score percent, Phase 9D §17). The
+ * value itself is already rounded to 1dp by
+ * `lib/assessment/scoring.ts`'s `calculateScorePercent`; this only trims a
+ * trailing `.0`. */
+export function formatScorePercent(scorePercent: number): string {
+  return `${Number.isInteger(scorePercent) ? scorePercent : scorePercent.toFixed(1)}%`;
+}

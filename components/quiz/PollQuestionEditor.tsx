@@ -23,6 +23,7 @@ export function PollQuestionEditor({
   onChangeOptionText,
   onTimerChange,
   onDelete,
+  showTimer,
 }: {
   question: Question;
   order: number;
@@ -35,6 +36,7 @@ export function PollQuestionEditor({
   onChangeOptionText: (optionId: string, text: string) => void;
   onTimerChange: (seconds: number) => void;
   onDelete: () => void;
+  showTimer?: boolean; // false = Post-test (no per-question timer), default = Live Quiz (shown)
 }) {
   return (
     <div className="flex max-w-[640px] flex-col gap-3.5">
@@ -93,7 +95,11 @@ export function PollQuestionEditor({
         ) : null}
       </div>
 
-      <QuestionSettings timerSeconds={question.timerSeconds} onTimerChange={onTimerChange} />
+      <QuestionSettings
+        timerSeconds={question.timerSeconds}
+        onTimerChange={onTimerChange}
+        showTimer={showTimer}
+      />
       <p className="text-[11.5px] text-muted-foreground">
         Không có: đáp án đúng, điểm, speed bonus.
       </p>

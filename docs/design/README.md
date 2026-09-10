@@ -31,6 +31,9 @@ The `.dc.html` files bundled here (`Product Flow & Sitemap`, `Design System V1`,
 | `/join` | Join Game | Manual Game PIN entry (used when a participant opens RayCert directly, not via QR/link) |
 | `/join/[sessionCode]` | Nickname Entry | Session already resolved from the URL — reached via QR Code scan, a shared Join Link, **or** a redirect from `/join` after a valid PIN. No PIN re-entry here. |
 | `/play/[sessionId]` | Participant Session | Single route hosting Waiting Room → Question → Result → Leaderboard → Final Result as **UI states**, driven by realtime session state, not sub-routes |
+| `/assessment/[assessmentId]/start` | Post-test Start | Student Information (Họ tên/Bộ phận) + assessment overview → `Bắt đầu làm bài`. Phase 9C. Note the singular `/assessment/` — a deliberate separate namespace from the trainer's plural `/assessments/...`, mirroring `/play` vs `/quizzes`. |
+| `/assessment/[assessmentId]/take` | Post-test Take | Self-paced, freely-revisitable multi-question flow, one overall timer — **not** the Live Quiz Select+Confirm/per-question-timer model. Phase 9C. |
+| `/assessment/[assessmentId]/result` | Post-test Result | PASS/FAIL, score, question summary, optional Review Answers, Attempt History, Retake — Phase 9C (minimal placeholder) → Phase 9D (real screen, this table entry). Attempt data comes from `sessionStorage` (`lib/assessment/attempt-store.ts`), not the URL — the route only carries `?attemptId=`. |
 
 **Trainer**
 | Route | Page | Purpose |
@@ -42,6 +45,10 @@ The `.dc.html` files bundled here (`Product Flow & Sitemap`, `Design System V1`,
 | `/quizzes/[quizId]/preview` | Quiz Preview | Read-only run-through |
 | `/results` | Results Dashboard | Session history |
 | `/results/[sessionId]` | Game Report | Overview + Participant Results + QUIZ/POLL Analysis |
+| `/assessments` | Assessments (Post-test list) | List, Edit/Preview/Copy Link — Phase 9A |
+| `/assessments/new` | Assessment Editor (new) | Same component as edit, empty draft |
+| `/assessments/[assessmentId]` | Assessment Editor (edit) | Title/Description, Questions section (reuses Quiz Editor's `QuestionList`/`QuizQuestionEditor`/`PollQuestionEditor`), Assessment Settings. Participant take-flow now lives at `/assessment/[assessmentId]/...` (Phase 9C, see Public table above) — a separate route namespace, not nested under this trainer route. |
+| `/assessments/[assessmentId]/present` | Assessment Presenter | Projector screen for trainers — QR + title + stats + overall countdown (last 5 min). Phase 9C+. Deliberately a top-level route file **outside** the `(trainer)` route group despite sharing the `/assessments/...` prefix, so it escapes `NavBar`/`SidebarNav` chrome and gets a full-bleed `HostShell` layout (verified empirically: no build conflict, no inherited layout) — same trick as `/host/[sessionId]/...` vs `/quizzes/[quizId]`. |
 
 **Host**
 | Route | Page | Purpose |
@@ -107,10 +114,12 @@ Components: `PollQuestionEditor`, `QuestionImageUpload` (shared), `AnswerOptionE
 Primary CTA: implicit save (debounced). Secondary: add/remove option (2–6), delete question.
 States: incomplete (empty text or <2 options), via the same `ValidationMessage`. No correct-answer / points fields ever rendered — enforced by `QuestionSettings`'s `points`/`onPointsChange` props being optional and omitted entirely for POLL.
 
-**07 · Import Excel Modal** — overlay on `/quizzes/[quizId]` (and `/quizzes/new`) · Trainer · Desktop.
+**07 · Import Excel Modal** — overlay on `/quizzes/[quizId]` (and `/quizzes/new`) · Trainer · Desktop. Also reused overlaying `/assessments/new`/`/assessments/[assessmentId]` (Phase 9B).
 **Fully implemented (Phase 4), client-side only** — `.xlsx` read via `exceljs` (dynamically imported, only loaded when the dialog opens/downloads), no upload to any backend, no macro/formula execution (exceljs reads formula cells' last computed result only). Components: `ExcelImportDialog` (orchestrator) + `ExcelDropzone` + `ExcelImportSummary` + `ExcelPreviewTable` + `ExcelValidationMessage`.
 Primary CTA: `Import N câu hợp lệ` (disabled at 0 valid rows). Secondary: Upload lại file, Cancel, Download Template.
 States: empty → selected → validating → preview → importing → success (toast, closes + resets on next open). Invalid rows are never auto-corrected — each gets exactly one `{errorColumn, errorMessage}` pair (docs in §5/§13). A wrong extension or unparseable file shows a friendly inline error and stays on `empty` for retry.
+
+**Phase 9B — `mode` parameter (`ActivityMode`, default `"LIVE_QUIZ"`):** `ExcelImportDialog`/`validateImportRow`/`ExcelPreviewTable`/`ExcelImportSummary` all gained an optional `mode?: ActivityMode` prop/param — `"LIVE_QUIZ"` (the default, used unmodified by Quiz Editor — every check, message, and column stays byte-identical to Phase 4) vs. `"POST_TEST"` (used by Assessment Editor): `Type` must be `QUIZ` (a `POLL` row is an error — "Post-test chỉ hỗ trợ QUIZ" — not silently skipped), `Points` blank defaults to `1` (the one documented auto-correction) and otherwise must be a positive **integer** (decimals rejected — "Điểm phải là số nguyên"), `Time` is parsed for template-column compatibility but never required/never fails a row (Post-test has no per-question timer). `ExcelPreviewTable` swaps its Type column for Correct Answer + Points in `POST_TEST` mode; `ExcelImportSummary` swaps the QUIZ/POLL count split for a "Tổng điểm (câu hợp lệ)" total. `lib/excel/template.ts` gained `generatePostTestTemplateBlob`/`POST_TEST_TEMPLATE_FILENAME` — QUIZ-only sample rows, one sample row with `Points` left blank to illustrate the default — `generateTemplateBlob`/`TEMPLATE_FILENAME` (Live Quiz's template) are untouched. **Timer fix-up:** the Post-test template uses its own narrower `POST_TEST_TEMPLATE_COLUMNS` — `Type, Question, Option A, Option B, Option C, Option D, Correct Answer, Points` — no `Option E`/`Option F` (Post-test caps at 4 options) and no `Time` column at all (Post-test has no per-question timer). `lib/excel/parse.ts` looks up columns by header name and already tolerated missing ones, so this needed zero parser changes; a Quiz template's extra columns, if reused for a Post-test import anyway, are simply ignored by the `POST_TEST` validation branch.
 
 **08 · Host Lobby** — `/host/[sessionId]/lobby` · Trainer(Host) · Desktop, projector.
 Layout: full-bleed navy panel, `GameQRCode` | `GamePin` side-by-side focal point (stacks vertically <640px), `JoinInstructions`, `CopyJoinLinkButton`, participant chips, Start Game.
@@ -185,6 +194,32 @@ States: empty (no sessions at all), empty (search/filter yields zero rows) — b
 **25 · Game Report** — `/results/[sessionId]` · Trainer · Desktop. **Implemented.**
 Components: `SessionReportView` (orchestrator) → `ReportSummary` + `ReportMetricCard` grid, `KnowledgeGapSection`, `QuizQuestionAnalytics`/`PollQuestionAnalytics` (via `QuestionAnalyticsCard` + `ResponseDistribution`), `ParticipantResultsTable`/`ParticipantResultRow`, `ParticipantDetailDialog`, `ExportReportButton`.
 States: all-POLL session (rank/score/highest-lowest hidden, no QUIZ Analysis block, participant table shows "—" for score/rank) and all-QUIZ session (no POLL Analysis block) both exercised by mock data; POLL never merged into correct-rate/score/knowledge-gap anywhere. Unknown `sessionId` shows a not-found state with a back link (same pattern as `/quizzes/[quizId]`).
+
+**26 · Assessments (Post-test list)** — `/assessments` · Trainer · Desktop. **Implemented (Phase 9A — no prior hi-fi spec, designed directly within the Design System tokens below; Company Name + Duplicate addendum extended it).**
+Components: `AssessmentList` → `AssessmentCard` (title, `companyName` if present (trimmed; renders nothing — not a "Chưa có công ty" placeholder — when absent or blank-after-trim), description, `AssessmentStatusBadge`, question count, total points, minimum passing points, equivalent pass rate, time limit, attempts, Edit/Preview/Copy Link/Present, and a `MoreHorizontalIcon` `DropdownMenu` — mirroring `QuizRow`'s existing Live Quiz "more actions" pattern — holding **Duplicate**, added specifically to avoid a 6th inline button cluttering the card). This route is `export const dynamic = "force-dynamic"` (Company Name + Duplicate addendum) — see §4 mock-store note below for why.
+States: empty (`EmptyState`, no Post-tests at all).
+
+**27 · Assessment Editor** — `/assessments/new`, `/assessments/[assessmentId]` · Trainer · Desktop. **Implemented (Phase 9A + points-per-question addendum + Phase 9B question management/Excel import + timer fix-up + banner addendum + banner UI fix-up + Company Name + Duplicate addendum).**
+Components: `AssessmentEditor` (orchestrator, `useAssessmentEditor`) → title input, a **"Tên công ty" input** (Company Name addendum — optional, `sr-only` label + placeholder "Công ty TNHH ABC" matching the title/description inputs' existing label-less style, `maxLength={120}`, sits directly below title and above description per spec; raw value kept in state as typed, trimmed only at render time everywhere it's displayed downstream), description textarea, a **"Banner bài kiểm tra" card** (`AssessmentBannerSection` → `AssessmentBannerUpload` only — JPG/JPEG/PNG/WebP, max 5MB, 1 banner, 16:5-recommended, Replace/Remove, capped to `max-w-160` in the desktop editor so the aspect ratio doesn't dominate the page; **no Banner title/subtitle inputs** — removed in the banner UI fix-up, since the banner is image/branding only now and never carries text), a Questions card (header CTAs "Tải file mẫu" + "Import Excel"; `AssessmentQuestionSummary` showing scored-QUIZ-vs-total + derived `totalPoints`, + reused `QuestionList`/`QuizQuestionEditor`/`PollQuestionEditor`/`AddQuestionDialog` from the Quiz Editor — each QUIZ question's own `points` edited via a free numeric input labeled "Điểm" (`QuestionSettings`'s `pointsInputMode="custom"`, instead of Live Quiz's 500/1000/1500/2000 preset dropdown), **no per-question Timer control at all** (`QuestionSettings`'s `showTimer={false}` — Post-test has no per-question timer, only the overall `settings.timeLimitMinutes`; `Question.timerSeconds` still exists on the shared model for LIVE_QUIZ but Post-test never displays/reads it); reorder via existing up/down, delete via existing trash button — no duplicate-question action, foundation doesn't have one for either mode), an `AssessmentSettings` card ("Điều kiện đạt": Tổng số câu + read-only Tổng điểm bài + `minimumPassingPoints` input + live "Tương đương: X%"; "Số lần làm"; "Thời gian làm bài" — optional, "Không giới hạn" toggle, the *only* timer in Post-test, starts on "Bắt đầu làm bài" and doesn't reset between questions — see Screens 28–30 below for the now-built participant take-flow; randomize/show-correct `Switch` toggles; Active/Inactive), `AssessmentPreviewDialog`, `ExcelImportDialog` reused with `mode="POST_TEST"` (Phase 9B — see §16 below). Top action bar also has a **Present** button (`Link` to `/assessments/[assessmentId]/present`, opens in a new tab — see Screen 27b) alongside the unchanged Preview/Save & Close; `AssessmentList`'s `AssessmentCard` (Screen 26) gained the same Present action next to Edit/Preview/Copy Link (Phase 9C+).
+States: empty questions ("Post-test chưa có câu hỏi nào"), POLL-present warning (question source includes POLL — excluded from scoring, not blocked; manual Add Question still offers POLL, Excel import does not), validation error (`minimumPassingPoints` > `totalPoints` — "Điểm tối thiểu để đạt không được lớn hơn tổng điểm của bài." — Active toggle disabled and forced back to Inactive), unknown `assessmentId` not-found (same pattern as `/quizzes/[quizId]`, `/results/[sessionId]`), Excel import preview/partial-import/all-invalid/non-xlsx (same states as Quiz Editor's import, Post-test-specific columns), no-banner (upload dropzone shown in the editor; `AssessmentBanner`'s plain Signal-Blue/`brand-900` + icon visual — no text — wherever the banner renders without one), banner file rejected (wrong MIME or >5MB — existing banner untouched, inline error shown, never silently replaced).
+
+**27b · Assessment Presenter** — `/assessments/[assessmentId]/present` · Trainer · Desktop/projector-first (1366×768, 1920×1080). **Implemented (Phase 9C+).**
+Components: `AssessmentPresent` (orchestrator) in `HostShell` (unmodified reuse of Live Quiz's full-bleed navy shell) → light "RayCert" wordmark, a QR-beside-content layout (mirrors `HostLobbyPanel`'s side-by-side pattern so it fits 1366×768 with no vertical scroll) with `GameQRCode` (unmodified component, reused directly; QR value is the **absolute** URL to `/assessment/[assessmentId]/start`, seeded as a relative path on first render and swapped to `window.location.origin + ...` in a mount effect to avoid an SSR hydration mismatch — same pattern as `HostLobbyPanel`'s join-link URL) + "Quét mã QR để bắt đầu làm bài" caption + truncated URL text + `CopyJoinLinkButton` (unmodified component, `label="Copy Link"` override), and a content column: `AssessmentBanner` if the assessment has one (else omitted entirely — no RayCert-fallback banner block, just the title), title as `<h1>`, `companyName` if present (trimmed, directly under the title — Company Name addendum §4), a 2×2 stat grid (question count, total points, minimum passing points + equivalent %, time limit or "Không giới hạn"), and — only when the assessment has a time limit — `AssessmentCountdown` (`mode="presenter"`) plus a "Bắt đầu đếm giờ" button shown until pressed.
+States: no time limit (`Thời gian làm bài: Không giới hạn`, no countdown, no start-timer button — Screen §13), time limit but timer not yet started (stat grid + start button, no countdown UI, since `AssessmentCountdown` renders `null` below the 5-minute-remaining band), timer running >5 min remaining (still renders `null` — presenter view stays QR/stats-focused per spec, no countdown clutter), ≤5:00 remaining (large NORMAL→WARNING countdown appears: "Còn 5 phút"), ≤1:00 remaining (CRITICAL: "Sắp hết giờ"), 0:00 (EXPIRED: "Đã hết thời gian"), banner present vs. absent, unknown `assessmentId` not-found (bare navy not-found message, no trainer chrome since this route is intentionally outside `(trainer)`).
+Timing note: there is no backend shared-session timing yet (Phase 9C+ §9), so "session start" is a local, presenter-initiated `sessionStartedAt` timestamp set by the "Bắt đầu đếm giờ" button; `expiresAt` is derived with the exact same formula `useAssessmentAttempt` uses for participants, then fed into the same unmodified `useAssessmentTimer` hook used by Screen 29 — not fake API polling, and a one-line swap once a backend provides a real `expiresAt`.
+
+**28 · Post-test Start** — `/assessment/[assessmentId]/start` · Participant · Mobile-first (also fine on tablet/desktop via `MobileShell`). **Implemented (Phase 9C + banner addendum + banner UI fix-up).**
+Components: `AssessmentStart` → `AssessmentBanner` (image-only, or the plain Signal-Blue fallback — never renders title/subtitle text, no gradient scrim) → `AssessmentHeader` (title as an `<h1>`, then `companyName` if present (trimmed; renders nothing when absent — Company Name addendum §5, never added to `StudentInformationForm`), then description — all one block below the banner, `gap-1` internally, `gap-4` from the banner), overview stats (scored question count, `totalPoints`, `minimumPassingPoints` + equivalent %, `timeLimitMinutes`, `maxAttempts`), `StudentInformationForm` (Họ tên/Bộ phận — required, trimmed, max 100 chars each, no email/password/account/PIN). The page starts directly with the banner — no "POST-TEST"/"Assessment"/"Test"/"Exam" label anywhere.
+States: empty/invalid field errors (shown only after a Start attempt — a `touched` gate, not on every keystroke), assessment not-found, assessment `status !== "active"` (blocks Start with a dedicated message — the normal flow can never reach `/take` for an inactive Post-test), banner present vs. absent (fallback, verified both via the editor's empty draft and directly on this route).
+
+**29 · Post-test Take** — `/assessment/[assessmentId]/take` · Participant · Mobile-first. **Implemented (Phase 9C).**
+Components: `AssessmentTakeShell` (orchestrator, `useAssessmentAttempt`) → `AssessmentProgress` (Câu X/Y · points), `AssessmentCountdown` (`mode="participant"` — overall countdown, NORMAL/WARNING "Còn 5 phút"/CRITICAL "Sắp hết giờ"/EXPIRED, `useAssessmentTimer`; visually/behaviorally identical to the pre-Phase-9C+ `AssessmentTimer`, which was merged into `AssessmentCountdown` as its participant branch when the Presenter screen added a shared `mode="presenter"` branch — see Screen 27b), a persistent "Nộp bài" button, `AssessmentNavigator` (current/answered/unanswered — "answered" uses a neutral brand-tinted fill, deliberately never success/error green/red), `AssessmentQuestion` (text → image → `AssessmentAnswerOption[]`, freely re-selectable, no Select+Confirm lock), sticky Previous/Next, `SubmitAssessmentDialog`.
+States: loading ("Đang chuẩn bị bài làm…" — attempt/shuffle creation happens in a mount-only effect, not render or a lazy `useState` initializer, so it never runs during SSR and can't hydration-mismatch), mid-attempt (any question freely revisitable, answers preserved across navigation, timer keeps running), submit-incomplete vs. submit-complete confirmation copy, auto-submit on timer expiry (locks answers, `submissionReason: "TIMEOUT"`, redirects to Screen 30), manual submit (`submissionReason: "MANUAL"`, redirects to Screen 30), attempt limit exhausted (Phase 9D §11 — the mount effect computes the next `attemptNumber` from `lib/assessment/attempt-store.ts`'s history, scoped to this `fullName`+`department` — see the student-info bug fix note below; if it would exceed `settings.maxAttempts`, no attempt is created at all and the route bounces to Screen 30 for this learner's own last locked attempt instead, which shows the "hết lượt" state there rather than a dead-end blank `/take`). Never renders correct answer, correct/incorrect, earned points, PASS/FAIL, or a leaderboard — `AssessmentParticipantQuestion` (`lib/assessment/participant-question.ts`) strips `isCorrect` at the type level, mirroring `lib/game/participant-question.ts`'s Live Quiz security-boundary pattern.
+
+**30 · Post-test Result** — `/assessment/[assessmentId]/result` · Participant · Mobile-first. **Implemented (Phase 9C — minimal placeholder; real screen built Phase 9D).**
+Components: `AssessmentResult` (orchestrator) → `AssessmentHeader` (title + `companyName` if present, no description — Screen §20's recommended order puts these first) → `PassFailBadge` ("ĐẠT"/"KHÔNG ĐẠT", icon + bold text, never color-only) → TIMEOUT banner ("Bài làm đã được nộp tự động khi hết thời gian.", only when `submissionReason === "TIMEOUT"`) → `AssessmentScoreCard` (earnedPoints/totalPoints, score %, minimumPassingPoints/totalPoints) → `AssessmentResultSummary` (correct/incorrect/unanswered counts) → inline fullName/department + "Lần N / maxAttempts" → `RetakeAssessmentButton` + a plain "Hoàn thành" link back to Screen 28 → `AssessmentReview` (only when `settings.showCorrectAnswersAfterSubmit`, else omitted entirely — not just hidden) → `AttemptHistory`. No banner here — §15 explicitly deprioritizes it in favor of a clear result summary, and the recommended layout doesn't call for one.
+States: loading ("Đang tải kết quả…" — the attempt lives in `sessionStorage`, unavailable during SSR; state starts empty and is populated in a mount-only effect, same hydration-safe pattern as `AssessmentPresent`'s `sessionStartedAt`, so the server-rendered and first-client-rendered HTML always match), attempt not found (bookmarked/shared link opened in a different tab/device — `sessionStorage` is tab-scoped, so this is an expected, not-a-bug outcome; shows a dedicated message + a link back to Screen 28, never a crash), passed vs. failed, TIMEOUT vs. MANUAL submission, Review Answers shown vs. omitted (`showCorrectAnswersAfterSubmit`), Retake available vs. exhausted (`RetakeAssessmentButton` renders the exact required message "Bạn đã sử dụng hết số lần làm bài." in place of the button once `attemptNumber >= maxAttempts` — never a disabled button with no explanation), first attempt vs. attempt history present (`AttemptHistory` renders for 1+ locked attempts, not just 2+).
+Retake (§10): navigates straight to Screen 29 with the same `fullName`/`department` already known from this attempt (as URL params, the same handoff shape Screen 28 already uses) — skips Screen 28's form entirely. `useAssessmentAttempt`'s existing mount effect does the rest: next `attemptNumber` from history, a fresh shuffle/timer/blank answers is simply what creating any new attempt already does; nothing is "reset" as a special case.
 
 ---
 
@@ -276,10 +311,52 @@ components/
   media/
     QuestionImageUpload.tsx
     QuestionImageDisplay.tsx
-  ui/                        # shadcn primitives: button, input, dialog, progress, badge, toast, tabs...
+  assessment/                # Phase 9A — Post-test / Assessment
+    AssessmentList.tsx
+    AssessmentCard.tsx
+    AssessmentStatusBadge.tsx
+    AssessmentEditor.tsx       # orchestrator: useAssessmentEditor + Title/Description + Questions + Settings
+    AssessmentSettings.tsx     # minimumPassingPoints ("Điều kiện đạt"), attempts, time limit, randomize/show-correct toggles, Active/Inactive
+    AssessmentQuestionSummary.tsx # scored (QUIZ) vs total count, derived totalPoints, POLL-present warning
+    AssessmentPreviewDialog.tsx   # mirrors QuizPreviewDialog, adds settings summary strip
+    # --- banner (Phase 9C addendum, then a UI fix-up split it in two) ---
+    AssessmentBanner.tsx        # image/branding ONLY — no title/subtitle, no gradient scrim; used by BOTH the editor's live preview and the Start Screen, unmodified. No image → plain Signal Blue (brand-900) + icon visual, still no text.
+    AssessmentHeader.tsx        # title (<h1>) + companyName (trimmed, if present — Company Name addendum) + description — a separate block, always rendered below AssessmentBanner, never inside/overlaid on it
+    AssessmentBannerUpload.tsx  # editor upload widget — standalone, not a refactor of QuestionImageUpload, so Live Quiz's question image upload is never touched
+    AssessmentBannerSection.tsx # editor section: AssessmentBannerUpload only (capped max-w-160) — no Banner title/subtitle inputs (removed in the fix-up; the banner never carries text)
+    # --- Phase 9C — participant take-flow, same folder (no role subfolder split yet) ---
+    AssessmentStart.tsx        # /start screen: AssessmentBanner + AssessmentHeader + overview stats + StudentInformationForm + Bắt đầu làm bài — no "POST-TEST"/activity-type label anywhere
+    StudentInformationForm.tsx # Họ tên/Bộ phận — required, trimmed, max length
+    AssessmentTakeShell.tsx    # orchestrator: useAssessmentAttempt + Progress/Timer/Navigator/Question/Previous-Next/Submit
+    AssessmentQuestion.tsx     # text → image → options, for one question
+    AssessmentAnswerOption.tsx # state: "default"|"selected" only — correct/incorrect not a representable state at all (type-level guard, like PollProps in ParticipantAnswerOption)
+    AssessmentNavigator.tsx    # current/answered/unanswered — answered = neutral brand fill, never success/error color
+    AssessmentProgress.tsx     # "Câu X/Y · N điểm"
+    SubmitAssessmentDialog.tsx # different copy for incomplete vs. fully-answered
+    # --- Phase 9C+ — Presenter screen + shared countdown ---
+    AssessmentCountdown.tsx    # mode: "participant" | "presenter" — replaces AssessmentTimer.tsx (deleted; its JSX/logic became the participant branch, byte-identical). Both modes share one useAssessmentTimer instance as the sole timing-logic source. Presenter branch renders null until the 5-minute band (spec §8), then NORMAL/WARNING/CRITICAL/EXPIRED as a large centered display; participant branch unchanged from the old AssessmentTimer.
+    AssessmentPresent.tsx      # /assessments/[assessmentId]/present orchestrator — HostShell + GameQRCode + CopyJoinLinkButton (both reused unmodified via new optional props) + AssessmentBanner + AssessmentCountdown(mode="presenter") + local sessionStartedAt mock-timing state
+    # --- Phase 9D — Result screen, scoring, attempts, retake ---
+    AssessmentResult.tsx       # /assessment/[assessmentId]/result orchestrator — loads the attempt from sessionStorage in a mount-only effect (hydration-safe), composes everything below
+    PassFailBadge.tsx          # "ĐẠT"/"KHÔNG ĐẠT" — icon + bold text together, never color-only; never "Winner"/"Rank"/"Leaderboard"/"Score bonus" wording
+    AssessmentScoreCard.tsx    # earnedPoints/totalPoints, score %, minimumPassingPoints/totalPoints — distinct from AssessmentResultSummary's correct/incorrect/unanswered counts
+    AssessmentResultSummary.tsx # correct/incorrect/unanswered counts row
+    AssessmentReview.tsx       # Review Answers orchestrator — renders nothing when there's nothing to review; caller gates it on settings.showCorrectAnswersAfterSubmit
+    AssessmentReviewQuestion.tsx # one review row — question text/points/selected answer/correct answer/correct-incorrect-unanswered state/points earned; mirrors Live Quiz's QuizResult color+icon vocabulary (success/error tokens, Check/X/Minus) without reusing the component (that one's a transient per-question screen, this is a static post-submission list)
+    AttemptHistory.tsx         # this learner's own past attempts in this tab (sessionStorage) — not full trainer analytics
+    RetakeAssessmentButton.tsx # "Làm lại" (navigates straight to /take with fullName/department prefilled, skipping /start) — renders the required "Bạn đã sử dụng hết số lần làm bài." message in its own place once attemptNumber >= maxAttempts, instead of a disabled button
+  ui/                        # shadcn primitives: button, input, dialog, progress, badge, toast, tabs, switch, dropdown-menu...
 ```
 
 Non-`components/` additions (Phase 3): `hooks/use-quiz-editor.ts` (all Quiz Editor local state — add/select/edit question, add/remove option, set correct answer, save-status simulation) and `lib/validation/question.ts` (Zod schemas + `isQuestionComplete`/`getQuestionValidationMessages`, backing both the sidebar's incomplete badge and each editor's `ValidationMessage`).
+
+Non-`components/` additions (Phase 9A/9B): `hooks/use-assessment-editor.ts` — mirrors `use-quiz-editor.ts`'s question-array CRUD (`addQuestion`/`removeQuestion`/`moveQuestion`/`patchQuestion`/`addOption`/`removeOption`/`updateOptionText`/`setCorrectOption`/`importQuestions`, same `Question`/`AnswerOption` shape) as its own separate copy — not a shared refactor — plus Assessment-level state (`setTitle`/`setDescription`/`updateSettings`/`setStatus`) and derived `totalPoints`/`scoredQuestionCount`/`validationMessages`/`isPublishable` recomputed every render; `withStatusClamp` forces `status` back to `"inactive"` the moment any edit makes the assessment fail validation. `lib/validation/assessment.ts` (`getScoredQuestions`/`getPollQuestions`/`getTotalPoints`/`getEquivalentPassRate`/`getAssessmentValidationMessages`). `lib/assessment/scoring.ts` (`calculateEarnedPoints`/`calculateScorePercent`/`isPassed` — pure, not wired to any UI yet, ready for Phase 9B's/9D's actual attempt data).
+
+Non-`components/` additions (Phase 9C): `hooks/use-assessment-attempt.ts` — the Post-test take-flow state machine. Deliberately not built on/from `use-participant-gameplay.ts` (Live Quiz's Select+Confirm + per-question countdown + auto-advance is a different interaction model entirely). Owns attempt creation (shuffle `randomizeQuestions`/`randomizeAnswers` — new arrays/objects only, source `Assessment`/`Question` never mutated; answer options are re-lettered A/B/C/D by new position after a shuffle, but `id`/`isCorrect` travel with the option object, never rebuilt by index, so the correctness mapping can't drift), navigation (`goNext`/`goPrevious`/`jumpTo`), answer selection (locked once `status !== "IN_PROGRESS"`), and submit (`"MANUAL"` or `"TIMEOUT"`, computing `lib/assessment/scoring.ts`'s `summarizeAttempt` and redirecting to `/result`). Attempt creation runs inside a mount-only `useEffect`, never in the render body / a lazy `useState` initializer, specifically so `Math.random()`/`Date.now()`/`crypto.randomUUID()` never execute during this "use client" component's server-rendered pass — refreshing `/take` starts an entirely new attempt, matching "no persistence across refresh" (Phase 9C §17). `hooks/use-assessment-timer.ts` — data-only overall-timer hook (`remainingSeconds`/`formattedTime`/`isLastFiveMinutes`/`isLastMinute`/`isExpired`), recomputes from `expiresAt - Date.now()` on every ~1s tick rather than accumulating a counter. Reused unmodified by the Presenter screen (Phase 9C+, see Screen 27b) — the hook needed zero changes; `AssessmentPresent` just derives its own local `expiresAt` and feeds it in, same as `useAssessmentAttempt` does for participants. `lib/assessment/participant-question.ts` (`toAssessmentParticipantQuestion`) — mirrors `lib/game/participant-question.ts`'s security-boundary pattern: strips `isCorrect` at the type level for the take-flow's rendered question data. `lib/assessment/scoring.ts` gained `summarizeAttempt`/`AssessmentAttemptSummary` (correctCount/incorrectCount/unansweredCount/earnedPoints/totalPoints/scorePercent/passed) — computed at submit time, deliberately never rendered in Phase 9C (no Result UI yet), ready for Phase 9D.
+
+Non-`components/` additions (Phase 9D): `useAssessmentAttempt` gained the attempt-limit gate and scoring/persistence wiring the Phase 9C version left as a TODO. On mount it now computes the next `attemptNumber` from `lib/assessment/attempt-store.ts`'s `getNextAttemptNumber` (sessionStorage-backed history) instead of hardcoding `1`; if that would exceed `settings.maxAttempts`, no attempt is created — the route bounces to `/result` for the last locked attempt instead (§11's "không tạo attempt vượt limit", enforced at the one point an attempt would actually be created, so it also covers a Retake-gate bypass via direct `/take` navigation). The lock effect (submit or timeout) now calls `summarizeAttempt`, merges the result onto the `AssessmentAttempt` (including per-answer `isCorrect`/`pointsEarned`, only ever set at this point — §18's security boundary), persists it via `lib/assessment/attempt-store.ts`'s `saveAttempt`, and redirects to `/result?attemptId=<id>` — replacing the Phase 9C placeholder's `?fullName=&submittedAt=&reason=` params, since the full attempt (fullName/department included) now lives in the stored record itself. `lib/assessment/attempt-store.ts` (new) — `sessionStorage`-backed, tab-scoped attempt history keyed per Assessment (`getAttemptHistory`/`saveAttempt`/`getAttemptById`/`getAttemptHistoryForIdentity`/`getNextAttemptNumber`); the mechanism that lets `/take` and `/result` (separate routes, no shared React state) hand off a completed attempt, and that Retake/the attempt-limit gate/Attempt History read from. Not real persistence — cleared when the tab closes, never shared across tabs/devices (no backend yet). **Student-info bug fix (post-9D):** `getNextAttemptNumber`/`getAttemptHistoryForIdentity` filter by `(fullName, department)` — there's no real auth, so a second person testing the same Assessment in the same tab used to be silently bounced to the first person's locked Result once the first person's `maxAttempts` was used up (the exhaustion gate and the Attempt History list were both scoped only to `assessmentId`, counting/showing every attempt regardless of who made it). `AssessmentResult` also no longer falls back to "the last attempt for this Assessment" when `?attemptId=` is missing from the URL — that fallback could show the wrong learner's data the same way; a missing/unmatched `attemptId` now always renders the not-found state. `lib/assessment/scoring.ts`'s `summarizeAttempt` now also returns the merged `answers: AssessmentAnswer[]` (ready to overwrite `AssessmentAttempt.answers`) and rounds `scorePercent` to 1 decimal place (was a plain integer round) — `lib/format.ts` gained `formatScorePercent` to trim a trailing `.0` for display (§17: `17/24 -> "70.8%"`, `18/25 -> "72%"`). `lib/assessment/scoring.ts` also gained `buildQuestionReviews` — builds the Review Answers rows from `attempt.questionOrder`/`attempt.answers` joined against the live `assessment.questions` by id (never index, per §16), safe in this mock app since trainer edits never persist back to `mockAssessments` anyway. `lib/validation/assessment.ts` gained `getQuestionPoints` (`question.points ?? 1` — the "blank points defaults to 1" rule, §3/"bối cảnh đã chốt", used by `getTotalPoints`/`summarizeAttempt`/`buildQuestionReviews` so there is exactly one place this default lives).
+
+Non-`components/` additions (Company Name + Duplicate addendum): `lib/assessment/duplicate.ts` (`duplicateAssessment(source, existingIds)`) — pure function, no side effects. New `id` as `<baseId>-copy-<n>` (strips any existing `-copy-N` suffix first, so duplicating a copy doesn't nest — `assessment-x-copy-1` → duplicate → `assessment-x-copy-2`, never `-copy-1-copy-1`), title as `"<base title> - Copy"` (n=1) or `"<base title> - Copy <n>"` (n≥2), `status` forced to `"inactive"` (no Draft status exists on `AssessmentStatus` yet), deep-copies `questions`/`options` with fresh `crypto.randomUUID()` ids (`isCorrect` travels with its option object, not rebuilt by index, so the mapping can't drift), spreads everything else (`companyName`, `settings`, banner fields) since those are either primitives or plain string references safe to share. `app/(trainer)/assessments/actions.ts` — a `"use server"` Server Action, `duplicateAssessmentAction(assessmentId)`, the one place that mutates the mock "database": a client component can't mutate `mocks/assessments.ts` directly, since a `"use client"` bundle runs in the browser with its own copy of every module it imports. Calls `revalidatePath("/assessments")` and `refresh()` (from `next/cache`) so the list reflects the new card; the caller (`AssessmentCard`) also calls `router.refresh()` client-side as a second trigger, since `revalidatePath` alone wasn't observed to force a re-fetch for an event-handler-invoked action. `mocks/assessments.ts` changed its `mockAssessments` export from a bare array literal to a `globalThis`-backed singleton (`getAssessmentsStore()`/`globalThis.__raycertMockAssessments`) — **required**, not a style choice: Next.js compiles Server Components and Server Actions into separate module graphs ("layers"), so a plain module-level array ends up as two independent instances; a mutation made inside the Server Action was empirically invisible to the Server Component rendering `/assessments` (verified via a temporary `console.log` in each layer showing different `mockAssessments.length`) until the array was moved onto `globalThis`, which is one real object shared by the whole Node process regardless of layer. `addMockAssessment(assessment)` (`unshift`, so a new card appears first) replaces direct array mutation from outside the module. `app/(trainer)/assessments/page.tsx` gained `export const dynamic = "force-dynamic"` — without it Next.js prerenders the route as static (no dynamic segment, no dynamic API call in it), serving a stale cached render after a Duplicate even with the `globalThis` fix in place.
 
 Non-`components/` additions (Phase 7): `hooks/use-host-gameplay.ts` — same phase vocabulary as Phase 6's participant hook (`QUESTION_ACTIVE → QUESTION_RESULTS → LEADERBOARD → FINISHED`) but **action-driven, not timer-auto-advance**: the host clicks Close Question/Leaderboard/Next Question/End Game; the countdown reaching 0 auto-closes as a convenience, mirroring what clicking Close Question does. Reuses `mocks/gameplay.ts` and `lib/game/participant-question.ts` from Phase 6 rather than duplicating them.
 
@@ -325,25 +402,25 @@ Non-`components/` additions (Phase 6): `hooks/use-participant-gameplay.ts` (the 
 
 **`ParticipantLeaderboard`** — Props: `entries: LeaderboardEntry[]` (nearby ranks or top 5), `myRank: number`. Distinct compact styling from `Leaderboard`. Used in: `/play/[sessionId]` after QUIZ result.
 
-**`ExcelImportDialog`** — Props: `open`, `onOpenChange`, `onImportQuestions: (questions: Question[]) => void`. Owns the `ImportState` state machine (`empty → selected → validating → preview → importing → success`), calls `parseExcelFile` (`lib/excel/parse.ts`) + `validateImportRow` (`lib/excel/validate.ts`) per row, and on confirm calls `onImportQuestions` with only the valid rows' pre-built `Question`s (in file order). Resets to `empty` whenever it closes. Used in: Quiz Editor ("Import Excel" button).
+**`ExcelImportDialog`** — Props: `open`, `onOpenChange`, `onImportQuestions: (questions: Question[]) => void`, `mode?: ActivityMode` (default `"LIVE_QUIZ"`, Phase 9B). Owns the `ImportState` state machine (`empty → selected → validating → preview → importing → success`), calls `parseExcelFile` (`lib/excel/parse.ts`, mode-agnostic) + `validateImportRow(row, mode)` (`lib/excel/validate.ts`) per row, and on confirm calls `onImportQuestions` with only the valid rows' pre-built `Question`s (in file order). Title/description and the downloaded template branch on `mode`. Resets to `empty` whenever it closes. Used in: Quiz Editor ("Import Excel" button, default mode) and Assessment Editor ("Import Excel" button, `mode="POST_TEST"`).
 
-**`ExcelDropzone`** — Props: `onFileSelected: (file: File) => void`, `onDownloadTemplate: () => void`, `disabled?`. Drag-and-drop + Browse + Download Template (`lib/excel/template.ts`'s `generateTemplateBlob`, downloaded client-side, never sent anywhere). Used in: `ExcelImportDialog`, `empty` state.
+**`ExcelDropzone`** — Props: `onFileSelected: (file: File) => void`, `onDownloadTemplate: () => void`, `disabled?`. Drag-and-drop + Browse + Download Template — the callback is supplied by `ExcelImportDialog` and already branches on `mode` (`generateTemplateBlob` vs. `generatePostTestTemplateBlob`, `lib/excel/template.ts`), downloaded client-side, never sent anywhere. Unmodified by Phase 9B. Used in: `ExcelImportDialog`, `empty` state.
 
-**`ExcelImportSummary`** — Props: `fileName: string`, `summary: ImportSummary` (`{total, quizCount, pollCount, validCount, errorCount}`). Used in: `ExcelImportDialog`, `preview` state.
+**`ExcelImportSummary`** — Props: `fileName: string`, `summary: ImportSummary` (`{total, quizCount, pollCount, validCount, errorCount, totalPoints}` — `totalPoints` added Phase 9B), `mode?: ActivityMode`. `POST_TEST` mode shows "Tổng điểm (câu hợp lệ)" instead of the QUIZ/POLL split (always all-QUIZ there). Used in: `ExcelImportDialog`, `preview` state.
 
-**`ExcelPreviewTable`** — Props: `rows: ValidatedImportRow[]` (an `ImportPreviewRow` plus an optional `builtQuestion`). Renders row/type/question/status/error columns; error rows get an error-100 background.
+**`ExcelPreviewTable`** — Props: `rows: ValidatedImportRow[]` (an `ImportPreviewRow` plus an optional `builtQuestion`), `mode?: ActivityMode`. `LIVE_QUIZ` (default): row/type/question/status/error columns, unchanged from Phase 4. `POST_TEST`: row/question/correct-answer/points/status/error. Error rows get an error-100 background in both.
 
 **`ExcelValidationMessage`** — Props: `errorColumn?: string`, `errorMessage?: string`. Renders `**{column}** · {message}` (e.g. "**Correct Answer** · POLL không được có Correct Answer") or nothing when there's no error. Used in: `ExcelPreviewTable`'s Error column.
 
 **`ReconnectOverlay`** — Props: `status: 'reconnecting'|'failed'`, `onRetry?`, `onLeave?`. Semi-opaque overlay over current screen content (keeps context visible underneath). Used in: any participant/host live route.
 
-**`GameQRCode`** — Props: `url: string`, `size?: number`. Renders a QR code for `url`; never constructs or hard-codes a URL/domain itself — the caller always resolves the join URL (client-side, from the page's own origin) and passes it in. Used in: Host Lobby.
+**`GameQRCode`** — Props: `url: string`, `size?: number`, `title?: string` (Phase 9C+ addition — default `"Mã QR để tham gia"`, becomes the QR SVG's native `<title>`/accessible name; every pre-existing call site keeps the default, so Live Quiz's rendering is byte-identical). Renders a QR code for `url`; never constructs or hard-codes a URL/domain itself — the caller always resolves the join URL (client-side, from the page's own origin) and passes it in. Used in: Host Lobby, Assessment Presenter (Phase 9C+, with a Post-test-specific `title`).
 
 **`GamePin`** — Props: `pin: string`. Large projector-scale PIN display. Used in: Host Lobby, alongside `GameQRCode` in a `QR | PIN` layout (stacks vertically <640px).
 
 **`JoinInstructions`** — Props: `text?: string` (default "Quét QR hoặc nhập PIN để tham gia"). Used in: Host Lobby.
 
-**`CopyJoinLinkButton`** — Props: `url: string`. Copies `url` to the clipboard and shows a toast ("Đã sao chép liên kết" / error fallback). Used in: Host Lobby.
+**`CopyJoinLinkButton`** — Props: `url: string`, `label?: string` (Phase 9C+ addition — default `"Copy Join Link"`, every pre-existing call site keeps the default). Copies `url` to the clipboard and shows a toast ("Đã sao chép liên kết" / error fallback). Used in: Host Lobby, Assessment Presenter (Phase 9C+, with `label="Copy Link"`).
 
 **`HostLobbyPanel`** — Responsibility: composes `GameQRCode` + `GamePin` + `JoinInstructions` + `CopyJoinLinkButton` + participant chips + Start Game for `/host/[sessionId]/lobby`. Props: `sessionCode: string`, `pin: string`, `participants: Participant[]`. State: `joinUrl` — seeded with the relative path (`/join/[sessionCode]`) so server and first client render match, then upgraded to an absolute URL (`window.location.origin + ...`) after mount to avoid a hydration mismatch.
 
@@ -470,13 +547,118 @@ export interface ImageUploadState {
   fileName?: string;
   errorMessage?: string;
 }
+
+// --- Post-test / Assessment domain (Phase 9A, points-per-question addendum) ---
+
+export type ActivityMode = 'LIVE_QUIZ' | 'POST_TEST';
+
+export type AssessmentStatus = 'active' | 'inactive';
+
+export interface AssessmentSettings {
+  // Primary pass/fail field — an absolute point total, NOT a count of
+  // correct answers and NOT a %. See "Scoring rule" below.
+  minimumPassingPoints: number;
+  maxAttempts: number;
+  timeLimitMinutes: number | null;    // null = no overall time limit
+  randomizeQuestions: boolean;
+  randomizeAnswers: boolean;
+  showCorrectAnswersAfterSubmit: boolean;
+}
+
+export interface Assessment {
+  id: string;
+  title: string;
+  companyName?: string;               // optional client/company metadata (Company Name addendum) — trimmed at render, never a Student Information field
+  description: string;
+  questions: Question[];              // reuses Question/AnswerOption directly; each QUIZ question's own `points` (not Live Quiz's 1000-base preset)
+  settings: AssessmentSettings;
+  status: AssessmentStatus;
+  createdAt: string;
+  updatedAt: string;
+  // Banner (Start Screen UI fix-up) — image/branding only, rendered above a
+  // separate `title`/`description` heading, never overlaid with text. No
+  // `bannerAlt`/`bannerTitle`/`bannerSubtitle` — removed in the fix-up: a
+  // banner never carries its own text, so there's nothing for those fields
+  // to override; alt text derives from `bannerFileName` at render time.
+  bannerImageUrl?: string;
+  bannerFileName?: string;
+  bannerMimeType?: string;
+}
+
+// --- Post-test participant attempt domain (Phase 9C; scoring fields Phase 9D) ---
+
+export type AttemptStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'SUBMITTED' | 'TIMEOUT';
+
+export type SubmissionReason = 'MANUAL' | 'TIMEOUT';
+
+export interface AssessmentAnswer {
+  questionId: string;
+  selectedOptionId: string | null;    // null = unanswered
+  answeredAt?: string;                // ISO — last time this answer was set/changed
+  isCorrect?: boolean;                // derived only once the attempt locks — §18 security boundary
+  pointsEarned?: number;              // derived only once the attempt locks
+}
+
+export interface AssessmentAttempt {
+  id: string;
+  assessmentId: string;
+  fullName: string;
+  department: string;
+  startedAt: string;                  // ISO
+  expiresAt: string | null;           // ISO — null when the assessment has no time limit
+  submittedAt: string | null;
+  attemptNumber: number;
+  status: AttemptStatus;
+  submissionReason: SubmissionReason | null;
+  answers: AssessmentAnswer[];
+  questionOrder: string[];            // this attempt's question id order (shuffled or natural)
+  // Phase 9D — 0/false while IN_PROGRESS, computed once via
+  // lib/assessment/scoring.ts's summarizeAttempt when the attempt locks,
+  // never recomputed afterward (a later edit to the live Assessment's
+  // question points can't retroactively change a past attempt's result).
+  correctCount: number;
+  incorrectCount: number;
+  unansweredCount: number;
+  earnedPoints: number;
+  totalPoints: number;
+  scorePercent: number;               // rounded to 1 decimal place — lib/format.ts's formatScorePercent trims a trailing .0
+  passed: boolean;
+}
 ```
 
-> **Forward-compat note (roadmap, not implemented):** `Question`, `AnswerOption`, `Quiz`, and
-> `QuestionType` are shared between the current Live Quiz mode and a possible future Post-test
-> mode — keep them neutral (no `Live`-prefixed names, no hard dependency on `GameSession`/
-> `SessionPhase`). Same for the image concept behind `imageUrl` /
-> `QuestionImageUpload`/`QuestionImageDisplay`. See `ROADMAP_ASSESSMENT.md` at the repo root for
+> **Attempt domain (Phase 9C):** `AssessmentAttempt`/`AssessmentAnswer` are in-memory only —
+> created fresh in `hooks/use-assessment-attempt.ts` on `/take` mount, never persisted, never
+> surviving a refresh (no backend yet — ROADMAP_ASSESSMENT.md §4's future `AssessmentAttempt`
+> table is what will eventually back this). Not a `GameSession`/`ParticipantAnswer` variant —
+> a genuinely separate model, same principle as `Assessment` itself. `answers`/`questionOrder`
+> go beyond the phase's minimum field list, added so one object captures this attempt's
+> (possibly shuffled) question order and per-question answers together.
+
+> **Scoring rule (Phase 9A addendum, finalized Phase 9D, `lib/assessment/scoring.ts` +
+> `lib/validation/assessment.ts`):** a QUIZ question's points is `question.points ?? 1` —
+> `getQuestionPoints`, blank defaults to `1`, never `0`. `totalPoints` is derived — never
+> stored — as `sum(getQuestionPoints(q) for scored/QUIZ questions)`, recomputed on every render
+> so it tracks add/remove/edit-points/import automatically. `earnedPoints = sum(points of the
+> QUIZ questions answered correctly)`. `scorePercent = round(earnedPoints / totalPoints * 100,
+> 1 decimal place)` — e.g. `17/24 -> 70.8`, never a plain integer round; `lib/format.ts`'s
+> `formatScorePercent` trims a trailing `.0` for display. `passed = earnedPoints >=
+> minimumPassingPoints` (exact equality passes — Phase 9D §5) — **never** `correctCount >=
+> minimumCorrectAnswers` (that field no longer exists). `correctCount` is stored on
+> `AssessmentAttempt` for the Result screen's question-summary row, but is not the PASS/FAIL
+> condition. The "Tương đương: X%" shown next to `minimumPassingPoints` in the editor
+> (`minimumPassingPoints / totalPoints * 100`) is display-only — it is not the formula PASS/FAIL
+> is computed from, and is unrelated to a specific attempt's own `scorePercent`.
+
+> **Forward-compat note — now partially implemented (Phase 9A):** `Question`, `AnswerOption`,
+> `Quiz`, and `QuestionType` are shared between Live Quiz and the Post-test mode added in Phase
+> 9A — they stayed neutral as required (no `Live`-prefixed names, no hard dependency on
+> `GameSession`/`SessionPhase`), so `Assessment.questions` reuses `Question[]` unmodified. Same
+> for the image concept behind `imageUrl` / `QuestionImageUpload`/`QuestionImageDisplay` — the
+> Assessment Editor reuses `QuestionImageUpload` via the shared `QuizQuestionEditor`/
+> `PollQuestionEditor` components, unmodified. `Assessment`/`AssessmentSettings`/
+> `AssessmentStatus` above are genuinely new (Phase 9A); `AssessmentAttempt`/`AssessmentAnswer`
+> (participant take-flow, PASS/FAIL computation) remain roadmap-only — not built until Phase 9B.
+> See `ROADMAP_ASSESSMENT.md` at the repo root for
 > the full future activity-mode / Assessment rules — nothing there is implemented yet.
 
 ---
@@ -661,6 +843,7 @@ Provide a `mocks/` module (e.g. `mocks/quizzes.ts`, `mocks/session.ts`) covering
 - **Join flow resolvers** (Phase 5, updated): `resolveSessionByPin(pin)` and `resolveSessionByCode(sessionCode)` in `mocks/session.ts`, both looking up the single mock `GameSession` — `id` (sessionCode) and `pin` are now the **same value, `"123456"`** (this mock has no concept of a separate opaque session code yet, so PIN entry and QR/Join Link resolve identically either way). Also: `getSessionQuizTitle(session)` (looks up the quiz title via `quizId`, for Nickname Entry / Waiting Room) and `isNicknameTaken(nickname)` (case-insensitive check against `mockParticipants`, backing the "duplicate nickname" mock state). Frontend-only stand-ins for what a real backend will resolve server-side.
 - **Gameplay sequence** (Phase 6, added): `mockGameplayQuestions`/`mockGameplayResults`/`getGameplayResult` in `mocks/gameplay.ts` — 4 fixed questions covering every combination the manual tests need (QUIZ+image, QUIZ no image, POLL×4 options, POLL×6 options), reusing `mockActiveQuizQuestion`/`mockQuestionResult` from `mocks/session.ts` for question 1. Drives `/play/[sessionId]`'s entire gameplay loop.
 - **`RecentSessionSummary[]`** mock (added): `mockRecentSessions` in `mocks/session.ts` — 3 entries referencing the 2 published quizzes, `hostedAt` computed as `Date.now() - offset` (not a fixed ISO string) so "2 giờ trước" stays accurate whenever the dashboard is viewed. Not a core domain type — `GameSession` alone has no quiz title or hosted-at timestamp.
+- **`Assessment[]`** mock (Phase 9A, points-per-question addendum; store made a `globalThis` singleton by the Company Name + Duplicate addendum — see §4): `mockAssessments`/`getAssessment(assessmentId)`/`addMockAssessment(assessment)` in `mocks/assessments.ts` — 2 seed Post-tests (`Duplicate` grows this list at runtime, server-side, for the life of the process), each `questions: Question[]` **cloned** (via a local `withAssessmentPoints` helper, not a shared reference) from `Question[]` already seeded in `mocks/quizzes.ts`, so text/options aren't duplicated but each QUIZ question gets its own low-integer `points` independent of Live Quiz's 1000-point base: `assessment-compliance-cert` (all-QUIZ, 6 questions, points `[2,2,3,3,4,6]` → `totalPoints: 20`, `minimumPassingPoints: 14` → 70%, status `active`, `timeLimitMinutes: 15`, `randomizeQuestions: true`, `companyName: "  Công ty TNHH ABC  "` — deliberately whitespace-padded, the only mock exercising the Company Name addendum's trim-at-render rule end-to-end on List/Presenter/Start, first QUIZ question carries a sample image via a `withSampleImage` helper — Phase 9C added this specifically to exercise the take-flow's image layout, since no Post-test mock previously had one; also the only mock with `bannerImageUrl`/`bannerFileName` set — the fallback (no-banner) path is exercised on this same route by temporarily clearing those fields, and permanently by any fresh `/assessments/new` draft, since `AssessmentBanner` is the identical component either way) and `assessment-onboarding-check` (8 QUIZ + 2 POLL, points `[1,2,2,3,3,4,4,6]` → `totalPoints: 25`, `minimumPassingPoints: 18` → 72%, status `inactive` — reachable via direct `/take` navigation for QA but blocked at `/start`, `randomizeAnswers: true`, no `companyName` — exercises the Company Name addendum's "absent → no row at all" rule, exercises the POLL-present warning in `AssessmentQuestionSummary` and (participant-side) POLL questions being excluded from the take-flow's scored question set).
 
 ---
 
