@@ -13,11 +13,18 @@ Tiêu chí: responsive, bám handoff, lint/typecheck/build pass.
 Trạng thái: CHƯA BẮT ĐẦU
 
 # Milestone 1 — Database
-Bảng: users/profiles, quizzes, questions, answer_options, game_sessions, participants, participant_answers.
+Bảng: profiles, quizzes, questions, answer_options, assessments, assessment_questions,
+assessment_answer_options, assessment_attempts, assessment_answers, game_sessions, participants,
+participant_answers.
 question_type chỉ `QUIZ | POLL`.
 QUIZ: 2–4 option, 1 đúng, base_points>0.
 POLL: 2–6 option, không đúng, base_points=0.
-Trạng thái: CHƯA BẮT ĐẦU
+Trạng thái: **Schema + RLS foundation xong (Phase 10A)** — migration
+`supabase/migrations/20260910000000_initial_schema.sql`, chi tiết
+`docs/backend/SUPABASE_SETUP.md`. Assessment questions dùng snapshot model (không reference
+Quiz Library) — xem lý do trong migration + setup doc. Chưa làm: migrate frontend sang dùng
+database thật (vẫn mock/local — Phase 10A §27), participant-facing RLS policies đầy đủ, Realtime,
+Storage bucket thật (chỉ mới document strategy). Auth (Phase 10B) build trên nền này.
 
 # Milestone 2 — Quiz Library & Builder
 - List/Create/Edit/Archive quiz
