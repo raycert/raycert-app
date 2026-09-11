@@ -19,7 +19,7 @@ export default function Home() {
 
       <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
         <Button variant="secondary" asChild>
-          <Link href="/dashboard">Trainer Dashboard (shell)</Link>
+          <Link href="/login">Trainer Login</Link>
         </Button>
         <Button variant="secondary" asChild>
           <Link href="/host/123456/lobby">Host Lobby</Link>

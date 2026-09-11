@@ -56,7 +56,13 @@ Trạng thái: CHƯA BẮT ĐẦU
 
 # Milestone 7 — Authentication & Ownership
 Login/logout, protected dashboard, quiz ownership, host authorization.
-Trạng thái: CHƯA BẮT ĐẦU
+Trạng thái: **Trainer auth thật xong (Phase 10B)** — `/login`, `/signup`, `/forgot-password`,
+`/reset-password` dùng Supabase Auth thật (email/password); `proxy.ts` (Next.js 16 đổi tên từ
+`middleware.ts`) bảo vệ `/dashboard`, `/quizzes`, `/assessments`, `/results`, `/host/*`, redirect
+`/login` nếu chưa đăng nhập; participant routes (`/join`, `/play`, `/assessment/*` số ít) vẫn
+public. Chi tiết `docs/backend/SUPABASE_SETUP.md` §8/§8b. Quiz ownership/host authorization ở mức
+RLS (Phase 10A) đã sẵn sàng nhưng CHƯA áp dụng vào query thật (frontend vẫn mock/local — Phase
+10C+ mới migrate persistence).
 
 # Milestone 8 — Reports & Training Analytics
 Game Summary, Participant Analysis, QUIZ Analysis, POLL Analysis.

@@ -1,9 +1,12 @@
-# SUPABASE_SETUP.md — RayCert Backend Foundation (Phase 10A)
+# SUPABASE_SETUP.md — RayCert Backend Foundation (Phase 10A + 10B)
 
-Scope: database schema + RLS foundation only. The frontend still runs on
-mock/local state after this — nothing here changes what the app reads or
-writes at runtime (see §10, "How to verify," and MASTER_PLAN.md's Phase 10A
-entry). Phase 10B builds the actual login/signup UI on top of this.
+Phase 10A scope: database schema + RLS foundation. Phase 10B scope: real
+Trainer authentication (email/password via Supabase Auth) on top of that
+schema — `/login`, `/signup`, `/forgot-password`, `/reset-password`,
+protected trainer routes, session refresh, logout. Quiz/Assessment/Live
+Quiz data itself still runs on mock/local state after Phase 10B too —
+auth is real, the rest of the app's persistence is not yet (see §10 and
+MASTER_PLAN.md's Phase 10A/10B entries).
 
 ---
 
@@ -256,31 +259,109 @@ that migration happens.
 
 ---
 
-## 8. Auth readiness
+## 8. Auth — what Phase 10B built
 
-No login/signup UI ships in this phase (addendum §20/intro). What *is*
-ready for Phase 10B:
+- Routes: `/login`, `/signup`, `/forgot-password`, `/reset-password` (all
+  under the `(auth)` route group — a shared centered-card shell, no
+  NavBar/SidebarNav), plus `app/auth/confirm/route.ts` (a Route Handler,
+  not a page — see §8b, it's the plumbing that makes email links actually
+  establish a session).
+- `profiles` is auto-populated by the `on_auth_user_created` trigger the
+  moment `signUpAction` (`app/(auth)/actions.ts`) calls
+  `supabase.auth.signUp({ email, password, options: { data: { first_name,
+  last_name } } })`. If email confirmation is OFF, the same action also
+  re-asserts `first_name`/`last_name` on the profile right after (defensive
+  — the trigger should already be correct, this just guards against
+  metadata-extraction drift) using the now-authenticated session; if
+  confirmation is ON there's no session yet to do that update under RLS,
+  so it's skipped there — the trigger's own data is trusted as sufficient
+  in that branch. Never uses the admin/service-role client for this or
+  anything else auth-related (Phase 10B §16).
+- Route protection is `proxy.ts` (Next.js 16 renamed `middleware.ts` to
+  `proxy.ts` — the old convention is deprecated and `pnpm build` fails
+  loudly if both files exist at once) + `lib/supabase/proxy.ts`'s
+  `updateSession`. It runs on every request (matcher excludes only static
+  assets), refreshes the session cookie, and redirects: no session on
+  `/dashboard`, `/quizzes`, `/assessments` (both the trainer list/editor
+  AND `/assessments/[id]/present`, the Presenter screen, which lives
+  outside the `(trainer)` layout folder but is still trainer-only),
+  `/results`, or `/host/*` → `/login?redirectTo=<original path>`; a
+  session on `/login`/`/signup` → `/dashboard`. Participant routes
+  (`/join*`, `/play/*`, `/assessment/*` — **singular**, never confused with
+  the protected plural `/assessments/*`) are never touched.
+- `getCurrentUser()`/`getCurrentProfile()` (`lib/supabase/auth.ts`) use
+  `supabase.auth.getUser()`, never `getSession()` — `getUser()` revalidates
+  against Supabase Auth's server on every call, `getSession()` only trusts
+  the cookie's face value. This is used consistently in the proxy, the
+  `(trainer)` layout, and `/reset-password`'s session check.
+- The Trainer shell's NavBar (`components/layout/NavBar.tsx`) receives
+  `profile` from `(trainer)/layout.tsx` (a server-side fetch, not a client
+  loading flash) and shows first/last name + email in a dropdown with a
+  "Đăng xuất" action calling `signOutAction`. A `null` profile (signed in,
+  no `profiles` row — e.g. a user created directly in the Dashboard before
+  this migration existed) falls back to generic labels rather than
+  crashing (Phase 10B §11).
 
-- `profiles` exists, 1:1 with `auth.users`, auto-populated by the
-  `on_auth_user_created` trigger the moment a user signs up — Phase 10B's
-  signup form just needs to call
-  `supabase.auth.signUp({ email, password, options: { data: { first_name, last_name } } })`
-  and the trigger does the rest. Idempotent (`on conflict (id) do
-  nothing`), never touches the password (Supabase Auth owns
-  `auth.users.encrypted_password` entirely; the trigger only reads
-  `new.email`/`new.raw_user_meta_data`).
-- `lib/supabase/server.ts` already wires Supabase's cookie-based session
-  handling for Next.js App Router (`@supabase/ssr`'s `createServerClient`)
-  — Phase 10B's route protection (middleware, protected Dashboard routes)
-  builds directly on this, no new client plumbing needed.
-- `lib/supabase/client.ts` is ready for a Client Component login form to
-  call `supabase.auth.signInWithPassword(...)`.
-- RLS policies already assume `auth.uid()` is the trainer — once Phase 10B
-  wires up real sessions, every trainer-owned-table policy in §6 is already
-  correct with no changes needed.
+---
 
-**Not built**: `/login`, `/signup`, `/logout` routes, session-refresh
-middleware, redirect-if-unauthenticated route protection. All Phase 10B.
+## 8b. Required Supabase Dashboard settings for Auth (Phase 10B)
+
+Unlike Phase 10A's checklist (schema only), these are **required** for
+login/signup/password-reset to actually work correctly, not optional
+verification steps:
+
+1. **Authentication → URL Configuration**:
+   - **Site URL**: set to your app's real origin (`http://localhost:3000`
+     for local dev, your real domain in production). Supabase uses this to
+     build absolute links in emails when `redirectTo` is relative.
+   - **Redirect URLs**: add `http://localhost:3000/auth/confirm` (and your
+     production equivalent, e.g. `https://yourapp.com/auth/confirm`) to
+     the allow-list — Supabase rejects a `redirectTo` that isn't on this
+     list, which would otherwise silently break both password reset and
+     signup confirmation.
+2. **Authentication → Email Templates** — **must be edited**, the default
+   templates will NOT work with this app's `/auth/confirm` route as built:
+   - **Confirm signup**: change the link to
+     `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup&next=/dashboard`
+     (replacing the default `{{ .ConfirmationURL }}`).
+   - **Reset Password**: change the link to
+     `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password`.
+   - Why: the default templates point at Supabase's own hosted verify
+     endpoint, which redirects back with session tokens in a URL
+     *fragment* (`#access_token=...`) — invisible to a server-side Route
+     Handler. This app's `/auth/confirm` instead verifies the `token_hash`
+     itself (`supabase.auth.verifyOtp`) and sets the session cookie
+     directly, which needs the token in the query string, not a fragment.
+     This is Supabase's own documented pattern for the Next.js App Router
+     + `@supabase/ssr`, not a workaround specific to this app.
+3. **Authentication → Providers → Email**:
+   - **Confirm email** toggle — check whichever setting you want (Phase
+     10B §5 handles both): ON means `signUpAction` returns
+     `requiresEmailConfirmation` and the UI shows a "check your email"
+     card; OFF means signup logs the user in immediately and redirects to
+     `/dashboard`. Either is a supported, tested code path — this is a
+     product decision for you to make, not something the code assumes.
+   - **Minimum password length** — this app's client-side minimum is 8
+     characters; if your project's setting is different, align one or the
+     other so users don't see the client accept a password the server
+     then rejects (or vice versa).
+4. **Authentication → Rate Limits** — be aware these exist (e.g. email
+   sending) if you're testing signup/reset repeatedly yourself in a short
+   window; the app surfaces a friendly "thử lại sau ít phút" message when
+   you hit one (`over_email_send_rate_limit`/`over_request_rate_limit` in
+   `lib/supabase/auth-errors.ts`), it does not retry automatically.
+5. **Create a test trainer** the normal way now — via `/signup` in the
+   running app — rather than the Phase 10A seed's Dashboard-manual-user
+   step, now that signup actually works. Confirm the matching `profiles`
+   row appears (Table Editor → `profiles`) with the right
+   `first_name`/`last_name`/`email`.
+6. Optionally set `NEXT_PUBLIC_SITE_URL` in `.env.local` (not in
+   `.env.example` — Phase 10A scoped that file to exactly 3 variables, so
+   this stays undocumented-but-optional there) if you want
+   `resetPasswordForEmail`'s redirect origin pinned explicitly rather than
+   derived from the request's own `Host` header (`lib/supabase/base-url.ts`)
+   — useful behind a proxy/CDN in a real deployment, not needed for local
+   dev.
 
 ---
 
@@ -330,8 +411,18 @@ After running the migration (§3):
    this should show exactly one row.
 5. Run the seed (§3) and confirm `select count(*) from public.quizzes;` /
    `assessments;` each return at least 1.
-6. **Frontend regression** (addendum §28) — this phase changes no app
-   behavior, so the existing app should look and work identically:
-   `pnpm build` succeeds, and `pnpm dev` + a quick click-through of
-   Dashboard/Quiz Editor/Assessment Editor/Live Quiz/Reports still all work
-   exactly as before, still on mock data.
+6. **Frontend regression** (Phase 10A addendum §28) — `pnpm build`
+   succeeds, and a quick click-through of Dashboard/Quiz Editor/Assessment
+   Editor/Live Quiz/Reports still all work exactly as before, still on mock
+   data (Phase 10B only changes *whether you can reach them*, never what
+   they do once you're in).
+7. **Auth smoke test** (Phase 10B, after completing §8b's Dashboard steps):
+   visit `/dashboard` while signed out → redirected to
+   `/login?redirectTo=%2Fdashboard`; sign up a test trainer → either
+   auto-redirected to `/dashboard` or shown the "check your email" card,
+   matching whichever "Confirm email" setting you chose; sign in → redirect
+   to `/dashboard`, NavBar shows the right name/email; refresh the page →
+   still signed in; open the user menu → "Đăng xuất" → redirected to
+   `/login`; visit `/dashboard` again → redirected to `/login` again (no
+   stale session). Separately confirm `/join`, `/play/[id]`,
+   `/assessment/[id]/start` all stay reachable with no session at all.

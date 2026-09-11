@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 
 /**
@@ -19,7 +20,7 @@ import type { Database } from "./database.types";
  * during a plain page render is safe to no-op there, since middleware
  * (added in Phase 10B) is what actually keeps the session cookie fresh.
  */
-export async function createClient() {
+export async function createClient(): Promise<SupabaseClient<Database>> {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
