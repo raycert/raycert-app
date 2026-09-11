@@ -3,16 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/layout/EmptyState";
 import { AssessmentList } from "@/components/assessment/AssessmentList";
-import { mockAssessments } from "@/mocks";
+import { listAssessmentsForCurrentUser } from "@/lib/data/assessments";
 
-// This route reads the mutable `mockAssessments` singleton (Duplicate,
-// Company Name + Duplicate addendum §7-16) — without this, Next.js
-// prerenders it as a static page (no dynamic segment, no dynamic API calls),
-// so a Duplicate's `router.refresh()` re-fetches a stale cached render
-// instead of a fresh one reflecting the just-added assessment.
+// Real per-trainer data now (Phase 10C) — force-dynamic so a Duplicate's
+// router.refresh() (see AssessmentCard.tsx) always re-fetches a fresh
+// render instead of a stale cached one (no dynamic segment on this route
+// otherwise, so Next.js would happily prerender it once and reuse that).
 export const dynamic = "force-dynamic";
 
-export default function AssessmentsPage() {
+export default async function AssessmentsPage() {
+  const assessments = await listAssessmentsForCurrentUser();
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -21,7 +22,7 @@ export default function AssessmentsPage() {
             Assessments
           </h1>
           <p className="text-base text-muted-foreground">
-            {mockAssessments.length} Post-test trong thư viện của bạn
+            {assessments.length} Post-test trong thư viện của bạn
           </p>
         </div>
         <Button asChild>
@@ -31,7 +32,7 @@ export default function AssessmentsPage() {
 
       <Card>
         <CardContent>
-          {mockAssessments.length === 0 ? (
+          {assessments.length === 0 ? (
             <EmptyState
               title="Chưa có Post-test nào"
               description="Tạo Post-test đầu tiên để bắt đầu."
@@ -42,7 +43,7 @@ export default function AssessmentsPage() {
               }
             />
           ) : (
-            <AssessmentList assessments={mockAssessments} />
+            <AssessmentList assessments={assessments} />
           )}
         </CardContent>
       </Card>

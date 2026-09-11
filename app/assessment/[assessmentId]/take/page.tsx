@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { AssessmentTakeShell } from "@/components/assessment/AssessmentTakeShell";
-import { getAssessment } from "@/mocks";
+import { getAssessmentById } from "@/lib/data/assessments";
+
+export const dynamic = "force-dynamic";
 
 export default async function AssessmentTakePage({
   params,
@@ -12,7 +14,7 @@ export default async function AssessmentTakePage({
   const { assessmentId } = await params;
   const { fullName, department } = await searchParams;
 
-  const assessment = getAssessment(assessmentId);
+  const assessment = await getAssessmentById(assessmentId);
   if (!assessment) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">

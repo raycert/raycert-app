@@ -1,5 +1,5 @@
 import { AssessmentResult } from "@/components/assessment/AssessmentResult";
-import { getAssessment } from "@/mocks";
+import { getAssessmentById } from "@/lib/data/assessments";
 
 /**
  * Landing point after Submit (Phase 9C §11/§16, real Result screen built
@@ -7,7 +7,12 @@ import { getAssessment } from "@/mocks";
  * in `sessionStorage` (`lib/assessment/attempt-store.ts`) — a server
  * component can't read that, so this page only resolves `assessment` +
  * `attemptId` and hands both to the "use client" `AssessmentResult`.
+ * `getAssessmentById` reads real Supabase data now (Phase 10C), served here
+ * by the public "status = ACTIVE" RLS policy since participants have no
+ * account.
  */
+export const dynamic = "force-dynamic";
+
 export default async function AssessmentResultPage({
   params,
   searchParams,
@@ -18,7 +23,7 @@ export default async function AssessmentResultPage({
   const { assessmentId } = await params;
   const { attemptId } = await searchParams;
 
-  const assessment = getAssessment(assessmentId);
+  const assessment = await getAssessmentById(assessmentId);
   if (!assessment) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { QuizEditorPage } from "@/components/quiz/QuizEditorPage";
-import { mockQuizzes } from "@/mocks";
+import { getQuizById } from "@/lib/data/quizzes";
+
+export const dynamic = "force-dynamic";
 
 export default async function EditQuizPage({
   params,
@@ -9,7 +11,7 @@ export default async function EditQuizPage({
   params: Promise<{ quizId: string }>;
 }) {
   const { quizId } = await params;
-  const quiz = mockQuizzes.find((q) => q.id === quizId);
+  const quiz = await getQuizById(quizId);
 
   if (!quiz) {
     return (
@@ -18,7 +20,7 @@ export default async function EditQuizPage({
           Không tìm thấy quiz
         </h1>
         <p className="max-w-md text-base text-muted-foreground">
-          Không tìm thấy quiz &quot;{quizId}&quot; trong mock data.
+          Quiz &quot;{quizId}&quot; không tồn tại, hoặc không thuộc về tài khoản của bạn.
         </p>
         <Button variant="secondary" asChild>
           <Link href="/quizzes">← Quay lại My Quizzes</Link>

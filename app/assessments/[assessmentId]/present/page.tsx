@@ -1,5 +1,5 @@
 import { AssessmentPresent } from "@/components/assessment/AssessmentPresent";
-import { getAssessment } from "@/mocks";
+import { getAssessmentById } from "@/lib/data/assessments";
 
 /**
  * Deliberately NOT nested inside `app/(trainer)/assessments/[assessmentId]/`
@@ -8,14 +8,21 @@ import { getAssessment } from "@/mocks";
  * cannot be "escaped" by a deeper segment once a layout wraps it. Verified
  * this split doesn't collide with `(trainer)`'s `/assessments/[assessmentId]`
  * route — different leaf paths, same prefix, both build and render cleanly.
+ *
+ * Reads via `getAssessmentById` (Phase 10C) — served by the owner-RLS policy
+ * for the trainer opening this from their own dashboard, or by the public
+ * "status = ACTIVE" policy if this link is ever opened without a trainer
+ * session; either way it's the same real Supabase row.
  */
+export const dynamic = "force-dynamic";
+
 export default async function AssessmentPresentPage({
   params,
 }: {
   params: Promise<{ assessmentId: string }>;
 }) {
   const { assessmentId } = await params;
-  const assessment = getAssessment(assessmentId);
+  const assessment = await getAssessmentById(assessmentId);
 
   if (!assessment) {
     return (

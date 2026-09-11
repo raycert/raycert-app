@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AssessmentEditor } from "@/components/assessment/AssessmentEditor";
-import { getAssessment } from "@/mocks";
+import { getAssessmentById } from "@/lib/data/assessments";
+
+export const dynamic = "force-dynamic";
 
 export default async function EditAssessmentPage({
   params,
@@ -9,7 +11,7 @@ export default async function EditAssessmentPage({
   params: Promise<{ assessmentId: string }>;
 }) {
   const { assessmentId } = await params;
-  const assessment = getAssessment(assessmentId);
+  const assessment = await getAssessmentById(assessmentId);
 
   if (!assessment) {
     return (
@@ -18,7 +20,8 @@ export default async function EditAssessmentPage({
           Không tìm thấy assessment
         </h1>
         <p className="max-w-md text-base text-muted-foreground">
-          Không tìm thấy assessment &quot;{assessmentId}&quot; trong mock data.
+          Assessment &quot;{assessmentId}&quot; không tồn tại, hoặc không thuộc về tài khoản của
+          bạn.
         </p>
         <Button variant="secondary" asChild>
           <Link href="/assessments">← Quay lại Assessments</Link>

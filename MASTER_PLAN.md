@@ -19,12 +19,14 @@ participant_answers.
 question_type chỉ `QUIZ | POLL`.
 QUIZ: 2–4 option, 1 đúng, base_points>0.
 POLL: 2–6 option, không đúng, base_points=0.
-Trạng thái: **Schema + RLS foundation xong (Phase 10A)** — migration
-`supabase/migrations/20260910000000_initial_schema.sql`, chi tiết
-`docs/backend/SUPABASE_SETUP.md`. Assessment questions dùng snapshot model (không reference
-Quiz Library) — xem lý do trong migration + setup doc. Chưa làm: migrate frontend sang dùng
-database thật (vẫn mock/local — Phase 10A §27), participant-facing RLS policies đầy đủ, Realtime,
-Storage bucket thật (chỉ mới document strategy). Auth (Phase 10B) build trên nền này.
+Trạng thái: **Schema + RLS foundation xong (Phase 10A)**, Quiz/Assessment CRUD đã persist vào
+Postgres thật (Phase 10C) — migration `supabase/migrations/20260910000000_initial_schema.sql` +
+`20260911000000_public_assessment_read.sql` (participant-facing public read cho Assessment ACTIVE),
+chi tiết `docs/backend/SUPABASE_SETUP.md`. Data access layer: `lib/data/quizzes.ts` +
+`lib/data/assessments.ts`. Assessment questions dùng snapshot model (không reference Quiz Library)
+— xem lý do trong migration + setup doc. Chưa làm: Live Game persistence/Realtime, AssessmentAttempt
+persistence, Assessment Reports thật, Storage bucket thật cho banner/question image (vẫn local
+upload UI, không lưu blob URL giả vào DB).
 
 # Milestone 2 — Quiz Library & Builder
 - List/Create/Edit/Archive quiz
@@ -60,9 +62,11 @@ Trạng thái: **Trainer auth thật xong (Phase 10B)** — `/login`, `/signup`,
 `/reset-password` dùng Supabase Auth thật (email/password); `proxy.ts` (Next.js 16 đổi tên từ
 `middleware.ts`) bảo vệ `/dashboard`, `/quizzes`, `/assessments`, `/results`, `/host/*`, redirect
 `/login` nếu chưa đăng nhập; participant routes (`/join`, `/play`, `/assessment/*` số ít) vẫn
-public. Chi tiết `docs/backend/SUPABASE_SETUP.md` §8/§8b. Quiz ownership/host authorization ở mức
-RLS (Phase 10A) đã sẵn sàng nhưng CHƯA áp dụng vào query thật (frontend vẫn mock/local — Phase
-10C+ mới migrate persistence).
+public. Chi tiết `docs/backend/SUPABASE_SETUP.md` §8/§8b. **Quiz/Assessment ownership RLS đã áp
+dụng vào query thật (Phase 10C)** — verified bằng test 2 tài khoản trainer thật qua REST API:
+Trainer B không SELECT/UPDATE/DELETE được row của Trainer A (trả về rỗng/RLS-filtered), và không
+spoof được `owner_id` khi INSERT (bị chặn bởi WITH CHECK, lỗi 42501). Live Game host
+authorization vẫn mock (chưa migrate).
 
 # Milestone 8 — Reports & Training Analytics
 Game Summary, Participant Analysis, QUIZ Analysis, POLL Analysis.

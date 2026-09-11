@@ -1,12 +1,13 @@
-# SUPABASE_SETUP.md — RayCert Backend Foundation (Phase 10A + 10B)
+# SUPABASE_SETUP.md — RayCert Backend Foundation (Phase 10A + 10B + 10C)
 
 Phase 10A scope: database schema + RLS foundation. Phase 10B scope: real
 Trainer authentication (email/password via Supabase Auth) on top of that
 schema — `/login`, `/signup`, `/forgot-password`, `/reset-password`,
-protected trainer routes, session refresh, logout. Quiz/Assessment/Live
-Quiz data itself still runs on mock/local state after Phase 10B too —
-auth is real, the rest of the app's persistence is not yet (see §10 and
-MASTER_PLAN.md's Phase 10A/10B entries).
+protected trainer routes, session refresh, logout. Phase 10C scope: Quiz
+Library and Assessment CRUD now persist to Postgres for real (see §11) —
+Live Game/Realtime, AssessmentAttempt persistence, and Assessment Reports
+are still mock/local, deliberately deferred (see MASTER_PLAN.md's Phase
+10A/10B/10C entries).
 
 ---
 
@@ -53,16 +54,27 @@ Settings → API).
 
 ## 3. Migration instructions
 
-The schema lives in `supabase/migrations/20260910000000_initial_schema.sql`
-— one file, run once, top to bottom.
+Two migration files so far, run once each, top to bottom, in order:
+
+1. `supabase/migrations/20260910000000_initial_schema.sql` — the full
+   schema (Phase 10A).
+2. `supabase/migrations/20260911000000_public_assessment_read.sql` —
+   **required for Phase 10C's participant-facing routes to work** (Start/
+   Take/Result/Presenter — `app/assessment/[assessmentId]/*`,
+   `app/assessments/[assessmentId]/present`). It adds three narrow
+   "anyone can SELECT WHERE status = 'ACTIVE'" policies on
+   `assessments`/`assessment_questions`/`assessment_answer_options` so a
+   participant (who has no Supabase Auth account) can read a published
+   Assessment. Verified via a direct REST call during Phase 10C's RLS
+   testing that without this migration, an anonymous request to an
+   ACTIVE assessment returns an empty result — **if you deployed Phase
+   10A before Phase 10C, you must run this second file too**, or
+   participant links will silently show "Không tìm thấy bài kiểm tra."
 
 **Via the Dashboard (no CLI needed):**
 1. Open your project → **SQL Editor** → **New query**.
-2. Paste the full contents of
-   `supabase/migrations/20260910000000_initial_schema.sql`.
-3. Run it. It should complete with no errors (enums, tables, indexes, RLS
-   policies, and the two trigger functions all in one transaction-per-
-   statement run).
+2. Paste the full contents of the first file, run it, confirm no errors.
+3. New query again, paste the full contents of the second file, run it.
 4. Optionally also run `supabase/seed.sql` for demo data — read the
    comment at the top of that file first, it has one manual prerequisite
    (create a trainer user in Authentication → Users before seeding, since
@@ -426,3 +438,63 @@ After running the migration (§3):
    `/login`; visit `/dashboard` again → redirected to `/login` again (no
    stale session). Separately confirm `/join`, `/play/[id]`,
    `/assessment/[id]/start` all stay reachable with no session at all.
+
+---
+
+## 11. Phase 10C — Quiz Library + Assessment persistence
+
+`/quizzes`, the Quiz Editor, `/assessments`, and the Assessment Editor now
+read/write real Postgres rows instead of mock data. What changed:
+
+- **Data access layer**: `lib/data/quizzes.ts` and `lib/data/assessments.ts`
+  are the only places that query `quizzes`/`questions`/`answer_options` and
+  `assessments`/`assessment_questions`/`assessment_answer_options`. UI code
+  never calls `createClient()` directly for these tables — it calls these
+  functions (reads) or the Server Actions in `app/(trainer)/quizzes/
+  actions.ts` / `app/(trainer)/assessments/actions.ts` (writes), which
+  delegate here. `owner_id` always comes from `getCurrentUser()`, never a
+  parameter — verified this can't be bypassed even by a client sending a
+  forged `owner_id` (see the RLS test below).
+- **Save model**: debounced autosave (`hooks/use-debounced-save.ts`,
+  ~900ms after the Quiz/Assessment stops changing) with a real "Chưa lưu →
+  Đang lưu… → Đã lưu" status, never faking "Đã lưu" on a failed save — an
+  error shows the actual friendly message inline instead. Both editors
+  share this hook. `/quizzes/new` and `/assessments/new` insert a blank row
+  and redirect to the real id immediately (no client-side draft id).
+- **Sync strategy**: saving a Quiz/Assessment upserts every question/option
+  by its own client-generated UUID and deletes whichever ids from the
+  previous save are no longer present — ids stay stable across saves
+  rather than delete-all-reinsert-all.
+- **Image/banner persistence**: still deliberately NOT migrated to Storage
+  this phase (see §7 — buckets aren't confirmed created, no real upload
+  code exists). The local `URL.createObjectURL` upload UI is unchanged; the
+  save layer only refuses to ever write a `blob:` url into the database
+  (`persistableImageUrl()` in both data files returns `null` instead).
+- **New RLS migration required**: `20260911000000_public_assessment_read.sql`
+  (§3) — participant routes (`/assessment/[id]/start|take|result`,
+  `/assessments/[id]/present`) have no Supabase Auth session, so they need
+  a narrow "SELECT WHERE status = 'ACTIVE'" policy on
+  `assessments`/`assessment_questions`/`assessment_answer_options`. This is
+  additive to the owner-only policies from §6 (Postgres OR's multiple
+  permissive policies together) and never touches INSERT/UPDATE/DELETE or
+  the attempt tables. **If you already ran the Phase 10A migration before
+  Phase 10C, you must also run this one** — verified during this phase's
+  RLS testing that without it, an anonymous request to an `ACTIVE`
+  assessment returns zero rows.
+- **RLS verified against the real project** (not just read from the
+  migration file): created two throwaway trainer accounts via the Admin
+  API, had Trainer A create a quiz and an assessment, then confirmed as
+  Trainer B: `SELECT` by id returns `[]`, `UPDATE`/`DELETE` by id affect
+  zero rows, and `INSERT` into `quizzes` with `owner_id` forged to
+  Trainer A's id is rejected outright (`42501`, RLS `WITH CHECK`
+  violation) rather than silently succeeding. All test rows/accounts were
+  deleted afterward.
+- **Kept on mock/local data, unchanged this phase**: Live Game
+  (`game_sessions`/`participants`/`participant_answers`), Reports
+  (`mocks/reports.ts`), `AssessmentAttempt` + Assessment Result
+  (`lib/assessment/attempt-store.ts`, `sessionStorage`-based — Result reads
+  the Assessment itself from Supabase now, but the attempt/score/pass-fail
+  data stays where it was). `mocks/quizzes.ts` is still imported by
+  Reports/Live Game mocks and must not be deleted. `mocks/assessments.ts`
+  has no remaining importers after this migration but was left in place
+  rather than deleted (nothing currently references it).

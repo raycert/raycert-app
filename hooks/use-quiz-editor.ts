@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import type { AnswerOption, Question, QuestionType, Quiz } from "@/types";
 import { isQuestionComplete } from "@/lib/validation/question";
+import { useDebouncedSave, type SaveStatus } from "@/hooks/use-debounced-save";
+import { saveQuizAction } from "@/app/(trainer)/quizzes/actions";
 
-export type SaveStatus = "saved" | "saving" | "unsaved";
+export type { SaveStatus };
 
 const LABELS = ["A", "B", "C", "D", "E", "F"];
 const MAX_OPTIONS: Record<QuestionType, number> = { QUIZ: 4, POLL: 6 };
@@ -36,40 +38,21 @@ function createBlankQuestion(type: QuestionType, order: number): Question {
 }
 
 /**
- * Client/local editor state for the Quiz Editor (Phase 3). No persistence —
- * everything lives in React state, seeded once from mock data or a blank
- * draft. Also drives the "Chưa lưu → Đang lưu… → Đã lưu" save-status mock.
+ * Client/local editor state for the Quiz Editor. Persists to Supabase via
+ * `saveQuizAction`, debounced ~900ms after the quiz stops changing — see
+ * `useDebouncedSave` for the "Chưa lưu → Đang lưu… → Đã lưu" status machine.
  */
 export function useQuizEditor(initialQuiz: Quiz) {
   const [quiz, setQuiz] = useState<Quiz>(initialQuiz);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
     initialQuiz.questions[0]?.id ?? null
   );
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
 
-  const isFirstRender = useRef(true);
-  const savingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    setSaveStatus("unsaved");
-    if (savingTimer.current) clearTimeout(savingTimer.current);
-    if (savedTimer.current) clearTimeout(savedTimer.current);
-
-    savingTimer.current = setTimeout(() => {
-      setSaveStatus("saving");
-      savedTimer.current = setTimeout(() => setSaveStatus("saved"), 600);
-    }, 900);
-
-    return () => {
-      if (savingTimer.current) clearTimeout(savingTimer.current);
-      if (savedTimer.current) clearTimeout(savedTimer.current);
-    };
-  }, [quiz]);
+  const {
+    status: saveStatus,
+    errorMessage: saveError,
+    flush: flushSave,
+  } = useDebouncedSave(quiz, saveQuizAction);
 
   const updateQuestions = useCallback(
     (updater: (questions: Question[]) => Question[]) => {
@@ -206,6 +189,8 @@ export function useQuizEditor(initialQuiz: Quiz) {
   return {
     quiz,
     saveStatus,
+    saveError,
+    flushSave,
     selectedQuestion,
     selectedQuestionId,
     hasIncompleteQuestions,

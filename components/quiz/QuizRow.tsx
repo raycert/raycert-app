@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MoreHorizontalIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { Quiz } from "@/types";
@@ -12,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatRelativeTime } from "@/lib/format";
+import { deleteQuizAction, duplicateQuizAction } from "@/app/(trainer)/quizzes/actions";
 import { QuizStatusBadge } from "./QuizStatusBadge";
 
 const GRID_COLS = "grid-cols-[2fr_1fr_1.4fr_1fr_1fr_1.6fr]";
@@ -40,6 +42,31 @@ export function QuizListHeader() {
 }
 
 export function QuizRow({ quiz }: { quiz: Quiz }) {
+  const router = useRouter();
+
+  async function handleDuplicate() {
+    const result = await duplicateQuizAction(quiz.id);
+    if ("error" in result) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(`Đã sao chép "${quiz.title || "Untitled Quiz"}"`);
+    router.refresh();
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Xoá quiz "${quiz.title || "Untitled Quiz"}"? Hành động này không thể hoàn tác.`)) {
+      return;
+    }
+    const result = await deleteQuizAction(quiz.id);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(`Đã xoá "${quiz.title || "Untitled Quiz"}"`);
+    router.refresh();
+  }
+
   return (
     <div
       className={`grid ${GRID_COLS} items-center gap-2.5 rounded-lg border border-border px-3.5 py-3.5 text-[13.5px]`}
@@ -65,13 +92,8 @@ export function QuizRow({ quiz }: { quiz: Quiz }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => toast(`Đã sao chép "${quiz.title}" (mock)`)}>
-              Duplicate
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => toast.error(`Đã xoá "${quiz.title}" (mock)`)}
-            >
+            <DropdownMenuItem onClick={handleDuplicate}>Duplicate</DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onClick={handleDelete}>
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

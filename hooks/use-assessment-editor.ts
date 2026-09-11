@@ -15,6 +15,8 @@ import {
   getScoredQuestions,
   getTotalPoints,
 } from "@/lib/validation/assessment";
+import { useDebouncedSave } from "@/hooks/use-debounced-save";
+import { saveAssessmentAction } from "@/app/(trainer)/assessments/actions";
 
 const LABELS = ["A", "B", "C", "D", "E", "F"];
 const MAX_OPTIONS: Record<QuestionType, number> = { QUIZ: 4, POLL: 6 };
@@ -67,6 +69,12 @@ export function useAssessmentEditor(initialAssessment: Assessment) {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
     initialAssessment.questions[0]?.id ?? null
   );
+
+  const {
+    status: saveStatus,
+    errorMessage: saveError,
+    flush: flushSave,
+  } = useDebouncedSave(assessment, saveAssessmentAction);
 
   const updateQuestions = useCallback(
     (updater: (questions: Question[]) => Question[]) => {
@@ -237,6 +245,9 @@ export function useAssessmentEditor(initialAssessment: Assessment) {
 
   return {
     assessment,
+    saveStatus,
+    saveError,
+    flushSave,
     selectedQuestion,
     selectedQuestionId,
     scoredQuestionCount,

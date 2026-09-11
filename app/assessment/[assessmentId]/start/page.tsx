@@ -1,5 +1,7 @@
 import { AssessmentStart } from "@/components/assessment/AssessmentStart";
-import { getAssessment } from "@/mocks";
+import { getAssessmentById } from "@/lib/data/assessments";
+
+export const dynamic = "force-dynamic";
 
 export default async function AssessmentStartPage({
   params,
@@ -7,7 +9,7 @@ export default async function AssessmentStartPage({
   params: Promise<{ assessmentId: string }>;
 }) {
   const { assessmentId } = await params;
-  const assessment = getAssessment(assessmentId);
+  const assessment = await getAssessmentById(assessmentId);
 
   if (!assessment) {
     return (

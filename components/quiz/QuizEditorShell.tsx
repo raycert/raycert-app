@@ -10,12 +10,14 @@ const SAVE_STATUS_LABEL: Record<SaveStatus, string> = {
   saved: "Đã lưu",
   saving: "Đang lưu…",
   unsaved: "Chưa lưu",
+  error: "Lỗi lưu",
 };
 
 export function QuizEditorShell({
   quizTitle,
   onTitleChange,
   saveStatus,
+  saveError,
   onImportExcel,
   onPreview,
   onHost,
@@ -26,6 +28,7 @@ export function QuizEditorShell({
   quizTitle: string;
   onTitleChange: (title: string) => void;
   saveStatus: SaveStatus;
+  saveError?: string | null;
   onImportExcel: () => void;
   onPreview: () => void;
   onHost: () => void;
@@ -58,7 +61,9 @@ export function QuizEditorShell({
               className="w-full min-w-0 bg-transparent text-sm font-bold outline-none focus-visible:underline sm:text-[15px]"
             />
           </label>
-          <span className="shrink-0 text-xs font-medium text-muted-foreground">
+          <span
+            className={`shrink-0 text-xs font-medium ${saveStatus === "error" ? "text-destructive" : "text-muted-foreground"}`}
+          >
             · {SAVE_STATUS_LABEL[saveStatus]}
           </span>
         </div>
@@ -76,6 +81,12 @@ export function QuizEditorShell({
           </div>
         </div>
       </div>
+
+      {saveStatus === "error" && saveError ? (
+        <p className="border-b border-border bg-destructive/10 px-5.5 py-2 text-[12.5px] text-destructive">
+          {saveError}
+        </p>
+      ) : null}
 
       {hostDisabled ? (
         <p className="border-b border-border bg-amber-100 px-5.5 py-2 text-[12.5px] text-amber-600">

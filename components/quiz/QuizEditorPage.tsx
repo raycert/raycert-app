@@ -17,6 +17,7 @@ export function QuizEditorPage({ initialQuiz }: { initialQuiz: Quiz }) {
   const {
     quiz,
     saveStatus,
+    saveError,
     selectedQuestion,
     selectedQuestionId,
     hasIncompleteQuestions,
@@ -46,6 +47,7 @@ export function QuizEditorPage({ initialQuiz }: { initialQuiz: Quiz }) {
         quizTitle={quiz.title}
         onTitleChange={setTitle}
         saveStatus={saveStatus}
+        saveError={saveError}
         onImportExcel={() => setImportOpen(true)}
         onPreview={() => setPreviewOpen(true)}
         onHost={() => router.push(`/host/${quiz.id}/lobby`)}

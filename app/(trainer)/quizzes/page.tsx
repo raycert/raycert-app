@@ -1,22 +1,17 @@
-"use client";
-
-import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SearchInput } from "@/components/layout/SearchInput";
 import { EmptyState } from "@/components/layout/EmptyState";
-import { QuizList } from "@/components/quiz/QuizList";
-import { mockQuizzes } from "@/mocks";
+import { QuizLibrary } from "@/components/quiz/QuizLibrary";
+import { listQuizzesForCurrentUser } from "@/lib/data/quizzes";
 
-export default function MyQuizzesPage() {
-  const [search, setSearch] = useState("");
+// Real per-trainer data now (Phase 10C) — force-dynamic so a Duplicate/Delete's
+// router.refresh() (see QuizRow.tsx) always re-fetches a fresh render instead
+// of a stale cached one (no dynamic segment on this route otherwise).
+export const dynamic = "force-dynamic";
 
-  const filteredQuizzes = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return mockQuizzes;
-    return mockQuizzes.filter((quiz) => quiz.title.toLowerCase().includes(query));
-  }, [search]);
+export default async function MyQuizzesPage() {
+  const quizzes = await listQuizzesForCurrentUser();
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,27 +20,13 @@ export default function MyQuizzesPage() {
           My Quizzes
         </h1>
         <p className="text-base text-muted-foreground">
-          {mockQuizzes.length} quiz trong thư viện của bạn
+          {quizzes.length} quiz trong thư viện của bạn
         </p>
       </div>
 
       <Card>
         <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <SearchInput
-              id="quiz-search"
-              label="Search quizzes"
-              value={search}
-              onChange={setSearch}
-              placeholder="Search quizzes…"
-              className="w-full sm:w-60"
-            />
-            <Button asChild>
-              <Link href="/quizzes/new">+ Create Quiz</Link>
-            </Button>
-          </div>
-
-          {mockQuizzes.length === 0 ? (
+          {quizzes.length === 0 ? (
             <EmptyState
               title="Chưa có quiz nào"
               description="Tạo quiz đầu tiên để bắt đầu đào tạo."
@@ -56,7 +37,7 @@ export default function MyQuizzesPage() {
               }
             />
           ) : (
-            <QuizList quizzes={filteredQuizzes} />
+            <QuizLibrary quizzes={quizzes} />
           )}
         </CardContent>
       </Card>

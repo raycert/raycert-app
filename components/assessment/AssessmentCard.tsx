@@ -38,10 +38,10 @@ export function AssessmentCard({ assessment }: { assessment: Assessment }) {
   async function handleDuplicate() {
     const result = await duplicateAssessmentAction(assessment.id);
     if ("error" in result) {
-      toast.error("Không thể sao chép Assessment");
+      toast.error(result.error);
       return;
     }
-    toast.success(`Đã sao chép Assessment: "${result.title}"`);
+    toast.success("Đã sao chép Assessment");
     router.refresh();
   }
 

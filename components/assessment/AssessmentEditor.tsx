@@ -24,10 +24,20 @@ import { AssessmentBannerSection } from "./AssessmentBannerSection";
 
 const MAX_COMPANY_NAME_LENGTH = 120;
 
+const SAVE_STATUS_LABEL: Record<string, string> = {
+  saved: "Đã lưu",
+  saving: "Đang lưu…",
+  unsaved: "Chưa lưu",
+  error: "Lỗi lưu",
+};
+
 export function AssessmentEditor({ initialAssessment }: { initialAssessment: Assessment }) {
   const router = useRouter();
   const {
     assessment,
+    saveStatus,
+    saveError,
+    flushSave,
     selectedQuestion,
     selectedQuestionId,
     totalPoints,
@@ -65,8 +75,12 @@ export function AssessmentEditor({ initialAssessment }: { initialAssessment: Ass
         .findIndex((q) => q.id === selectedQuestion.id) + 1
     : 0;
 
-  function handleSaveAndClose() {
-    toast.success("Đã lưu Post-test (mock — chưa có backend persistence)");
+  async function handleSaveAndClose() {
+    const result = await flushSave();
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
     router.push("/assessments");
   }
 
@@ -77,6 +91,11 @@ export function AssessmentEditor({ initialAssessment }: { initialAssessment: Ass
           ← Quay lại Assessments
         </Button>
         <div className="flex items-center gap-2">
+          <span
+            className={`text-xs font-medium ${saveStatus === "error" ? "text-destructive" : "text-muted-foreground"}`}
+          >
+            {SAVE_STATUS_LABEL[saveStatus]}
+          </span>
           <Button variant="secondary" size="sm" onClick={() => setPreviewOpen(true)}>
             Preview
           </Button>
@@ -86,11 +105,17 @@ export function AssessmentEditor({ initialAssessment }: { initialAssessment: Ass
               Present
             </Link>
           </Button>
-          <Button size="sm" onClick={handleSaveAndClose}>
+          <Button size="sm" onClick={handleSaveAndClose} disabled={saveStatus === "saving"}>
             Save & Close
           </Button>
         </div>
       </div>
+
+      {saveStatus === "error" && saveError ? (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-[12.5px] text-destructive">
+          {saveError}
+        </p>
+      ) : null}
 
       <div className="flex flex-col gap-3">
         <label htmlFor="assessment-title" className="sr-only">
