@@ -83,7 +83,7 @@ export function QuizRow({ quiz }: { quiz: Quiz }) {
           <Link href={`/quizzes/${quiz.id}`}>Edit</Link>
         </Button>
         <Button size="sm" asChild>
-          <Link href={`/host/${quiz.id}/lobby`}>Host</Link>
+          <Link href={`/host/new?quizId=${quiz.id}`}>Host</Link>
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

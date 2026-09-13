@@ -5,18 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PinInput } from "@/components/participant/PinInput";
-import { resolveSessionByPin } from "@/mocks/session";
+import { resolvePinAction } from "./actions";
 
 type PinStatus = "idle" | "validating" | "invalid" | "success";
-
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 export default function JoinPage() {
   const router = useRouter();
   const [pin, setPin] = useState("");
   const [status, setStatus] = useState<PinStatus>("idle");
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const isPinComplete = pin.length === 6;
   const busy = status === "validating" || status === "success";
@@ -31,17 +28,16 @@ export default function JoinPage() {
     if (!isPinComplete || busy) return;
 
     setStatus("validating");
-    await wait(500);
+    const result = await resolvePinAction(pin);
 
-    const session = resolveSessionByPin(pin);
-    if (!session) {
+    if ("error" in result) {
+      setError(result.error);
       setStatus("invalid");
       return;
     }
 
     setStatus("success");
-    await wait(300);
-    router.push(`/join/${session.id}`);
+    router.push(`/join/${result.sessionId}`);
   }
 
   return (
@@ -60,7 +56,7 @@ export default function JoinPage() {
         <PinInput
           value={pin}
           onChange={handlePinChange}
-          error={status === "invalid" ? "PIN không hợp lệ" : undefined}
+          error={status === "invalid" ? (error ?? "PIN không hợp lệ") : undefined}
           disabled={busy}
         />
       </div>

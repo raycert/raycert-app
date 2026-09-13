@@ -1,21 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
 import { CheckIcon } from "lucide-react";
-import type { PollResult as PollResultData, QuestionResult } from "@/types";
+import { toast } from "sonner";
+import type { PollResult as PollResultData } from "@/types";
 import { AvatarChip } from "./AvatarChip";
 import { ParticipantQuestion } from "./ParticipantQuestion";
 import { QuizResult } from "@/components/game/QuizResult";
 import { PollResult, type PollResultRow } from "@/components/game/PollResult";
-import { ParticipantLeaderboard } from "@/components/leaderboard/ParticipantLeaderboard";
 import { useParticipantGameplay } from "@/hooks/use-participant-gameplay";
+import type { PlayState } from "@/app/play/[sessionId]/actions";
 
-// Mock-only pacing: no real host, so the Waiting Room auto-starts after a
-// short delay instead of giving the participant a start control (they never
-// self-start — CLAUDE.md §3, §11).
-const AUTO_START_DELAY_MS = 3000;
+const SUBMIT_REJECTION_MESSAGE: Record<string, string> = {
+  SESSION_NOT_FOUND: "Phiên tham gia không hợp lệ, vui lòng tham gia lại.",
+  QUESTION_CHANGED: "Câu hỏi đã đóng hoặc đã chuyển sang câu khác.",
+  QUESTION_EXPIRED: "Đã hết thời gian trả lời câu này.",
+  ALREADY_ANSWERED: "Bạn đã trả lời câu này rồi.",
+  INVALID_OPTION: "Lựa chọn không hợp lệ.",
+  UNKNOWN_ERROR: "Không thể gửi câu trả lời. Vui lòng thử lại.",
+};
 
-function buildPollRows(result: PollResultData, question: { options: { id: string; label: string; text: string }[] }): PollResultRow[] {
+function buildPollRows(
+  result: PollResultData,
+  question: { options: { id: string; label: string; text: string }[] }
+): PollResultRow[] {
   return result.distribution.map((d) => {
     const option = question.options.find((o) => o.id === d.optionId);
     return {
@@ -29,42 +36,42 @@ function buildPollRows(result: PollResultData, question: { options: { id: string
 }
 
 export function ParticipantGameShell({
-  nickname,
-  quizTitle,
-  participantCount,
+  sessionId,
+  initialState,
 }: {
-  nickname: string;
-  quizTitle: string;
-  participantCount: number;
+  sessionId: string;
+  initialState: PlayState;
 }) {
   const {
     phase,
-    questionIndex,
     totalQuestions,
+    participantCount,
     participantQuestion,
     secondsLeft,
     selectedOptionId,
-    currentResult,
-    currentAnswer,
+    myResult,
     myScore,
-    leaderboard,
-    startGame,
+    finalLeaderboard,
+    myFinalRank,
+    myParticipantId,
+    submitting,
     selectOption,
     submitAnswer,
-  } = useParticipantGameplay(nickname);
+  } = useParticipantGameplay(sessionId, initialState);
 
-  useEffect(() => {
-    if (phase !== "WAITING") return;
-    const timeout = setTimeout(startGame, AUTO_START_DELAY_MS);
-    return () => clearTimeout(timeout);
-  }, [phase, startGame]);
+  async function handleSubmit() {
+    const result = await submitAnswer();
+    if (!result.success) {
+      toast.error(SUBMIT_REJECTION_MESSAGE[result.reason] ?? SUBMIT_REJECTION_MESSAGE.UNKNOWN_ERROR);
+    }
+  }
 
   if (phase === "WAITING") {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 text-center">
         <div className="flex flex-col items-center gap-1">
           <p className="text-xs leading-4 uppercase tracking-wide text-muted-foreground">
-            {quizTitle}
+            {initialState.quizTitle}
           </p>
           <h1 className="font-heading text-[24px] font-bold leading-8 text-heading">
             Waiting Room
@@ -72,8 +79,8 @@ export function ParticipantGameShell({
         </div>
 
         <div className="flex flex-col items-center gap-3">
-          <AvatarChip nickname={nickname} />
-          <p className="text-lg font-semibold text-heading">{nickname}</p>
+          <AvatarChip nickname={initialState.myNickname} />
+          <p className="text-lg font-semibold text-heading">{initialState.myNickname}</p>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-success-100 px-3 py-1 text-[12.5px] font-semibold text-success-600">
             <CheckIcon className="size-3.5" />
             Đã tham gia
@@ -101,16 +108,34 @@ export function ParticipantGameShell({
   }
 
   if (phase === "FINISHED") {
-    const finalRank = leaderboard.myRank;
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3.5 px-6 text-center">
         <p className="text-[12.5px] text-muted-foreground">Bạn xếp thứ</p>
         <p className="font-heading text-[44px] font-extrabold leading-none text-primary">
-          #{finalRank}
+          {myFinalRank !== null ? `#${myFinalRank}` : "—"}
         </p>
         <p className="text-[13.5px] text-body">
           Tổng điểm: <strong className="text-heading">{myScore.toLocaleString("vi-VN")}</strong>
         </p>
+        {finalLeaderboard.length > 0 ? (
+          <div className="mt-4 flex w-full max-w-xs flex-col gap-1.5">
+            {finalLeaderboard.slice(0, 5).map((entry) => (
+              <div
+                key={entry.participantId}
+                className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
+                  entry.participantId === myParticipantId
+                    ? "bg-primary/10 font-semibold text-primary"
+                    : "bg-surface-subtle text-body"
+                }`}
+              >
+                <span>
+                  #{entry.rank} {entry.nickname}
+                </span>
+                <span>{entry.score.toLocaleString("vi-VN")}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -121,33 +146,39 @@ export function ParticipantGameShell({
     return (
       <ParticipantQuestion
         question={participantQuestion}
-        questionNumber={questionIndex + 1}
+        questionNumber={participantQuestion.order}
         totalQuestions={totalQuestions}
         secondsLeft={secondsLeft}
-        submitted={phase === "ANSWER_SUBMITTED"}
+        submitted={phase === "ANSWER_SUBMITTED" || submitting}
         selectedOptionId={selectedOptionId}
         onSelectOption={selectOption}
-        onSubmit={submitAnswer}
+        onSubmit={handleSubmit}
       />
     );
   }
 
-  if (phase === "QUESTION_RESULTS" && currentResult) {
-    if (participantQuestion.type === "QUIZ") {
-      const result = currentResult as QuestionResult;
-      const correctOption = participantQuestion.options.find(
-        (o) => o.id === result.correctOptionId
-      )!;
-      const selected = participantQuestion.options.find(
-        (o) => o.id === currentAnswer?.optionId
+  if (phase === "QUESTION_RESULTS") {
+    if (!myResult || !myResult.revealed) {
+      return (
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
+          <p className="text-base text-muted-foreground">Đang chờ kết quả…</p>
+        </div>
       );
+    }
+
+    if (myResult.type === "QUIZ") {
+      const correctOption = participantQuestion.options.find(
+        (o) => o.id === myResult.result.correctOptionId
+      );
+      const selected = participantQuestion.options.find((o) => o.id === myResult.selectedOptionId);
+      if (!correctOption) return null;
       return (
         <QuizResult
-          isCorrect={currentAnswer?.optionId == null ? null : (currentAnswer?.isCorrect ?? false)}
+          isCorrect={myResult.selectedOptionId == null ? null : myResult.isCorrect}
           selectedOption={selected ? { label: selected.label, text: selected.text } : null}
           correctOption={{ label: correctOption.label, text: correctOption.text }}
-          pointsAwarded={currentAnswer?.pointsAwarded ?? 0}
-          responseMs={currentAnswer?.responseMs}
+          pointsAwarded={myResult.pointsAwarded}
+          responseMs={myResult.responseMs ?? undefined}
           totalScore={myScore}
         />
       );
@@ -155,15 +186,11 @@ export function ParticipantGameShell({
 
     return (
       <PollResult
-        rows={buildPollRows(currentResult as PollResultData, participantQuestion)}
-        selectedOptionId={currentAnswer?.optionId ?? null}
-        totalVoters={currentResult.responseCount}
+        rows={buildPollRows(myResult.result, participantQuestion)}
+        selectedOptionId={myResult.selectedOptionId}
+        totalVoters={myResult.result.responseCount}
       />
     );
-  }
-
-  if (phase === "LEADERBOARD") {
-    return <ParticipantLeaderboard entries={leaderboard.entries} myRank={leaderboard.myRank} />;
   }
 
   return null;

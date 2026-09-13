@@ -50,7 +50,7 @@ export function QuizEditorPage({ initialQuiz }: { initialQuiz: Quiz }) {
         saveError={saveError}
         onImportExcel={() => setImportOpen(true)}
         onPreview={() => setPreviewOpen(true)}
-        onHost={() => router.push(`/host/${quiz.id}/lobby`)}
+        onHost={() => router.push(`/host/new?quizId=${quiz.id}`)}
         hostDisabled={hasIncompleteQuestions}
         sidebar={
           <QuestionList

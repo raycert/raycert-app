@@ -39,22 +39,38 @@ Trạng thái: CHƯA BẮT ĐẦU
 Host: Quiz → Host → Session → PIN → Lobby.
 Participant: Join → PIN → nickname → Waiting Room.
 Realtime participant join/leave/lobby/game start.
-Trạng thái: CHƯA BẮT ĐẦU
+Trạng thái: **Persistence thật xong (Phase 10D)** — Host → `/host/new?quizId=` tạo `game_sessions`
+thật (PIN 6 số unique, `host_id` từ session), Lobby/Join/Waiting Room đọc/ghi participant thật.
+`Realtime participant join/leave` ở milestone này **CHƯA làm** — dùng polling ~2.5s
+(`hooks/use-live-poll.ts`) thay cho `postgres_changes`/Broadcast, để dành Phase 10E. Chi tiết
+`docs/backend/SUPABASE_SETUP.md` §12.
 
 # Milestone 4 — Live Question Engine
 Dùng chung engine cho QUIZ/POLL.
 Không leak correct answer.
 Duplicate answer bị chặn.
-Trạng thái: CHƯA BẮT ĐẦU
+Trạng thái: **Persistence thật xong (Phase 10D)** — `participant_answers` thật, `is_correct`/
+`points_awarded` tính server-side (`lib/data/live-answers.ts`), không client nào nhận được
+`isCorrect`/`correctOptionId` trước khi câu đóng (`toParticipantQuestion` strip ở type level).
+Duplicate answer bị chặn ở cả app-layer lẫn DB unique constraint `(participant_id, question_id)` —
+verified qua REST test thật. Chưa có: Realtime broadcast giữa participants (Phase 10E).
 
 # Milestone 5 — Results & Scoring
 QUIZ: đúng/sai, 1000 + speed bonus tối đa 300, distribution, leaderboard.
 POLL: vote distribution, %, không score/rank/correct rate.
-Trạng thái: CHƯA BẮT ĐẦU
+Trạng thái: **Scoring thật xong (Phase 10D)** — công thức CLAUDE.md §10 y hệt, tính từ
+`current_question_started_at` thật (không tin timestamp client), `participants.score` cập nhật
+thật. Leaderboard tính từ `participants.score` thật qua `getLeaderboard()`. Chưa production-grade
+concurrency (read-modify-write cho score, chấp nhận race nhỏ — nằm ngoài scope phase này).
 
 # Milestone 6 — Full Game Loop
 Cho phép xen kẽ QUIZ → Result → Leaderboard → POLL → Poll Result → QUIZ...
-Trạng thái: CHƯA BẮT ĐẦU
+Trạng thái: **Chạy trên dữ liệu thật (Phase 10D)** — Host điều khiển Start/Close/Next/End qua Server
+Actions thật, session xen kẽ QUIZ/POLL đúng thứ tự câu hỏi thật của quiz. Participant KHÔNG còn có
+sub-phase "Leaderboard" đồng bộ giữa mỗi câu (quyết định có chủ đích — xem `docs/backend/
+SUPABASE_SETUP.md` §12: leaderboard giữa game của Host là UI-only, không có DB status riêng, nên
+participant không có cách nào biết Host đang ở sub-phase đó nếu không có Realtime); participant chỉ
+thấy leaderboard đầy đủ 1 lần ở FINISHED.
 
 # Milestone 7 — Authentication & Ownership
 Login/logout, protected dashboard, quiz ownership, host authorization.
@@ -65,8 +81,12 @@ Trạng thái: **Trainer auth thật xong (Phase 10B)** — `/login`, `/signup`,
 public. Chi tiết `docs/backend/SUPABASE_SETUP.md` §8/§8b. **Quiz/Assessment ownership RLS đã áp
 dụng vào query thật (Phase 10C)** — verified bằng test 2 tài khoản trainer thật qua REST API:
 Trainer B không SELECT/UPDATE/DELETE được row của Trainer A (trả về rỗng/RLS-filtered), và không
-spoof được `owner_id` khi INSERT (bị chặn bởi WITH CHECK, lỗi 42501). Live Game host
-authorization vẫn mock (chưa migrate).
+spoof được `owner_id` khi INSERT (bị chặn bởi WITH CHECK, lỗi 42501). **Live Game host
+authorization cũng đã thật (Phase 10D)** — `game_sessions` có RLS `host_id = auth.uid()` giống hệt
+pattern `owner_id`; verified: trainer tự insert `game_sessions` qua JWT của mình trước khi migration
+Phase 10D được áp dụng bị chặn 42501 (xác nhận gap có thật), và migration mới thêm policy
+select/insert/update owner-scoped cho `game_sessions` + policy select-only cho host trên
+`participants`/`participant_answers`.
 
 # Milestone 8 — Reports & Training Analytics
 Game Summary, Participant Analysis, QUIZ Analysis, POLL Analysis.

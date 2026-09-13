@@ -8,11 +8,13 @@
  * doesn't compile. `profiles` was added in Phase 10B; `quizzes`/`questions`/
  * `answer_options`/`assessments`/`assessment_questions`/
  * `assessment_answer_options` added in Phase 10C for `lib/data/quizzes.ts`/
- * `lib/data/assessments.ts`. Every other table (`assessment_attempts`,
- * `assessment_answers`, `game_sessions`, `participants`,
- * `participant_answers`) is still the empty placeholder — add more by hand
- * here ONLY if/when real code needs to query them, and keep each one in
- * sync with its migration by hand until the CLI is available.
+ * `lib/data/assessments.ts`; `game_sessions`/`participants`/
+ * `participant_answers` added in Phase 10D for `lib/data/game-sessions.ts`/
+ * `lib/data/participants.ts`/`lib/data/live-answers.ts`. Only
+ * `assessment_attempts`/`assessment_answers` remain the empty placeholder —
+ * add more by hand here ONLY if/when real code needs to query them, and
+ * keep each one in sync with its migration by hand until the CLI is
+ * available.
  *
  * To generate the real, complete file (replacing every hand-typed table
  * here):
@@ -217,6 +219,86 @@ type AssessmentAnswerOptionsInsert = {
 
 type AssessmentAnswerOptionsUpdate = Partial<AssessmentAnswerOptionsInsert>;
 
+type GameSessionStatusEnum = "WAITING" | "ACTIVE" | "QUESTION_ACTIVE" | "QUESTION_RESULTS" | "FINISHED";
+
+type GameSessionsRow = {
+  id: string;
+  quiz_id: string;
+  host_id: string;
+  game_pin: string;
+  status: GameSessionStatusEnum;
+  current_question_index: number;
+  current_question_id: string | null;
+  current_question_started_at: string | null;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+};
+
+type GameSessionsInsert = {
+  id?: string;
+  quiz_id: string;
+  host_id: string;
+  game_pin: string;
+  status?: GameSessionStatusEnum;
+  current_question_index?: number;
+  current_question_id?: string | null;
+  current_question_started_at?: string | null;
+  started_at?: string | null;
+  ended_at?: string | null;
+  created_at?: string;
+};
+
+type GameSessionsUpdate = Partial<GameSessionsInsert>;
+
+type ParticipantsRow = {
+  id: string;
+  game_session_id: string;
+  nickname: string;
+  participant_token: string;
+  score: number;
+  joined_at: string;
+  last_seen_at: string | null;
+};
+
+type ParticipantsInsert = {
+  id?: string;
+  game_session_id: string;
+  nickname: string;
+  participant_token?: string;
+  score?: number;
+  joined_at?: string;
+  last_seen_at?: string | null;
+};
+
+type ParticipantsUpdate = Partial<ParticipantsInsert>;
+
+type ParticipantAnswersRow = {
+  id: string;
+  game_session_id: string;
+  participant_id: string;
+  question_id: string;
+  answer_option_id: string;
+  submitted_at: string;
+  response_ms: number | null;
+  is_correct: boolean | null;
+  points_awarded: number;
+};
+
+type ParticipantAnswersInsert = {
+  id?: string;
+  game_session_id: string;
+  participant_id: string;
+  question_id: string;
+  answer_option_id: string;
+  submitted_at?: string;
+  response_ms?: number | null;
+  is_correct?: boolean | null;
+  points_awarded?: number;
+};
+
+type ParticipantAnswersUpdate = Partial<ParticipantAnswersInsert>;
+
 export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "12";
@@ -263,6 +345,24 @@ export type Database = {
         Row: AssessmentAnswerOptionsRow;
         Insert: AssessmentAnswerOptionsInsert;
         Update: AssessmentAnswerOptionsUpdate;
+        Relationships: [];
+      };
+      game_sessions: {
+        Row: GameSessionsRow;
+        Insert: GameSessionsInsert;
+        Update: GameSessionsUpdate;
+        Relationships: [];
+      };
+      participants: {
+        Row: ParticipantsRow;
+        Insert: ParticipantsInsert;
+        Update: ParticipantsUpdate;
+        Relationships: [];
+      };
+      participant_answers: {
+        Row: ParticipantAnswersRow;
+        Insert: ParticipantAnswersInsert;
+        Update: ParticipantAnswersUpdate;
         Relationships: [];
       };
     };

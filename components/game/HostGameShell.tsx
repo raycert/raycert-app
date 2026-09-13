@@ -1,29 +1,42 @@
 "use client";
 
-import type { PollResult as PollResultData, QuestionResult } from "@/types";
+import type { PollResult as PollResultData, Question, QuestionResult } from "@/types";
 import { useHostGameplay } from "@/hooks/use-host-gameplay";
-import { getGameplayResult, mockGameplayQuestions } from "@/mocks/gameplay";
 import { HostQuestionView } from "./HostQuestionView";
 import { HostQuizResults } from "./HostQuizResults";
 import { HostPollResults } from "./HostPollResults";
 import { HostGameControls } from "./HostGameControls";
 import { HostLeaderboard } from "@/components/leaderboard/HostLeaderboard";
 import { FinalLeaderboard } from "@/components/leaderboard/FinalLeaderboard";
-import { HostDevMockControls } from "@/components/dev/HostDevMockControls";
 
-const quizCount = mockGameplayQuestions.filter((q) => q.type === "QUIZ").length;
-const pollCount = mockGameplayQuestions.filter((q) => q.type === "POLL").length;
-
-function averageQuizCorrectRate(): number | null {
-  const rates = mockGameplayQuestions
+function averageQuizCorrectRate(
+  questions: Question[],
+  questionResults: Record<string, QuestionResult | PollResultData>
+): number | null {
+  const rates = questions
     .filter((q) => q.type === "QUIZ")
-    .map((q) => (getGameplayResult(q.id) as QuestionResult | undefined)?.correctRate)
-    .filter((v): v is number => typeof v === "number");
+    .map((q) => questionResults[q.id])
+    .filter((r): r is QuestionResult => !!r && "correctRate" in r)
+    .map((r) => r.correctRate);
   if (rates.length === 0) return null;
   return Math.round(rates.reduce((a, b) => a + b, 0) / rates.length);
 }
 
-export function HostGameShell() {
+export function HostGameShell({
+  sessionId,
+  quiz,
+  initialStatus,
+  initialQuestionIndex,
+  initialQuestionStartedAt,
+  initialLeaderboard,
+}: {
+  sessionId: string;
+  quiz: { title: string; questions: Question[] };
+  initialStatus: "QUESTION_ACTIVE" | "QUESTION_RESULTS" | "FINISHED";
+  initialQuestionIndex: number;
+  initialQuestionStartedAt: string | null;
+  initialLeaderboard: { participantId: string; nickname: string; score: number; rank: number }[];
+}) {
   const {
     phase,
     questionIndex,
@@ -32,15 +45,27 @@ export function HostGameShell() {
     question,
     participantQuestion,
     result,
+    questionResults,
     secondsLeft,
     responseCount,
     leaderboard,
+    transitioning,
+    awaitingFinalAnswers,
     closeQuestion,
     advanceFromResults,
     nextQuestion,
     endGame,
-    devBumpResponseCount,
-  } = useHostGameplay();
+  } = useHostGameplay({
+    sessionId,
+    quiz,
+    initialStatus,
+    initialQuestionIndex,
+    initialQuestionStartedAt,
+    initialLeaderboard,
+  });
+
+  const quizCount = quiz.questions.filter((q) => q.type === "QUIZ").length;
+  const pollCount = quiz.questions.filter((q) => q.type === "POLL").length;
 
   if (phase === "FINISHED") {
     return (
@@ -49,10 +74,12 @@ export function HostGameShell() {
         totalParticipants={totalParticipants}
         quizCount={quizCount}
         pollCount={pollCount}
-        avgCorrectRate={averageQuizCorrectRate()}
+        avgCorrectRate={averageQuizCorrectRate(quiz.questions, questionResults)}
       />
     );
   }
+
+  if (!question || !participantQuestion) return null;
 
   return (
     <div className="flex flex-1 flex-col gap-8">
@@ -67,7 +94,13 @@ export function HostGameShell() {
         />
       ) : null}
 
-      {phase === "QUESTION_RESULTS" && result ? (
+      {phase === "QUESTION_RESULTS" && awaitingFinalAnswers ? (
+        <p className="flex flex-1 items-center justify-center text-center text-white/70">
+          Đang chờ các câu trả lời cuối cùng…
+        </p>
+      ) : null}
+
+      {phase === "QUESTION_RESULTS" && !awaitingFinalAnswers && result ? (
         question.type === "QUIZ" ? (
           <HostQuizResults
             question={question}
@@ -84,15 +117,12 @@ export function HostGameShell() {
       <HostGameControls
         phase={phase}
         questionType={question.type}
+        transitioning={transitioning}
         onCloseQuestion={closeQuestion}
         onAdvanceFromResults={advanceFromResults}
         onNextQuestion={nextQuestion}
         onEndGame={endGame}
       />
-
-      {phase === "QUESTION_ACTIVE" ? (
-        <HostDevMockControls onBumpResponseCount={devBumpResponseCount} />
-      ) : null}
     </div>
   );
 }

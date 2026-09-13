@@ -1,13 +1,14 @@
-# SUPABASE_SETUP.md — RayCert Backend Foundation (Phase 10A + 10B + 10C)
+# SUPABASE_SETUP.md — RayCert Backend Foundation (Phase 10A + 10B + 10C + 10D)
 
 Phase 10A scope: database schema + RLS foundation. Phase 10B scope: real
 Trainer authentication (email/password via Supabase Auth) on top of that
 schema — `/login`, `/signup`, `/forgot-password`, `/reset-password`,
 protected trainer routes, session refresh, logout. Phase 10C scope: Quiz
-Library and Assessment CRUD now persist to Postgres for real (see §11) —
-Live Game/Realtime, AssessmentAttempt persistence, and Assessment Reports
-are still mock/local, deliberately deferred (see MASTER_PLAN.md's Phase
-10A/10B/10C entries).
+Library and Assessment CRUD now persist to Postgres for real (see §11).
+Phase 10D scope: Live Game session/participant/answer persistence (see
+§12) — Realtime, AssessmentAttempt persistence, and Assessment Reports are
+still mock/local, deliberately deferred (see MASTER_PLAN.md's Phase
+10A/10B/10C/10D entries).
 
 ---
 
@@ -54,7 +55,7 @@ Settings → API).
 
 ## 3. Migration instructions
 
-Two migration files so far, run once each, top to bottom, in order:
+Three migration files so far, run once each, top to bottom, in order:
 
 1. `supabase/migrations/20260910000000_initial_schema.sql` — the full
    schema (Phase 10A).
@@ -67,15 +68,27 @@ Two migration files so far, run once each, top to bottom, in order:
    participant (who has no Supabase Auth account) can read a published
    Assessment. Verified via a direct REST call during Phase 10C's RLS
    testing that without this migration, an anonymous request to an
-   ACTIVE assessment returns an empty result — **if you deployed Phase
-   10A before Phase 10C, you must run this second file too**, or
-   participant links will silently show "Không tìm thấy bài kiểm tra."
+   ACTIVE assessment returns an empty result.
+3. `supabase/migrations/20260912000000_live_game_host_rls.sql` —
+   **required for Phase 10D's Host flows to work** (Host button, Lobby,
+   Live) — adds owner-scoped RLS policies on `game_sessions` (host_id =
+   auth.uid()) and host-read-only policies on `participants`/
+   `participant_answers`. Verified via a direct REST call during Phase
+   10D's testing that without this migration, an authenticated trainer's
+   own attempt to `INSERT` a `game_sessions` row is rejected with `42501`
+   (RLS policy violation) — the Host button will fail with a friendly
+   error until this migration is applied.
+
+**If you deployed an earlier phase before a later one, you must run the
+migrations you're missing** — each is additive and safe to run once on top
+of the previous ones, in order.
 
 **Via the Dashboard (no CLI needed):**
 1. Open your project → **SQL Editor** → **New query**.
 2. Paste the full contents of the first file, run it, confirm no errors.
 3. New query again, paste the full contents of the second file, run it.
-4. Optionally also run `supabase/seed.sql` for demo data — read the
+4. New query again, paste the full contents of the third file, run it.
+5. Optionally also run `supabase/seed.sql` for demo data — read the
    comment at the top of that file first, it has one manual prerequisite
    (create a trainer user in Authentication → Users before seeding, since
    `profiles` rows only ever come from the `auth.users` trigger and there's
@@ -498,3 +511,97 @@ read/write real Postgres rows instead of mock data. What changed:
   Reports/Live Game mocks and must not be deleted. `mocks/assessments.ts`
   has no remaining importers after this migration but was left in place
   rather than deleted (nothing currently references it).
+
+---
+
+## 12. Phase 10D — Live Game session/participant/answer persistence
+
+The Host button, Host Lobby, Host Live, `/join`, `/join/[sessionCode]`, and
+`/play/[sessionId]` now read/write real `game_sessions`/`participants`/
+`participant_answers` rows instead of the fixed mock session/roster/question
+sequence. What changed:
+
+- **Two different Supabase clients, deliberately** (§20's chosen strategy):
+  the HOST half (`lib/data/game-sessions.ts`) uses the normal RLS-scoped
+  client — `game_sessions` got real owner policies in the Phase 10D
+  migration (§3), the same `host_id = auth.uid()` shape as `quizzes`'
+  `owner_id`, so RLS is the real backstop against Trainer B touching
+  Trainer A's session. The PARTICIPANT half
+  (`lib/data/participants.ts`/`lib/data/live-answers.ts`) uses the admin
+  client — a participant has no Supabase Auth session at all, so
+  `auth.uid()`-based RLS cannot express "this is the browser that joined."
+  This is the documented exception in `lib/supabase/admin.ts`'s own
+  comment, not a routine bypass: every participant-facing function does its
+  own full validation (session status, nickname shape/uniqueness, token
+  match, question-still-active, not-already-answered) before writing
+  anything, and `participants`/`participant_answers` still have NO
+  anonymous RLS policy — a raw anon-key request to those tables is denied
+  exactly like before.
+- **Participant identity**: an httpOnly cookie (`lib/game/participant-cookie.ts`,
+  `rc_pt`) carries `{sessionId, token}` after Join, where `token` is
+  `participants.participant_token` (a DB-generated random UUID string, not
+  a secret key). Every participant Server Action resolves the participant
+  from this cookie server-side — the client never sends/sees a raw
+  participantId. A stale cookie from a different session is rejected (the
+  cookie's `sessionId` must match the route being requested), and a
+  missing/invalid one sends the participant back to `/join/[sessionId]`
+  rather than fabricating one (§7).
+- **PIN generation**: 6 random digits, insert-and-retry-on-conflict against
+  `game_sessions.game_pin`'s existing global unique constraint (up to 15
+  attempts) — no pre-check-then-insert race window.
+- **No Realtime (Phase 10E's scope)**: a ~2.5s poll
+  (`hooks/use-live-poll.ts`) is what makes the Host Lobby's participant list,
+  Host Live's response count, and the participant's own phase transitions
+  (WAITING → QUESTION_ACTIVE → QUESTION_RESULTS → next question/FINISHED)
+  update without a manual refresh — genuinely just polling, not
+  `postgres_changes`/Broadcast. Verified against §9's own future-plan
+  section, unchanged by this phase.
+- **Scoring, server-side only**: `lib/data/live-answers.ts`'s
+  `submitAnswer` computes `is_correct`/`points_awarded` from the real
+  `current_question_started_at` timestamp and the real `answer_options.is_correct`
+  — never from a client-supplied elapsed time or correctness flag
+  (CLAUDE.md §5). `response_ms` is `now - current_question_started_at`,
+  clamped to ≥0. The exact CLAUDE.md §10 formula (`1000 + round(min(1,
+  remainingMs/totalMs) * 300)`), parameterized by the question's own
+  `base_points` instead of a literal 1000. `participants.score` is updated
+  via a read-then-write, not an atomic increment — a small race window
+  under concurrent submits is accepted for this phase's explicitly limited
+  scope (not "production authoritative scoring").
+- **Correct-answer leakage boundary (§13), verified by construction**: every
+  participant-facing read goes through `toParticipantQuestion()`
+  (`lib/game/participant-question.ts`, unchanged from the original mock
+  phase) before it can reach a client component — that function's return
+  type has no `isCorrect` field at all, so a participant component literally
+  cannot read it even if it tried. `getMyAnswerResult` additionally
+  refuses to reveal `is_correct`/`correctOptionId` while the specific
+  question is still `QUESTION_ACTIVE` for that session, even if called
+  early.
+- **RLS + DB constraints verified against the real project**: created a
+  throwaway trainer, confirmed (a) inserting a `game_sessions` row via the
+  trainer's own JWT is rejected `42501` before the Phase 10D migration is
+  applied (proving the gap is real, not just assumed), (b) after seeding a
+  session via the admin client, the DB's own unique constraints correctly
+  reject an exact-duplicate nickname (`23505`), a duplicate
+  `(participant_id, question_id)` answer (`23505`), and a duplicate
+  `game_pin` (`23505`) — the exact constraints `joinGameSession`/
+  `submitAnswer`/the PIN-retry loop depend on as their final backstop. All
+  test rows/accounts deleted afterward.
+- **Dropped from the old mock hook, a deliberate simplification**: a
+  synced "LEADERBOARD" sub-phase for the PARTICIPANT between questions. The
+  HOST's own leaderboard interstitial stays UI-only (no DB status, per
+  §10's explicit allowance), so without Realtime a participant has no way
+  to know when the host is showing it — showing one anyway would either
+  desync from the host or need a fabricated timer. QUIZ correct/incorrect +
+  points (CLAUDE.md's actual requirement) still show at
+  `QUESTION_RESULTS`; a full ranked board only appears once, at `FINISHED`.
+- **Kept on mock/local data, unchanged this phase**: `mocks/reports.ts`
+  (Reports) and the `mockParticipants`/`mockQuizzes` it still imports from
+  `mocks/session.ts`/`mocks/quizzes.ts` — left fully intact, not touched.
+  `mocks/gameplay.ts` (the old fixed 4-question demo sequence) and
+  `lib/game/scoring.ts`'s `calculateMockQuizPoints` have no remaining
+  importers after this migration (superseded by real quiz content and
+  `lib/data/live-answers.ts`'s server-side scoring) but were left in place
+  rather than deleted, same conservative policy as Phase 10C's orphaned
+  `mocks/assessments.ts`. `components/dev/HostDevMockControls.tsx` (the
+  "+1 response" dev-only button) is also now orphaned/unused, left in
+  place for the same reason.
